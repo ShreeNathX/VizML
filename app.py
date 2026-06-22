@@ -5,3 +5,4 @@ st.title('Main')
 st.write('Welcome to VizML - Your multipage streamlit page')
 
 st.sidebar.success('Select a page from sidebar.')
+print('Welcome to VizML - Your multipage streamlit page')
