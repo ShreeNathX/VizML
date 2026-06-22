@@ -1,0 +1,1137 @@
+
+<h2 class="sr-only">DataForge day-by-day development plan across 6 weeks — each day has specific tasks and tech stack</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.week-tabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.wtab{padding:6px 14px;font-size:12px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);background:var(--color-background-secondary)}
+.wtab.active{color:#0C447C;background:#E6F1FB;border-color:#85B7EB}
+.week-panel{display:none}
+.week-panel.active{display:block}
+.day{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:8px;overflow:hidden}
+.day-header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:0.5px solid var(--color-border-tertiary)}
+.day-num{width:36px;height:36px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.day-meta{flex:1}
+.day-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.day-focus{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.day-type{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;flex-shrink:0}
+.chevron{font-size:13px;color:var(--color-text-tertiary);transition:transform .18s}
+.day-body{display:none;padding:12px 14px}
+.day-body.open{display:block}
+.two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:8px}
+.section{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:9px 11px}
+.sec-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+.item{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--color-text-primary);margin-bottom:5px;line-height:1.4}
+.item:last-child{margin-bottom:0}
+.item i{font-size:12px;flex-shrink:0;margin-top:1px;color:var(--color-text-tertiary)}
+.tech-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.tech{font-size:10px;padding:2px 8px;border-radius:10px;border:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary);font-family:var(--font-mono)}
+.goal{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:var(--border-radius-md);margin-top:8px;font-size:12px}
+.warn{display:flex;align-items:flex-start;gap:7px;padding:7px 10px;border-radius:var(--border-radius-md);margin-top:6px;font-size:11px;color:var(--color-text-warning);background:var(--color-background-warning)}
+</style>
+
+<div class="week-tabs">
+  <div class="wtab active" onclick="showWeek(0,this)">Week 1</div>
+  <div class="wtab" onclick="showWeek(1,this)">Week 2</div>
+  <div class="wtab" onclick="showWeek(2,this)">Week 3</div>
+  <div class="wtab" onclick="showWeek(3,this)">Week 4</div>
+  <div class="wtab" onclick="showWeek(4,this)">Week 5</div>
+  <div class="wtab" onclick="showWeek(5,this)">Week 6</div>
+</div>
+
+<div class="week-panel active" id="wp0">
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E6F1FB;color:#0C447C">D1</div>
+      <div class="day-meta">
+        <div class="day-title">Project scaffold + Git + virtual environment</div>
+        <div class="day-focus">Mon — Foundation setup</div>
+      </div>
+      <span class="day-type" style="background:#E6F1FB;color:#0C447C">Setup</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Create root folder: dataforge/</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Create subfolders: core/, pages/, assets/, tests/, outputs/</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Initialise Git repo + write .gitignore</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Create virtual environment (venv)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write requirements.txt with all libraries</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Install all dependencies, verify no conflicts</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Create empty app.py + 7 empty page files</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Run streamlit run app.py — confirm blank app loads</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tech stack</div>
+          <div class="item"><i class="ti ti-terminal" aria-hidden="true"></i>Python 3.11</div>
+          <div class="item"><i class="ti ti-terminal" aria-hidden="true"></i>venv (standard library)</div>
+          <div class="item"><i class="ti ti-brand-git" aria-hidden="true"></i>Git</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>requirements.txt</div>
+          <div class="tech-row">
+            <span class="tech">streamlit</span><span class="tech">python-3.11</span><span class="tech">git</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>End of day: blank multi-page Streamlit app runs with no errors</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E6F1FB;color:#0C447C">D2</div>
+      <div class="day-meta">
+        <div class="day-title">Hardware detection module</div>
+        <div class="day-focus">Tue — core/hardware.py</div>
+      </div>
+      <span class="day-type" style="background:#E6F1FB;color:#0C447C">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write detect_device() — NVIDIA CUDA check</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Apple MPS check (torch.backends.mps)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>AMD ROCm check (torch.version.hip)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Intel IPEX check (import intel_extension_for_pytorch)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>CPU fallback with psutil core count</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>RAM available GB detection</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Return device config dict to session_state</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write pytest unit test for each device path</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tech stack</div>
+          <div class="item"><i class="ti ti-cpu" aria-hidden="true"></i>psutil — CPU + RAM info</div>
+          <div class="item"><i class="ti ti-cpu" aria-hidden="true"></i>torch — CUDA + MPS detection</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest — unit tests</div>
+          <div class="item"><i class="ti ti-cpu" aria-hidden="true"></i>py-cpuinfo — CPU brand name</div>
+          <div class="tech-row">
+            <span class="tech">psutil</span><span class="tech">torch</span><span class="tech">pytest</span><span class="tech">py-cpuinfo</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>End of day: detect_device() correctly identifies your machine's GPU/CPU and all unit tests pass</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E6F1FB;color:#0C447C">D3</div>
+      <div class="day-meta">
+        <div class="day-title">Sidebar, navigation + mode toggle UI</div>
+        <div class="day-focus">Wed — app.py + sidebar component</div>
+      </div>
+      <span class="day-type" style="background:#E6F1FB;color:#0C447C">UI</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Build sidebar layout with DataForge logo</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Auto / Manual mode pills wired to st.session_state.mode</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Hardware badge in sidebar footer</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Topbar with page title + mode badge per page</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Context annotation banner component (reusable)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>session_state initialisation guard (all keys)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Verify mode persists across page navigation</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tech stack</div>
+          <div class="item"><i class="ti ti-layout-sidebar" aria-hidden="true"></i>st.sidebar — sidebar layout</div>
+          <div class="item"><i class="ti ti-database" aria-hidden="true"></i>st.session_state — global state</div>
+          <div class="item"><i class="ti ti-layout" aria-hidden="true"></i>st.columns — topbar layout</div>
+          <div class="tech-row">
+            <span class="tech">streamlit</span><span class="tech">session_state</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>End of day: sidebar works, mode toggle switches between Auto/Manual and persists across all pages</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E6F1FB;color:#0C447C">D4</div>
+      <div class="day-meta">
+        <div class="day-title">Logging module + PyInstaller smoke test</div>
+        <div class="day-focus">Thu — core/logger.py + packaging baseline</div>
+      </div>
+      <span class="day-type" style="background:#E6F1FB;color:#0C447C">Infra</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write core/logger.py — rotating file log to outputs/dataforge.log</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Log level: INFO in prod, DEBUG in dev</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Import logger in hardware.py, log detected device</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write minimal launcher.py (starts Streamlit, opens browser)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>PyInstaller: bundle ONLY app.py + launcher today</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test bundle on clean Python environment</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Document any hidden import issues found</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tech stack</div>
+          <div class="item"><i class="ti ti-file-text" aria-hidden="true"></i>logging (stdlib) — rotating file handler</div>
+          <div class="item"><i class="ti ti-package" aria-hidden="true"></i>PyInstaller — bundle test</div>
+          <div class="item"><i class="ti ti-browser" aria-hidden="true"></i>webbrowser (stdlib) — auto-open</div>
+          <div class="item"><i class="ti ti-network" aria-hidden="true"></i>socket (stdlib) — free port finder</div>
+          <div class="tech-row">
+            <span class="tech">logging</span><span class="tech">pyinstaller</span><span class="tech">webbrowser</span>
+          </div>
+        </div>
+      </div>
+      <div class="warn"><i class="ti ti-alert-triangle" style="font-size:14px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>Do this early — PyInstaller + Streamlit has known hidden import issues. Finding them on Day 4 saves you a crisis in Week 6.</div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>End of day: launcher opens Streamlit in browser, log file writes correctly</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E6F1FB;color:#0C447C">D5</div>
+      <div class="day-meta">
+        <div class="day-title">Config/settings page + week 1 review</div>
+        <div class="day-focus">Fri — pages/0_settings.py + cleanup</div>
+      </div>
+      <span class="day-type" style="background:#E6F1FB;color:#0C447C">UI + Review</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Build settings page: output folder path picker</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Default split ratio sliders (train/val/test)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>RAM warning threshold input</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Auto-open browser toggle</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Save settings to local JSON config file</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Review Week 1: all tests pass, app runs cleanly</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write DEVLOG.md entry for Week 1</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#185FA5">Tech stack</div>
+          <div class="item"><i class="ti ti-settings" aria-hidden="true"></i>st.text_input, st.slider — settings UI</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>json (stdlib) — persist config</div>
+          <div class="item"><i class="ti ti-folder" aria-hidden="true"></i>pathlib.Path — cross-platform paths</div>
+          <div class="tech-row">
+            <span class="tech">streamlit</span><span class="tech">json</span><span class="tech">pathlib</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>Week 1 done: scaffold, hardware detection, sidebar, logger, settings all working</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="week-panel" id="wp1">
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D6</div>
+      <div class="day-meta">
+        <div class="day-title">Data ingestion — CSV, Excel, JSON, Parquet</div>
+        <div class="day-focus">Mon — core/ingestion.py</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>load_csv() using Polars for files under available RAM</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>load_excel() with openpyxl backend</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>load_json() with schema normalisation</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>load_parquet() using Polars</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Dask chunked loader for files exceeding RAM</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>@st.cache_data on all loaders</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Unit tests: each file type with edge case (empty file, bad encoding)</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i>polars — fast loader</div>
+          <div class="item"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i>dask — large file chunking</div>
+          <div class="item"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i>openpyxl — Excel reading</div>
+          <div class="tech-row">
+            <span class="tech">polars</span><span class="tech">dask</span><span class="tech">openpyxl</span><span class="tech">pyarrow</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>End of day: all four file types load correctly, large file switches to Dask automatically</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D7</div>
+      <div class="day-meta">
+        <div class="day-title">Data validation + leakage sentinel</div>
+        <div class="day-focus">Tue — core/validation.py</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Schema inference: dtypes, null %, duplicate count</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Leakage sentinel: Pearson correlation > 0.95 with target</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>ID column detection (unique ratio > 0.99)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Post-event datetime column flagging</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Constant column detection (zero variance)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Return structured warnings dict to UI</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Unit test: inject a leaking column, assert it gets flagged</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>scipy.stats — Pearson correlation</div>
+          <div class="item"><i class="ti ti-table" aria-hidden="true"></i>pandas / polars — schema ops</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest — leakage unit test</div>
+          <div class="tech-row">
+            <span class="tech">scipy</span><span class="tech">pandas</span><span class="tech">pytest</span>
+          </div>
+        </div>
+      </div>
+      <div class="warn"><i class="ti ti-alert-triangle" style="font-size:14px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>The leakage sentinel test is the most critical test in the entire project. Do not skip it.</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D8</div>
+      <div class="day-meta">
+        <div class="day-title">Upload page UI — full implementation</div>
+        <div class="day-focus">Wed — pages/1_upload.py</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">UI</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>st.file_uploader for all 4 file types</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Call ingestion loader, store df in session_state</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Metric cards: rows, columns, nulls %, duplicates</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Schema preview table with type badges</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Leakage warning cards with confirm button</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Target column selector (st.selectbox)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Error states: empty file, no numeric columns, all nulls in target</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-upload" aria-hidden="true"></i>st.file_uploader</div>
+          <div class="item"><i class="ti ti-table" aria-hidden="true"></i>st.dataframe</div>
+          <div class="item"><i class="ti ti-alert-triangle" aria-hidden="true"></i>st.warning / st.error</div>
+          <div class="item"><i class="ti ti-select" aria-hidden="true"></i>st.selectbox — target picker</div>
+          <div class="tech-row">
+            <span class="tech">streamlit</span><span class="tech">polars</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>End of day: upload a real CSV, see all schema info, warnings, and target selector working</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D9</div>
+      <div class="day-meta">
+        <div class="day-title">EDA report generation</div>
+        <div class="day-focus">Thu — pages/2_eda.py + core/eda.py</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">Core + UI</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>ydata-profiling report generation (cached)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Correlation bar chart — top 10 features vs target</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Null distribution chart per column</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Class imbalance chart (classification only)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Outlier summary table (IQR method)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>HTML report download button</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-chart-bar" aria-hidden="true"></i>ydata-profiling — full report</div>
+          <div class="item"><i class="ti ti-chart-line" aria-hidden="true"></i>plotly — inline charts</div>
+          <div class="item"><i class="ti ti-download" aria-hidden="true"></i>st.download_button — HTML export</div>
+          <div class="tech-row">
+            <span class="tech">ydata-profiling</span><span class="tech">plotly</span><span class="tech">streamlit</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>End of day: EDA page fully working with charts and downloadable HTML report</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D10</div>
+      <div class="day-meta">
+        <div class="day-title">Error handling pass + Week 2 integration test</div>
+        <div class="day-focus">Fri — defensive programming + full flow test</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">QA</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Wrap all loaders in try/except with user-friendly messages</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Handle: corrupted file, wrong extension, zero rows</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Handle: all nulls in target, single-class target</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Empty state screens on EDA page if no file loaded</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Integration test: house_prices.csv through upload + EDA</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Log all errors to dataforge.log</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-shield" aria-hidden="true"></i>try/except — defensive wrapping</div>
+          <div class="item"><i class="ti ti-file-text" aria-hidden="true"></i>logging — error logging</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest — integration test</div>
+          <div class="tech-row">
+            <span class="tech">pytest</span><span class="tech">logging</span><span class="tech">streamlit</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>Week 2 done: real data flows from file upload through EDA with no crashes on bad inputs</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="week-panel" id="wp2">
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E1F5EE;color:#085041">D11</div>
+      <div class="day-meta">
+        <div class="day-title">Auto feature engineering — type inference + transforms</div>
+        <div class="day-focus">Mon — core/auto_engineer.py (part 1)</div>
+      </div>
+      <span class="day-type" style="background:#E1F5EE;color:#085041">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Column type inference: numeric, categorical, datetime, text, boolean</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Auto imputation: median for numeric, mode for categorical</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Auto encoding: one-hot (&lt;10 categories), ordinal (10-50), target encode (50+)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Auto scaling: MinMax for bounded, Standard for unbounded</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Datetime decomposition: year, month, day, weekday, is_weekend</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Return transform plan dict (column → transform)</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tech stack</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>sklearn.preprocessing — encoders + scalers</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>sklearn.impute — SimpleImputer</div>
+          <div class="item"><i class="ti ti-calendar" aria-hidden="true"></i>pandas datetime accessor</div>
+          <div class="tech-row">
+            <span class="tech">scikit-learn</span><span class="tech">pandas</span><span class="tech">category-encoders</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E1F5EE;color:#085041">D12</div>
+      <div class="day-meta">
+        <div class="day-title">Auto engineer — polynomial, skew, SMOTE + pipeline assembly</div>
+        <div class="day-focus">Tue — core/auto_engineer.py (part 2) + core/pipeline_builder.py</div>
+      </div>
+      <span class="day-type" style="background:#E1F5EE;color:#085041">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Optional polynomial features (degree 2)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Log-transform skewed columns (skewness > 0.75)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Drop near-zero variance columns</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>SMOTE for imbalanced classification datasets</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Class weight balancing alternative to SMOTE</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Assemble sklearn ColumnTransformer from transform plan</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Train/val/test split (stratified + time-series aware)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Fit transformer ONLY on train split — assert no leakage</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tech stack</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>sklearn.pipeline — Pipeline + ColumnTransformer</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>imbalanced-learn — SMOTE</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>sklearn.model_selection — StratifiedShuffleSplit</div>
+          <div class="tech-row">
+            <span class="tech">scikit-learn</span><span class="tech">imbalanced-learn</span>
+          </div>
+        </div>
+      </div>
+      <div class="warn"><i class="ti ti-alert-triangle" style="font-size:14px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>SMOTE must be applied AFTER the train split, never before. Applying before causes leakage of synthetic samples into validation.</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E1F5EE;color:#085041">D13</div>
+      <div class="day-meta">
+        <div class="day-title">Manual feature engineering studio</div>
+        <div class="day-focus">Wed — pages/3_features.py (manual mode)</div>
+      </div>
+      <span class="day-type" style="background:#E1F5EE;color:#085041">UI</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Per-column transform dropdown (encode / scale / impute / drop)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Custom interaction term builder (col A × col B)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Drop column toggle per row</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Live preview: show 5-row transformed sample</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Warn if user drops too many columns (&lt;3 remaining)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Save manual config to session_state.manual_plan</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Auto mode shows read-only tags on same page</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tech stack</div>
+          <div class="item"><i class="ti ti-select" aria-hidden="true"></i>st.selectbox — per-column transforms</div>
+          <div class="item"><i class="ti ti-toggle-left" aria-hidden="true"></i>st.toggle — drop column</div>
+          <div class="item"><i class="ti ti-table" aria-hidden="true"></i>st.dataframe — live preview</div>
+          <div class="tech-row">
+            <span class="tech">streamlit</span><span class="tech">pandas</span><span class="tech">scikit-learn</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E1F5EE;color:#085041">D14</div>
+      <div class="day-meta">
+        <div class="day-title">Leakage test suite + pipeline correctness tests</div>
+        <div class="day-focus">Thu — tests/test_pipeline.py</div>
+      </div>
+      <span class="day-type" style="background:#E1F5EE;color:#085041">Testing</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: scaler fitted on train, applied to val — assert no train data used</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: SMOTE applied after split only</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: output shape after ColumnTransformer matches expected</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: datetime decomposition produces correct column count</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: drop column reduces feature count correctly</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: target column never appears in X features</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>All tests must pass before Week 4</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tech stack</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest — test runner</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>numpy — shape assertions</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest-cov — coverage report</div>
+          <div class="tech-row">
+            <span class="tech">pytest</span><span class="tech">pytest-cov</span><span class="tech">numpy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#E1F5EE;color:#085041">D15</div>
+      <div class="day-meta">
+        <div class="day-title">Feature page integration + Week 3 milestone check</div>
+        <div class="day-focus">Fri — end-to-end feature test</div>
+      </div>
+      <span class="day-type" style="background:#E1F5EE;color:#085041">QA + Milestone</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Upload house_prices.csv → run full auto mode feature pipeline</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Switch to manual mode → customise 3 columns → verify output</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Confirm train/val/test shapes are correct and stratified</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Run all pipeline tests — 100% must pass</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test with imbalanced classification dataset (e.g. credit fraud)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write DEVLOG.md entry for Week 3</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#0F6E56">Tech stack</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest — full test run</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>Kaggle datasets — benchmark data</div>
+          <div class="tech-row">
+            <span class="tech">pytest</span><span class="tech">scikit-learn</span><span class="tech">imbalanced-learn</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>Milestone 2: both modes working, pipeline correct, zero leakage confirmed by tests</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="week-panel" id="wp3">
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#FAEEDA;color:#633806">D16</div>
+      <div class="day-meta">
+        <div class="day-title">Model training engine — sklearn + tree models</div>
+        <div class="day-focus">Mon — core/trainer.py (part 1)</div>
+      </div>
+      <span class="day-type" style="background:#FAEEDA;color:#633806">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Build train() dispatcher: routes to correct model class</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>sklearn: LinearRegression, LogisticRegression, SVR, SVC</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>sklearn: RandomForestClassifier, RandomForestRegressor</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>XGBoost: XGBClassifier, XGBRegressor</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>LightGBM: LGBMClassifier, LGBMRegressor</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>CatBoost: CatBoostClassifier, CatBoostRegressor</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Device routing: pass device flag per model from hardware config</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tech stack</div>
+          <div class="item"><i class="ti ti-trees" aria-hidden="true"></i>xgboost</div>
+          <div class="item"><i class="ti ti-trees" aria-hidden="true"></i>lightgbm</div>
+          <div class="item"><i class="ti ti-trees" aria-hidden="true"></i>catboost</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>scikit-learn</div>
+          <div class="tech-row">
+            <span class="tech">xgboost</span><span class="tech">lightgbm</span><span class="tech">catboost</span><span class="tech">scikit-learn</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#FAEEDA;color:#633806">D17</div>
+      <div class="day-meta">
+        <div class="day-title">Optuna HPO + cross-validation + early stopping</div>
+        <div class="day-focus">Tue — core/trainer.py (part 2)</div>
+      </div>
+      <span class="day-type" style="background:#FAEEDA;color:#633806">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Optuna study per model with MedianPruner</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Hyperparameter search space per model type</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Stratified k-fold cross-validation (k configurable)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Early stopping for XGBoost + LightGBM</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Callback: update session_state.trial_progress per trial</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Return best params + best score to session_state</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Run training in background thread (threading.Thread)</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tech stack</div>
+          <div class="item"><i class="ti ti-adjustments" aria-hidden="true"></i>optuna — HPO with pruning</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>sklearn.model_selection — StratifiedKFold</div>
+          <div class="item"><i class="ti ti-cpu" aria-hidden="true"></i>threading — background training</div>
+          <div class="tech-row">
+            <span class="tech">optuna</span><span class="tech">scikit-learn</span><span class="tech">threading</span>
+          </div>
+        </div>
+      </div>
+      <div class="warn"><i class="ti ti-alert-triangle" style="font-size:14px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>Run training in a background thread. Blocking the Streamlit main thread freezes the entire UI — progress bars will not update until training finishes.</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#FAEEDA;color:#633806">D18</div>
+      <div class="day-meta">
+        <div class="day-title">Clustering models + Training page UI</div>
+        <div class="day-focus">Wed — core/trainer.py (clustering) + pages/4_training.py</div>
+      </div>
+      <span class="day-type" style="background:#FAEEDA;color:#633806">Core + UI</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>KMeans + DBSCAN clustering support</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Silhouette score for cluster evaluation</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Task type selector: regression / classification / clustering</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Model selector cards (auto highlights recommended)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Split ratio sliders (train/val/test)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Optuna trials slider + cross-val folds selector</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Live st.progress bar + trial counter + best metric display</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Stop training button (sets threading event flag)</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tech stack</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>sklearn.cluster — KMeans, DBSCAN</div>
+          <div class="item"><i class="ti ti-chart-bar" aria-hidden="true"></i>st.progress + st.empty()</div>
+          <div class="item"><i class="ti ti-player-stop" aria-hidden="true"></i>threading.Event — stop signal</div>
+          <div class="tech-row">
+            <span class="tech">scikit-learn</span><span class="tech">streamlit</span><span class="tech">threading</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#FAEEDA;color:#633806">D19</div>
+      <div class="day-meta">
+        <div class="day-title">PyInstaller spec file + hidden imports resolved</div>
+        <div class="day-focus">Thu — build/dataforge.spec</div>
+      </div>
+      <span class="day-type" style="background:#FAEEDA;color:#633806">Packaging</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write dataforge.spec with all hidden imports listed</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Add Streamlit static files to datas list</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Add XGBoost + LightGBM binaries to binaries list</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Build --onedir bundle and test on clean environment</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Verify all 4 file types load in bundled app</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Document every hidden import issue found + fix</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tech stack</div>
+          <div class="item"><i class="ti ti-package" aria-hidden="true"></i>pyinstaller — spec file</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>pyinstaller-hooks-contrib</div>
+          <div class="tech-row">
+            <span class="tech">pyinstaller</span><span class="tech">pyinstaller-hooks-contrib</span>
+          </div>
+        </div>
+      </div>
+      <div class="warn"><i class="ti ti-alert-triangle" style="font-size:14px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>Test the bundle on a machine with no Python installed. Your dev machine will always pass even if the bundle is broken.</div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#FAEEDA;color:#633806">D20</div>
+      <div class="day-meta">
+        <div class="day-title">Training end-to-end test + Week 4 review</div>
+        <div class="day-focus">Fri — full training run validation</div>
+      </div>
+      <span class="day-type" style="background:#FAEEDA;color:#633806">QA</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Train XGBoost on house_prices.csv — verify metric appears</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Train LightGBM on credit fraud (imbalanced) — verify SMOTE applied</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Run KMeans on iris dataset — verify cluster count</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Confirm progress bar updates live during Optuna trials</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test stop button halts training mid-run</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Confirm hardware badge shows correct device during training</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#854F0B">Tech stack</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>Kaggle datasets — house prices, credit fraud, iris</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest — training unit tests</div>
+          <div class="tech-row">
+            <span class="tech">xgboost</span><span class="tech">lightgbm</span><span class="tech">optuna</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>Week 4 done: training works for all task types, live progress visible, HPO finding better params</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="week-panel" id="wp4">
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D21</div>
+      <div class="day-meta">
+        <div class="day-title">Evaluation metrics — regression + classification</div>
+        <div class="day-focus">Mon — core/evaluator.py (part 1)</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Regression metrics: RMSE, MAE, R², MAPE, MedAE</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Classification metrics: accuracy, F1, precision, recall, AUC</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Confusion matrix (plotly heatmap)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>ROC curve + PR curve (plotly)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Calibration: isotonic regression + Platt scaling</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Bias audit: metric breakdown per categorical slice</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Clustering: silhouette score, inertia, Davies-Bouldin</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>sklearn.metrics — all metrics</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>sklearn.calibration — CalibratedClassifierCV</div>
+          <div class="item"><i class="ti ti-chart-line" aria-hidden="true"></i>plotly — ROC, confusion matrix</div>
+          <div class="tech-row">
+            <span class="tech">scikit-learn</span><span class="tech">plotly</span><span class="tech">pandas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D22</div>
+      <div class="day-meta">
+        <div class="day-title">SHAP explainability — global + per-row</div>
+        <div class="day-focus">Tue — core/evaluator.py (part 2)</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">Core</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>SHAP TreeExplainer for XGBoost, LightGBM, CatBoost, RF</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>SHAP KernelExplainer fallback for sklearn models</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Global bar chart: mean |SHAP| per feature</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Per-row waterfall plot: explain single prediction</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Row selector (st.number_input) to pick any row</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Feature importance table with download button</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Cache SHAP values — do not recompute on every interaction</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-math" aria-hidden="true"></i>shap — TreeExplainer + KernelExplainer</div>
+          <div class="item"><i class="ti ti-chart-bar" aria-hidden="true"></i>plotly — SHAP bar + waterfall</div>
+          <div class="item"><i class="ti ti-download" aria-hidden="true"></i>st.download_button — importance CSV</div>
+          <div class="tech-row">
+            <span class="tech">shap</span><span class="tech">plotly</span><span class="tech">streamlit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D23</div>
+      <div class="day-meta">
+        <div class="day-title">Evaluation page UI + experiment history page</div>
+        <div class="day-focus">Wed — pages/5_evaluation.py + pages/7_history.py</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">UI</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Metric cards at top (st.metric with delta)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>st.tabs: Metrics / SHAP / Bias / Calibration</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>All evaluation charts rendered in correct tab</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Experiment history table: run name, model, metric, date</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Click row to reload that run's results</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Side-by-side run comparison (2 runs, same metric)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Append each run to session_state.run_history</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-layout" aria-hidden="true"></i>st.tabs — metric organisation</div>
+          <div class="item"><i class="ti ti-chart-bar" aria-hidden="true"></i>st.metric — delta display</div>
+          <div class="item"><i class="ti ti-table" aria-hidden="true"></i>st.dataframe — run history</div>
+          <div class="tech-row">
+            <span class="tech">streamlit</span><span class="tech">plotly</span><span class="tech">shap</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D24</div>
+      <div class="day-meta">
+        <div class="day-title">Export module — pkl, JSON, code snippet</div>
+        <div class="day-focus">Thu — core/exporter.py + pages/6_export.py</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">Core + UI</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>joblib.dump — full sklearn Pipeline (preprocessing + model)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Experiment JSON: params, metrics, seed, data hash, timestamp</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>EDA HTML report saved to outputs/ folder</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>st.download_button for each export type</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Inference code snippet shown in st.code block</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Verify pkl loads correctly and predict() works on new data</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Unit test: dump + load pkl, assert same predictions</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tech stack</div>
+          <div class="item"><i class="ti ti-package" aria-hidden="true"></i>joblib — pkl serialisation</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>json — experiment log</div>
+          <div class="item"><i class="ti ti-hash" aria-hidden="true"></i>hashlib — data fingerprint</div>
+          <div class="tech-row">
+            <span class="tech">joblib</span><span class="tech">json</span><span class="tech">hashlib</span><span class="tech">pathlib</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EEEDFE;color:#3C3489">D25</div>
+      <div class="day-meta">
+        <div class="day-title">Full pipeline end-to-end test — Milestone 3</div>
+        <div class="day-focus">Fri — upload → train → evaluate → export</div>
+      </div>
+      <span class="day-type" style="background:#EEEDFE;color:#3C3489">Milestone</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Dataset 1: house prices (regression) — full auto mode run</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Dataset 2: titanic (classification) — full manual mode run</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Dataset 3: customer segments (clustering) — auto mode</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Download pkl for each — verify predict() works offline</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Verify SHAP values make domain sense</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Run full pytest suite — all tests must pass</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write DEVLOG.md entry for Week 5</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#534AB7">Benchmark datasets</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>house_prices.csv — Kaggle</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>titanic.csv — Kaggle</div>
+          <div class="item"><i class="ti ti-file" aria-hidden="true"></i>mall_customers.csv — Kaggle</div>
+          <div class="tech-row">
+            <span class="tech">pytest</span><span class="tech">joblib</span><span class="tech">shap</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>Milestone 3: complete pipeline working — CSV in, trained model + pkl out. Project is done in substance.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="week-panel" id="wp5">
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EAF3DE;color:#27500A">D26</div>
+      <div class="day-meta">
+        <div class="day-title">PyInstaller full bundle — all libraries included</div>
+        <div class="day-focus">Mon — build/dataforge.spec final</div>
+      </div>
+      <span class="day-type" style="background:#EAF3DE;color:#27500A">Packaging</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Update spec with all Week 5 additions (shap, optuna, catboost)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Add ydata-profiling static assets to datas</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Bundle full application, measure install size</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test on clean VM — no Python, no pip</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Verify all 7 pages load in bundled version</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Fix any missing import errors found in VM test</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tech stack</div>
+          <div class="item"><i class="ti ti-package" aria-hidden="true"></i>pyinstaller — final spec</div>
+          <div class="item"><i class="ti ti-device-desktop" aria-hidden="true"></i>VirtualBox / clean VM — test env</div>
+          <div class="tech-row">
+            <span class="tech">pyinstaller</span><span class="tech">pyinstaller-hooks-contrib</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EAF3DE;color:#27500A">D27</div>
+      <div class="day-meta">
+        <div class="day-title">Platform installer — Windows .exe or macOS .dmg</div>
+        <div class="day-focus">Tue — platform-specific installer</div>
+      </div>
+      <span class="day-type" style="background:#EAF3DE;color:#27500A">Packaging</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Windows: write NSIS script → build DataForge_Setup.exe</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>macOS: use create-dmg → build DataForge.dmg</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Linux: build DataForge.AppImage</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test installer: install, launch, confirm app opens in browser</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Confirm outputs/ folder created on first run</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Confirm dataforge.log writes after install</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tech stack</div>
+          <div class="item"><i class="ti ti-brand-windows" aria-hidden="true"></i>NSIS — Windows installer</div>
+          <div class="item"><i class="ti ti-brand-apple" aria-hidden="true"></i>create-dmg — macOS installer</div>
+          <div class="item"><i class="ti ti-brand-ubuntu" aria-hidden="true"></i>AppImageTool — Linux</div>
+          <div class="tech-row">
+            <span class="tech">nsis</span><span class="tech">create-dmg</span><span class="tech">appimage</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EAF3DE;color:#27500A">D28</div>
+      <div class="day-meta">
+        <div class="day-title">Edge cases + RAM warning + empty states</div>
+        <div class="day-focus">Wed — polish pass across all pages</div>
+      </div>
+      <span class="day-type" style="background:#EAF3DE;color:#27500A">Polish</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>RAM warning before training if free RAM &lt; 2 GB</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Empty state screen on every page if prerequisite not met</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Verify all st.cache_data decorators correct</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: 1-row dataset, 1-column dataset, all-null column</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: dataset with special characters in column names</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: very large category cardinality (1000+ categories)</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Test: training on 500k row dataset — memory stable</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tech stack</div>
+          <div class="item"><i class="ti ti-cpu" aria-hidden="true"></i>psutil — live RAM check before training</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest — edge case tests</div>
+          <div class="tech-row">
+            <span class="tech">psutil</span><span class="tech">pytest</span><span class="tech">streamlit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EAF3DE;color:#27500A">D29</div>
+      <div class="day-meta">
+        <div class="day-title">Buffer day — catch-up + final test suite run</div>
+        <div class="day-focus">Thu — reserved for slippage</div>
+      </div>
+      <span class="day-type" style="background:#EAF3DE;color:#27500A">Buffer</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Complete any task that slipped from Weeks 1–5</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Run full pytest suite — all tests green</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Run coverage report — aim for &gt;80% core/ coverage</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Final leakage test on all 3 benchmark datasets</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Check dataforge.log is clean (no unexpected errors)</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tech stack</div>
+          <div class="item"><i class="ti ti-flask" aria-hidden="true"></i>pytest + pytest-cov</div>
+          <div class="tech-row">
+            <span class="tech">pytest</span><span class="tech">pytest-cov</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-header" onclick="tog(this)">
+      <div class="day-num" style="background:#EAF3DE;color:#27500A">D30</div>
+      <div class="day-meta">
+        <div class="day-title">README + usage guide + v1.0 release</div>
+        <div class="day-focus">Fri — documentation + final delivery</div>
+      </div>
+      <span class="day-type" style="background:#EAF3DE;color:#27500A">Ship</span>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="day-body">
+      <div class="two-col">
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Tasks</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write README.md: what it does, install steps, screenshots</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write USAGE.md: auto mode walkthrough, manual mode walkthrough</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write CHANGELOG.md: v1.0 feature list</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Tag Git release: v1.0.0</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Final installer test: fresh install → full pipeline run</div>
+          <div class="item"><i class="ti ti-check" aria-hidden="true"></i>Write DEVLOG.md final entry</div>
+        </div>
+        <div class="section">
+          <div class="sec-label" style="color:#3B6D11">Deliverables</div>
+          <div class="item"><i class="ti ti-package" aria-hidden="true"></i>DataForge_Setup.exe / .dmg / .AppImage</div>
+          <div class="item"><i class="ti ti-brand-git" aria-hidden="true"></i>Git tag v1.0.0</div>
+          <div class="item"><i class="ti ti-file-text" aria-hidden="true"></i>README + USAGE + CHANGELOG</div>
+          <div class="tech-row">
+            <span class="tech">git</span><span class="tech">markdown</span>
+          </div>
+        </div>
+      </div>
+      <div class="goal" style="background:#EAF3DE;color:#27500A"><i class="ti ti-circle-check" style="font-size:15px" aria-hidden="true"></i>DataForge v1.0 — installable on any machine, fully working, documented, and shipped.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showWeek(idx, el) {
+  document.querySelectorAll('.week-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+  document.querySelectorAll('.wtab').forEach((t,i) => t.classList.toggle('active', i===idx));
+}
+function tog(header) {
+  const body = header.nextElementSibling;
+  const ch = header.querySelector('.chevron');
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  if(ch) ch.style.transform = open ? '' : 'rotate(180deg)';
+}
+</script>
