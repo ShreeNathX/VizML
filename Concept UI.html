@@ -1,0 +1,3319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VizML — Universal ML Pipeline</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   All color, typography, spacing, and sizing values live here.
+   Change a token once — the whole UI follows.
+============================================================ */
+:root {
+  /* Color palette */
+  --color-bg:           #0B0C10;   /* deepest background, body fill */
+  --color-surface:      #13141A;   /* sidebar, topbar, card backgrounds */
+  --color-raised:       #1C1D26;   /* elevated panels, hovered rows */
+  --color-border:       #272836;   /* all dividers and outlines */
+
+  /* Semantic accent colors */
+  --color-accent:       #6C63FF;   /* machine / auto decisions */
+  --color-confirm:      #2DD4A0;   /* approve / success */
+  --color-override:     #F5A623;   /* manual override / warning */
+  --color-danger:       #F05C5C;   /* errors, leakage flags, stop */
+
+  /* Text hierarchy */
+  --color-text-primary:   #EEEEF5;   /* headings, values, active labels */
+  --color-text-secondary: #8A8BA8;   /* body, descriptions, nav labels */
+  --color-text-muted:     #4A4B62;   /* timestamps, placeholders, guides */
+
+  /* Derived alpha surfaces */
+  --color-accent-dim:   rgba(108, 99, 255, 0.10);
+  --color-confirm-dim:  rgba(45,  212, 160, 0.10);
+  --color-override-dim: rgba(245, 166,  35, 0.10);
+  --color-danger-dim:   rgba(240,  92,  92, 0.10);
+
+  /* Typography families */
+  --font-display: 'Space Grotesk', sans-serif;   /* page titles only */
+  --font-body:    'Inter', sans-serif;            /* all prose and UI labels */
+  --font-mono:    'IBM Plex Mono', monospace;     /* data, code, metrics, tags */
+
+  /* Type scale */
+  --text-xs:   10px;
+  --text-sm:   11px;
+  --text-base: 13px;
+  --text-md:   14px;
+  --text-lg:   16px;
+  --text-xl:   22px;
+
+  /* Spacing scale (4px base grid) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+
+  /* Radii */
+  --radius-sm:  3px;
+  --radius-md:  5px;
+  --radius-lg:  6px;
+  --radius-xl:  8px;
+
+  /* Layout dimensions */
+  --sidebar-width: 220px;
+  --topbar-height:  52px;
+
+  /* Transitions */
+  --transition-fast: 0.12s ease;
+  --transition-base: 0.18s ease;
+}
+
+/* ============================================================
+   RESET & BASE
+============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { cursor: pointer; }
+select { cursor: pointer; }
+input, textarea, select { font-family: inherit; }
+input[type=range] { accent-color: var(--color-accent); }
+
+/* ============================================================
+   SCROLLBARS
+============================================================ */
+::-webkit-scrollbar            { width: 5px; height: 5px; }
+::-webkit-scrollbar-track      { background: var(--color-bg); }
+::-webkit-scrollbar-thumb      { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover{ background: var(--color-text-muted); }
+
+/* ============================================================
+   TOPBAR
+   Fixed header, always on top. Contains logo, mode toggle,
+   mode description, and hardware badges.
+============================================================ */
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-height);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  z-index: 200;
+  gap: 0;
+}
+
+/* Logo block */
+.topbar-logo {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  padding: 0 var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.5px;
+  border-right: 1px solid var(--color-border);
+  height: 100%;
+}
+
+.topbar-logo .accent { color: var(--color-accent); }
+
+.logo-icon {
+  width: 26px;
+  height: 26px;
+  background: var(--color-accent);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-icon svg { width: 15px; height: 15px; fill: #fff; }
+
+/* Mode toggle — the most prominent control in the UI */
+.mode-toggle {
+  display: flex;
+  margin-left: var(--space-6);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.mode-btn {
+  padding: var(--space-1) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: none;
+  border-right: 1px solid var(--color-border);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+  height: 32px;
+}
+
+.mode-btn:last-child { border-right: none; }
+.mode-btn:hover { color: var(--color-text-secondary); }
+
+/* Active states — each mode has its own visual identity */
+.mode-btn.active[data-mode="auto"] {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.mode-btn.active[data-mode="hybrid"] {
+  /* Two-color: left half accent (machine), right half override (human) */
+  background: linear-gradient(90deg,
+    var(--color-accent)   0%,  var(--color-accent)   50%,
+    var(--color-override) 50%, var(--color-override) 100%
+  );
+  color: #fff;
+}
+
+.mode-btn.active[data-mode="manual"] {
+  background: var(--color-override);
+  color: #0B0C10;
+}
+
+/* Mode description — one-liner shown next to the toggle */
+.mode-description {
+  margin-left: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+
+/* Hardware badges — right side of topbar */
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-right: var(--space-5);
+}
+
+.hw-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-2);
+  background: var(--color-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.3px;
+}
+
+.hw-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-confirm);
+  flex-shrink: 0;
+}
+
+.hw-dot.gpu { background: var(--color-accent); }
+
+/* ============================================================
+   LAYOUT — sidebar + main panel
+============================================================ */
+#layout {
+  display: flex;
+  height: 100vh;
+  padding-top: var(--topbar-height);
+}
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+#sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-group {
+  padding: var(--space-5) 0 var(--space-2);
+}
+
+.sidebar-group-label {
+  padding: 0 var(--space-4) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Nav item — each page link in the sidebar */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.nav-item:hover {
+  background: var(--color-raised);
+  color: var(--color-text-primary);
+}
+
+.nav-item.active {
+  background: var(--color-raised);
+  color: var(--color-text-primary);
+  border-left-color: var(--color-accent);
+}
+
+.nav-item svg {
+  width: 15px; height: 15px;
+  opacity: 0.55;
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
+.nav-item.active svg { opacity: 1; }
+.nav-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Hardware info block — bottom of sidebar */
+.sidebar-hw {
+  margin-top: auto;
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 2;
+}
+
+.sidebar-hw-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.5px;
+}
+
+.sidebar-hw-val { color: var(--color-text-primary); }
+
+/* ============================================================
+   MAIN CONTENT AREA
+============================================================ */
+#main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-8);
+  background: var(--color-bg);
+}
+
+/* ============================================================
+   PAGE — each section shown via JS toggle
+============================================================ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* Page header */
+.page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.3px;
+  margin-bottom: var(--space-1);
+}
+
+.page-subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+  font-style: italic;
+}
+
+/* Section label — used inside pages */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-3);
+}
+
+/* ============================================================
+   CARDS & SURFACES
+============================================================ */
+/* Generic card */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.card-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================================
+   METRIC CARDS — Upload page stat row
+============================================================ */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.metric-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.metric-sub {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* Metric value color modifiers */
+.metric-value.ok     { color: var(--color-confirm); }
+.metric-value.warn   { color: var(--color-override); }
+.metric-value.danger { color: var(--color-danger); }
+
+/* ============================================================
+   DROPZONE
+============================================================ */
+.dropzone {
+  background: var(--color-surface);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-base), background var(--transition-base);
+  margin-bottom: var(--space-6);
+}
+
+.dropzone:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
+}
+
+.dropzone-icon {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.dropzone-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.dropzone-hint {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.format-row {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-top: var(--space-3);
+}
+
+.format-chip {
+  background: var(--color-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* File loaded confirmation bar */
+.file-loaded-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--color-raised);
+  border: 1px solid var(--color-confirm);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.file-loaded-icon { color: var(--color-confirm); }
+
+.file-loaded-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.file-loaded-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* ============================================================
+   SCHEMA TABLE
+============================================================ */
+.schema-table-wrap {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.schema-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.schema-table th {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.schema-table td {
+  padding: 9px var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.schema-table tr:last-child td { border-bottom: none; }
+.schema-table tr:hover td { background: var(--color-raised); }
+
+/* Inline type badges */
+.type-badge {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.type-float { background: var(--color-accent-dim);   color: var(--color-accent); }
+.type-int   { background: var(--color-confirm-dim);  color: var(--color-confirm); }
+.type-cat   { background: var(--color-override-dim); color: var(--color-override); }
+.type-bool  { background: var(--color-danger-dim);   color: var(--color-danger); }
+.type-date  { background: rgba(139,139,168,0.12);    color: var(--color-text-secondary); }
+
+/* Null percentage bar */
+.null-bar-track {
+  width: 72px; height: 5px;
+  background: var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.null-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--color-accent);
+  transition: width 0.4s;
+}
+
+.null-bar-fill.warn   { background: var(--color-override); }
+.null-bar-fill.danger { background: var(--color-danger); }
+
+/* Leakage flag */
+.leakage-flag {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+/* ============================================================
+   NULL HEATMAP (SVG chart box)
+============================================================ */
+.chart-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.chart-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: var(--space-4);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+/* ============================================================
+   ALERT / CALLOUT STRIP
+============================================================ */
+.alert-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   BADGES — inline semantic tags
+============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.badge-accent   { background: var(--color-accent-dim);   color: var(--color-accent); }
+.badge-confirm  { background: var(--color-confirm-dim);  color: var(--color-confirm); }
+.badge-override { background: var(--color-override-dim); color: var(--color-override); }
+.badge-danger   { background: var(--color-danger-dim);   color: var(--color-danger); }
+.badge-muted    { background: var(--color-raised);       color: var(--color-text-secondary); border: 1px solid var(--color-border); }
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: 7px var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn:active { opacity: 0.85; transform: translateY(1px); }
+
+.btn-primary  { background: var(--color-accent);   color: #fff; }
+.btn-confirm  { background: var(--color-confirm);  color: #0B0C10; font-weight: 600; }
+.btn-override { background: var(--color-override); color: #0B0C10; font-weight: 600; }
+.btn-danger   { background: var(--color-danger);   color: #fff; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-ghost:hover {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.btn-primary:hover  { background: #7d75ff; }
+.btn-confirm:hover  { background: #3deab4; }
+.btn-override:hover { background: #f8b83e; }
+.btn-danger:hover   { background: #f37070; }
+
+/* Size modifier */
+.btn-sm { padding: 4px var(--space-2); font-size: var(--text-xs); }
+
+/* ============================================================
+   TOGGLES — boolean switches
+============================================================ */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.toggle-switch {
+  width: 36px;
+  height: 20px;
+  background: var(--color-border);
+  border-radius: 10px;
+  position: relative;
+  transition: background var(--transition-base);
+  flex-shrink: 0;
+  cursor: pointer;
+  border: none;
+}
+
+.toggle-switch.on { background: var(--color-accent); }
+
+.toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left var(--transition-base);
+}
+
+.toggle-switch.on::after { left: 18px; }
+
+.toggle-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ============================================================
+   DIVIDER
+============================================================ */
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-5) 0;
+}
+
+/* ============================================================
+   ROW UTILITY — flex rows
+============================================================ */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   HYBRID DECISION CARDS
+   ─────────────────────────────────────────────────────────────
+   This is the signature element of VizML. Every auto-generated
+   pipeline decision appears as a card with:
+   - A two-color left stripe (accent = machine half, muted = pending)
+   - A machine reasoning description
+   - Approve / Override action buttons
+   - A slide-open override panel
+   ─────────────────────────────────────────────────────────────
+============================================================ */
+.decision-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.decision-card {
+  background: var(--color-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition-base);
+}
+
+/* State modifiers */
+.decision-card.state-approved  { border-color: var(--color-confirm); }
+.decision-card.state-overridden { border-color: var(--color-override); }
+
+/* Inner flex row: stripe + body */
+.dc-inner { display: flex; }
+
+/* The signature two-color left border stripe */
+.dc-stripe {
+  width: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--color-accent)  0%,  var(--color-accent)  50%,
+    var(--color-border)  50%, var(--color-border)  100%
+  );
+  transition: background var(--transition-base);
+}
+
+.decision-card.state-approved  .dc-stripe { background: var(--color-confirm); }
+.decision-card.state-overridden .dc-stripe { background: var(--color-override); }
+
+/* Card body */
+.dc-body {
+  flex: 1;
+  padding: var(--space-4);
+}
+
+/* Card header row */
+.dc-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.dc-step {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dc-column {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* The machine's decision — monospaced, prominent */
+.dc-decision {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+  font-weight: 500;
+}
+
+/* The reasoning — human-readable justification */
+.dc-reason {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* Action row */
+.dc-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* Status label (appears after approving/overriding) */
+.dc-status {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-left: var(--space-1);
+}
+
+.dc-status.approved   { color: var(--color-confirm); }
+.dc-status.overridden { color: var(--color-override); }
+
+/* Override slide-open panel */
+.dc-override-panel {
+  display: none;
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  animation: slideDown 0.14s ease;
+}
+
+.dc-override-panel.open { display: block; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dc-override-panel .field-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.dc-override-panel select,
+.dc-override-panel input {
+  width: 100%;
+  margin-bottom: var(--space-2);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.dc-override-panel select:focus,
+.dc-override-panel input:focus {
+  outline: none;
+  border-color: var(--color-override);
+}
+
+/* ============================================================
+   FEATURE ENGINEERING — Manual mode per-column table
+============================================================ */
+.fe-table { width: 100%; border-collapse: collapse; }
+
+.fe-table-header {
+  display: grid;
+  grid-template-columns: 150px 1fr 1fr 1fr;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.fe-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 1fr 1fr;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
+}
+
+.fe-row:last-child { border-bottom: none; }
+.fe-row:hover      { background: var(--color-raised); }
+
+.fe-col-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* All native selects in the app */
+.select {
+  width: 100%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.select:focus { outline: none; border-color: var(--color-accent); }
+
+/* ============================================================
+   MODEL LIBRARY
+============================================================ */
+.model-search-bar {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast);
+}
+
+.search-input::placeholder { color: var(--color-text-muted); }
+.search-input:focus { outline: none; border-color: var(--color-accent); }
+
+/* Task filter buttons */
+.filter-btn-group { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+
+.filter-btn {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+}
+
+.filter-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+.filter-btn.active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
+}
+
+/* Model group heading */
+.model-group-heading {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  padding: var(--space-5) 0 var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-3);
+}
+
+/* 3-column model grid */
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+/* Individual model card */
+.model-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.model-card:hover { border-color: var(--color-accent); }
+.model-card.hidden { display: none; }
+
+/* AUTO top-3 highlight */
+.model-card.recommended {
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
+}
+
+/* User-selected state */
+.model-card.selected {
+  border-color: var(--color-confirm);
+  background: var(--color-confirm-dim);
+}
+
+/* Recommended badge — top-right corner of card */
+.rec-badge {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.5px;
+}
+
+.model-card-name {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+  padding-right: 48px; /* avoid overlap with rec-badge */
+}
+
+.model-card-family {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: var(--space-2);
+}
+
+/* Tags: speed, interpretability */
+.tag-row { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+
+.tag {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.tag.fast   { border-color: var(--color-confirm);  color: var(--color-confirm); }
+.tag.slow   { border-color: var(--color-danger);   color: var(--color-danger); }
+.tag.hi-int { border-color: var(--color-confirm);  color: var(--color-confirm); }
+.tag.lo-int { border-color: var(--color-text-muted); color: var(--color-text-muted); }
+.tag.gpu    { border-color: var(--color-accent);   color: var(--color-accent); }
+
+/* ============================================================
+   MODEL DETAIL SIDE PANEL (HP configurator)
+============================================================ */
+.model-side-panel {
+  display: none;
+  position: fixed;
+  top: var(--topbar-height);
+  right: 0;
+  width: 360px;
+  height: calc(100vh - var(--topbar-height));
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  z-index: 300;
+  overflow-y: auto;
+  padding: var(--space-5);
+  box-shadow: -6px 0 32px rgba(0,0,0,0.5);
+  animation: panelSlideIn 0.18s ease;
+}
+
+@keyframes panelSlideIn {
+  from { transform: translateX(24px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.model-side-panel.open { display: block; }
+
+.panel-close-btn {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: var(--color-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 3px var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.panel-close-btn:hover { color: var(--color-text-primary); }
+
+/* HP parameter rows */
+.hp-row { margin-bottom: var(--space-3); }
+
+.hp-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.hp-input {
+  width: 100%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.hp-input:focus { outline: none; border-color: var(--color-accent); }
+
+/* ============================================================
+   TRAINING PAGE
+============================================================ */
+.training-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.training-stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--space-2);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.stat-value.accent  { font-size: var(--text-lg); color: var(--color-accent); }
+.stat-value.confirm { color: var(--color-confirm); }
+
+.stat-sub {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+/* Progress bar */
+.progress-track {
+  height: 5px;
+  background: var(--color-border);
+  border-radius: 3px;
+  margin-top: var(--space-2);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Trial log terminal */
+.trial-log {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  height: 220px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.9;
+}
+
+.log-ok   { color: var(--color-confirm); }
+.log-info { color: var(--color-accent); }
+.log-warn { color: var(--color-override); }
+.log-dim  { color: var(--color-text-muted); }
+
+/* ============================================================
+   EVALUATION PAGE
+============================================================ */
+.eval-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.eval-stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.eval-stat-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--space-1);
+}
+
+.eval-stat-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.eval-delta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  margin-top: var(--space-1);
+}
+
+.delta-up { color: var(--color-confirm); }
+.delta-dn { color: var(--color-danger); }
+
+/* ============================================================
+   CODE STUDIO
+============================================================ */
+.studio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* Editor wrapper */
+.editor-frame {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Editor chrome bar */
+.editor-chrome {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Mac-style traffic lights — decorative, not functional */
+.traffic-lights {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.tl-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.tl-close    { background: var(--color-danger); }
+.tl-minimize { background: var(--color-override); }
+.tl-max      { background: var(--color-confirm); }
+
+.editor-filename {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-left: var(--space-2);
+}
+
+.editor-actions { margin-left: auto; display: flex; gap: var(--space-2); }
+
+/* Editor body: line numbers + textarea */
+.editor-body { display: flex; min-height: 320px; }
+
+.line-numbers {
+  background: var(--color-raised);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-3) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-align: right;
+  line-height: 1.75;
+  user-select: none;
+  min-width: 38px;
+}
+
+.code-textarea {
+  flex: 1;
+  padding: var(--space-3);
+  background: var(--color-bg);
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  line-height: 1.75;
+  width: 100%;
+  tab-size: 4;
+}
+
+.code-textarea::selection { background: var(--color-accent-dim); }
+
+/* Validation feedback box */
+.validation-feedback {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.8;
+}
+
+.val-ok  { color: var(--color-confirm); }
+.val-err { color: var(--color-danger); }
+.val-dim { color: var(--color-text-muted); }
+
+/* Sample output panel */
+.sample-output {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  min-height: 80px;
+  line-height: 1.75;
+}
+
+/* Pipeline diagram */
+.pipeline-diagram { display: flex; flex-direction: column; gap: var(--space-1); margin-top: var(--space-3); }
+
+.pipe-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.pipe-step.inject {
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.pipe-step-num {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.inject-label {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+/* Code snippet (read-only display) */
+.code-block {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  overflow-x: auto;
+  line-height: 1.75;
+  white-space: pre;
+}
+
+/* Syntax-color helpers used inside .code-block */
+.syn-kw  { color: var(--color-accent); }
+.syn-fn  { color: var(--color-confirm); }
+.syn-str { color: var(--color-override); }
+.syn-cm  { color: var(--color-text-muted); font-style: italic; }
+.syn-txt { color: var(--color-text-primary); }
+
+/* ============================================================
+   EXPORT PAGE
+============================================================ */
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.export-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+}
+
+.export-card-icon { margin-bottom: var(--space-3); }
+
+.export-card-name {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.export-card-desc {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  margin-bottom: var(--space-4);
+  flex: 1;
+}
+
+/* ============================================================
+   EXPERIMENT HISTORY TABLE
+============================================================ */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.history-table td {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.history-table tr:last-child td { border-bottom: none; }
+
+.history-table tbody tr {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.history-table tbody tr:hover td { background: var(--color-raised); }
+.history-table tbody tr.selected-row td { background: var(--color-raised); }
+
+/* Mode pills */
+.mode-pill {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.mode-pill.auto   { background: var(--color-accent-dim);   color: var(--color-accent); }
+.mode-pill.hybrid { background: var(--color-override-dim); color: var(--color-override); }
+.mode-pill.manual { background: var(--color-confirm-dim);  color: var(--color-confirm); }
+
+/* ============================================================
+   SETTINGS PAGE
+============================================================ */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.settings-group {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.settings-group-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.setting-item { margin-bottom: var(--space-4); }
+.setting-item:last-child { margin-bottom: 0; }
+
+.setting-label {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  display: block;
+  margin-bottom: 3px;
+}
+
+.setting-hint {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.setting-input {
+  width: 100%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast);
+}
+
+.setting-input:focus { outline: none; border-color: var(--color-accent); }
+
+.setting-inline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* ============================================================
+   TOAST NOTIFICATION
+============================================================ */
+#toast {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  background: var(--color-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  z-index: 9999;
+  display: none;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.55);
+  animation: toastIn 0.2s ease;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#toast.show        { display: block; }
+#toast.toast-ok    { border-color: var(--color-confirm); }
+#toast.toast-warn  { border-color: var(--color-override); }
+#toast.toast-err   { border-color: var(--color-danger); }
+
+/* ============================================================
+   RESPONSIVE SIDEBAR COLLAPSE
+============================================================ */
+@media (max-width: 900px) {
+  :root { --sidebar-width: 48px; }
+  .nav-item span,
+  .sidebar-group-label,
+  .sidebar-hw,
+  .topbar-logo .logo-text { display: none; }
+  .mode-description { display: none; }
+  .topbar-logo { padding: 0 var(--space-3); justify-content: center; }
+}
+
+@media (max-width: 700px) {
+  .metric-grid           { grid-template-columns: repeat(2,1fr); }
+  .model-grid            { grid-template-columns: 1fr 1fr; }
+  .charts-grid           { grid-template-columns: 1fr; }
+  .export-grid           { grid-template-columns: 1fr; }
+  .settings-grid         { grid-template-columns: 1fr; }
+  .training-status-grid  { grid-template-columns: repeat(2,1fr); }
+  .eval-stat-grid        { grid-template-columns: repeat(2,1fr); }
+  .studio-grid           { grid-template-columns: 1fr; }
+  #main                  { padding: var(--space-4); }
+}
+</style>
+
+</head>
+<body>
+
+<!-- ====================================================
+     TOPBAR
+==================================================== -->
+<header id="topbar">
+  <div class="topbar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 3l3.5-6 3.5 6z"/></svg>
+    </div>
+    <span class="logo-text">Viz<span class="accent">ML</span></span>
+  </div>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="auto"   onclick="setMode('auto')">AUTO</button>
+    <button class="mode-btn"        data-mode="hybrid" onclick="setMode('hybrid')">HYBRID</button>
+    <button class="mode-btn"        data-mode="manual" onclick="setMode('manual')">MANUAL</button>
+  </div>
+  <div class="mode-description" id="modeDesc">Machine decides everything. Zero configuration.</div>
+
+  <div class="topbar-right">
+    <div class="hw-badge"><div class="hw-dot gpu"></div>RTX 4090 · CUDA</div>
+    <div class="hw-badge"><div class="hw-dot"></div>Ryzen 9 5950X · 32 GB</div>
+  </div>
+</header>
+
+<!-- ====================================================
+     APP LAYOUT
+==================================================== -->
+<div id="layout">
+
+<!-- ====================================================
+     SIDEBAR
+==================================================== -->
+<nav id="sidebar">
+  <div class="sidebar-group">
+    <div class="sidebar-group-label">Pipeline</div>
+    <button class="nav-item active" onclick="showPage('upload')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      <span>Upload &amp; Profile</span>
+    </button>
+    <button class="nav-item" onclick="showPage('features')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+      <span>Feature Engineering</span>
+    </button>
+    <button class="nav-item" onclick="showPage('models')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <span>Model Library</span>
+    </button>
+    <button class="nav-item" onclick="showPage('training')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Training</span>
+    </button>
+    <button class="nav-item" onclick="showPage('eval')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Evaluation</span>
+    </button>
+  </div>
+
+  <div class="sidebar-group">
+    <div class="sidebar-group-label">Developer</div>
+    <button class="nav-item" onclick="showPage('studio')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      <span>Code Studio</span>
+    </button>
+    <button class="nav-item" onclick="showPage('export')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Export</span>
+    </button>
+    <button class="nav-item" onclick="showPage('history')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+      <span>Experiment History</span>
+    </button>
+  </div>
+
+  <div class="sidebar-group">
+    <div class="sidebar-group-label">System</div>
+    <button class="nav-item" onclick="showPage('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 19.07l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M4.93 4.93l1.41 1.41M12 21v2M12 1v2"/></svg>
+      <span>Settings</span>
+    </button>
+  </div>
+
+  <div class="sidebar-hw">
+    <div class="sidebar-hw-title">Hardware</div>
+    <div>CPU <span class="sidebar-hw-val">Ryzen 9 5950X</span></div>
+    <div>Cores <span class="sidebar-hw-val">16c / 32t</span></div>
+    <div>RAM <span class="sidebar-hw-val">32 GB DDR4-3600</span></div>
+    <div>GPU <span class="sidebar-hw-val">RTX 4090 (CUDA)</span></div>
+    <div>VRAM <span class="sidebar-hw-val">24 GB</span></div>
+  </div>
+</nav>
+
+<!-- ====================================================
+     MAIN
+==================================================== -->
+<main id="main">
+
+<!-- ==================== UPLOAD & PROFILE ==================== -->
+<div class="page active" id="page-upload">
+  <div class="page-title">Upload &amp; Profile</div>
+  <div class="page-subtitle">// Drop a dataset to begin. VizML infers schema, audits nulls, and flags leakage automatically.</div>
+
+  <div class="dropzone" id="dropzone" onclick="simulateUpload()">
+    <div class="dropzone-icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+    </div>
+    <div class="dropzone-title">Drop your dataset here</div>
+    <div class="dropzone-hint">or click to browse &nbsp;·&nbsp; Files &gt; 500 MB trigger chunked loading</div>
+    <div class="format-row">
+      <span class="format-chip">.csv</span>
+      <span class="format-chip">.xlsx</span>
+      <span class="format-chip">.parquet</span>
+      <span class="format-chip">.json</span>
+    </div>
+  </div>
+
+  <div class="file-loaded-bar" id="fileLoadedBar" style="display:none">
+    <div class="file-loaded-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div>
+      <div class="file-loaded-name">housing_prices_2024.csv</div>
+      <div class="file-loaded-meta">21,613 rows &nbsp;·&nbsp; 21 columns &nbsp;·&nbsp; 4.2 MB &nbsp;·&nbsp; Parsed in 0.3s</div>
+    </div>
+    <div class="row" style="margin-left:auto;margin-bottom:0">
+      <button class="btn btn-ghost btn-sm">Replace</button>
+      <button class="btn btn-primary btn-sm" onclick="showPage('features')">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Metric stat strip -->
+  <div class="metric-grid" id="metricGrid" style="display:none">
+    <div class="metric-card">
+      <div class="metric-label">Rows</div>
+      <div class="metric-value">21,613</div>
+      <div class="metric-sub">training candidates</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Columns</div>
+      <div class="metric-value">21</div>
+      <div class="metric-sub">2 datetime · 14 numeric · 5 cat</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Null %</div>
+      <div class="metric-value warn">3.2%</div>
+      <div class="metric-sub">689 total missing cells</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Duplicates</div>
+      <div class="metric-value ok">0</div>
+      <div class="metric-sub">no exact row duplicates</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Memory</div>
+      <div class="metric-value">4.2 MB</div>
+      <div class="metric-sub">fits in RAM comfortably</div>
+    </div>
+  </div>
+
+  <div id="schemaSection" style="display:none">
+    <div class="section-label">Schema Detection</div>
+    <div class="schema-table-wrap">
+      <table class="schema-table">
+        <thead>
+          <tr>
+            <th>Column</th><th>Inferred Type</th><th>Unique</th>
+            <th>Null Count</th><th>Null %</th><th>Leakage</th><th>Sample</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>price</td><td><span class="type-badge type-float">float64</span></td><td>18,916</td><td>0</td><td><div class="null-bar-track"><div class="null-bar-fill" style="width:0%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">450000, 525000…</td></tr>
+          <tr><td>sqft_living</td><td><span class="type-badge type-int">int64</span></td><td>1,044</td><td>0</td><td><div class="null-bar-track"><div class="null-bar-fill" style="width:0%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">1180, 2570…</td></tr>
+          <tr><td>bedrooms</td><td><span class="type-badge type-int">int64</span></td><td>12</td><td>0</td><td><div class="null-bar-track"><div class="null-bar-fill" style="width:0%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">3, 4…</td></tr>
+          <tr><td>bathrooms</td><td><span class="type-badge type-float">float64</span></td><td>29</td><td>0</td><td><div class="null-bar-track"><div class="null-bar-fill" style="width:0%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">1.0, 2.25…</td></tr>
+          <tr><td>waterfront</td><td><span class="type-badge type-bool">bool</span></td><td>2</td><td>47</td><td><div class="null-bar-track"><div class="null-bar-fill warn" style="width:25%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">0, 1…</td></tr>
+          <tr><td>grade</td><td><span class="type-badge type-int">int64</span></td><td>12</td><td>0</td><td><div class="null-bar-track"><div class="null-bar-fill" style="width:0%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">7, 8…</td></tr>
+          <tr><td>sqft_above</td><td><span class="type-badge type-int">int64</span></td><td>942</td><td>0</td><td><div class="null-bar-track"><div class="null-bar-fill" style="width:0%"></div></div></td><td><span class="leakage-flag">⚠ r=0.97</span></td><td style="color:var(--color-text-muted)">1180, 2170…</td></tr>
+          <tr><td>zipcode</td><td><span class="type-badge type-cat">category</span></td><td>70</td><td>0</td><td><div class="null-bar-track"><div class="null-bar-fill" style="width:0%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">98178, 98125…</td></tr>
+          <tr><td>date</td><td><span class="type-badge type-date">datetime</span></td><td>372</td><td>0</td><td><div class="null-bar-track"><div class="null-bar-fill" style="width:0%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">2014-05-02…</td></tr>
+          <tr><td>yr_renovated</td><td><span class="type-badge type-int">int64</span></td><td>70</td><td>642</td><td><div class="null-bar-track"><div class="null-bar-fill danger" style="width:62%"></div></div></td><td>—</td><td style="color:var(--color-text-muted)">0, 1995…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert-strip" style="margin-top:16px">
+      <span class="badge badge-danger">1 leakage flag detected</span>
+      <span class="badge badge-override">sqft_above — Pearson r = 0.97 with target</span>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm">Dismiss</button>
+        <button class="btn btn-danger btn-sm" onclick="toast('sqft_above flagged for review','warn')">Review Flagged Column</button>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:28px">Null Audit Heatmap</div>
+    <div class="chart-box">
+      <div class="chart-label">Distribution of missing values across all columns</div>
+      <svg width="100%" height="72" viewBox="0 0 700 72" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="nullGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#F05C5C" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#F05C5C" stop-opacity="0.15"/>
+          </linearGradient>
+        </defs>
+        <g font-family="IBM Plex Mono" font-size="9" fill="#4A4B62">
+          <text x="2"   y="68">price</text>   <rect x="2"   y="54" width="52" height="8" fill="#272836" rx="2"/>
+          <text x="64"  y="68">sqft</text>    <rect x="64"  y="54" width="52" height="8" fill="#272836" rx="2"/>
+          <text x="126" y="68">beds</text>    <rect x="126" y="54" width="52" height="8" fill="#272836" rx="2"/>
+          <text x="188" y="68">baths</text>   <rect x="188" y="54" width="52" height="8" fill="#272836" rx="2"/>
+          <text x="250" y="68">wfront</text>  <rect x="250" y="24" width="52" height="38" fill="url(#nullGrad)" rx="2" opacity="0.6"/>
+          <text x="312" y="68">grade</text>   <rect x="312" y="54" width="52" height="8" fill="#272836" rx="2"/>
+          <text x="374" y="68">sqft_ab</text> <rect x="374" y="54" width="52" height="8" fill="#272836" rx="2"/>
+          <text x="436" y="68">zipcode</text> <rect x="436" y="54" width="52" height="8" fill="#272836" rx="2"/>
+          <text x="498" y="68">date</text>    <rect x="498" y="54" width="52" height="8" fill="#272836" rx="2"/>
+          <text x="560" y="68">yr_renov</text><rect x="560" y="4"  width="52" height="58" fill="url(#nullGrad)" rx="2"/>
+          <text x="622" y="68">lat</text>     <rect x="622" y="54" width="52" height="8" fill="#272836" rx="2"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="row" style="margin-top:20px">
+      <button class="btn btn-primary" onclick="showPage('features')">Proceed to Feature Engineering →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FEATURE ENGINEERING ==================== -->
+<div class="page" id="page-features">
+  <div class="page-title">Feature Engineering</div>
+  <div class="page-subtitle" id="feSubtitle">// AUTO mode — detected transforms shown as read-only cards</div>
+
+  <!-- AUTO VIEW -->
+  <div id="fe-auto">
+    <div class="section-label">Detected Transforms</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+      <div class="card"><div class="card-title">sqft_living</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary)">MinMax Scaling → [0, 1]</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:4px;line-height:1.5">Right-skewed distribution (skew=1.48). MinMax selected to preserve shape without outlier compression.</div></div>
+      <div class="card"><div class="card-title">bedrooms</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary)">Standard Scaling (z-score)</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:4px;line-height:1.5">12 unique integer values. Zero mean, unit variance normalisation applied.</div></div>
+      <div class="card"><div class="card-title">waterfront</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary)">Mode Imputation + Binary Encoding</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:4px;line-height:1.5">47 nulls → 0 (most frequent). Semantically safe: most properties are not waterfront.</div></div>
+      <div class="card"><div class="card-title">zipcode</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary)">Target Encoding (mean price per zip)</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:4px;line-height:1.5">High cardinality (70). One-hot would add 70 sparse columns. Target encoding retains geographic signal.</div></div>
+      <div class="card"><div class="card-title">date</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary)">Datetime Decomposition</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:4px;line-height:1.5">Extracted: year, month, day_of_week, quarter. Drops original column.</div></div>
+      <div class="card"><div class="card-title">yr_renovated</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--color-text-secondary)">Constant Impute (0) + Log1p Transform</div><div style="font-size:12px;color:var(--color-text-muted);margin-top:4px;line-height:1.5">642 nulls → 0 (semantically "never renovated"). Log1p compresses the 0–2015 range.</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="showPage('models')">Proceed to Model Library →</button>
+  </div>
+
+  <!-- HYBRID VIEW — signature decision cards -->
+  <div id="fe-hybrid" style="display:none">
+    <div class="row" style="margin-bottom:16px">
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--color-text-muted)">6 decisions pending your review</span>
+      <button class="btn btn-confirm btn-sm" onclick="approveAll()">Approve All</button>
+      <button class="btn btn-ghost btn-sm" onclick="showPage('studio')">Custom Transform →</button>
+    </div>
+
+    <div class="decision-cards" id="decisionCards">
+
+      <div class="decision-card" id="dc1">
+        <div class="dc-inner"><div class="dc-stripe"></div><div class="dc-body">
+          <div class="dc-header">
+            <span class="dc-step">Step 1 · Imputation</span>
+            <span class="dc-column">waterfront</span>
+            <span class="badge badge-override">47 nulls</span>
+          </div>
+          <div class="dc-decision">Mode Imputation → fill with 0 (most frequent value)</div>
+          <div class="dc-reason">Binary column. Mode fill preserves class distribution. Semantically: most properties are not waterfront, so 0 is the correct absence value.</div>
+          <div class="dc-actions">
+            <button class="btn btn-confirm btn-sm" onclick="approveCard('dc1')">✓ Approve</button>
+            <button class="btn btn-override btn-sm" onclick="toggleOverride('dc1')">Override</button>
+            <span class="dc-status" id="dc1-status"></span>
+          </div>
+          <div class="dc-override-panel" id="dc1-override">
+            <label class="field-label">Imputation Strategy</label>
+            <select class="select"><option>Mode (most frequent)</option><option>Median</option><option>Mean</option><option>Constant → 0</option><option>KNN Imputer</option><option>Drop rows with null</option></select>
+            <button class="btn btn-override btn-sm" onclick="confirmOverride('dc1')">Confirm Override</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="decision-card" id="dc2">
+        <div class="dc-inner"><div class="dc-stripe"></div><div class="dc-body">
+          <div class="dc-header">
+            <span class="dc-step">Step 2 · Scaling</span>
+            <span class="dc-column">sqft_living</span>
+          </div>
+          <div class="dc-decision">MinMax Scaling → range [0, 1]</div>
+          <div class="dc-reason">Distribution is right-skewed (skew=1.48). MinMax preserves the shape and relative distances without outlier-driven compression. Standard scaling would distort the lower range.</div>
+          <div class="dc-actions">
+            <button class="btn btn-confirm btn-sm" onclick="approveCard('dc2')">✓ Approve</button>
+            <button class="btn btn-override btn-sm" onclick="toggleOverride('dc2')">Override</button>
+            <span class="dc-status" id="dc2-status"></span>
+          </div>
+          <div class="dc-override-panel" id="dc2-override">
+            <label class="field-label">Scaling Method</label>
+            <select class="select"><option>MinMax [0,1]</option><option>Standard (z-score)</option><option>Robust (IQR)</option><option>MaxAbs</option><option>None</option></select>
+            <button class="btn btn-override btn-sm" onclick="confirmOverride('dc2')">Confirm Override</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="decision-card" id="dc3">
+        <div class="dc-inner"><div class="dc-stripe"></div><div class="dc-body">
+          <div class="dc-header">
+            <span class="dc-step">Step 3 · Encoding</span>
+            <span class="dc-column">zipcode</span>
+            <span class="badge badge-accent">70 categories</span>
+          </div>
+          <div class="dc-decision">Target Encoding — replace each zipcode with mean(price)</div>
+          <div class="dc-reason">High cardinality (70 unique values). One-hot would produce 70 sparse columns and risk dimensionality explosion. Target encoding distills geographic price signal into a single numeric column.</div>
+          <div class="dc-actions">
+            <button class="btn btn-confirm btn-sm" onclick="approveCard('dc3')">✓ Approve</button>
+            <button class="btn btn-override btn-sm" onclick="toggleOverride('dc3')">Override</button>
+            <span class="dc-status" id="dc3-status"></span>
+          </div>
+          <div class="dc-override-panel" id="dc3-override">
+            <label class="field-label">Encoding Strategy</label>
+            <select class="select"><option>Target Encoding</option><option>One-Hot (creates 70 cols)</option><option>Ordinal</option><option>Binary</option><option>Frequency</option><option>Drop column</option></select>
+            <button class="btn btn-override btn-sm" onclick="confirmOverride('dc3')">Confirm Override</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="decision-card" id="dc4">
+        <div class="dc-inner"><div class="dc-stripe"></div><div class="dc-body">
+          <div class="dc-header">
+            <span class="dc-step">Step 4 · Transform</span>
+            <span class="dc-column">yr_renovated</span>
+            <span class="badge badge-danger">642 nulls</span>
+          </div>
+          <div class="dc-decision">Constant Impute (0) → Log1p Transform</div>
+          <div class="dc-reason">Nulls semantically mean "never renovated", so 0 is the correct fill value — not median or mean. Log1p applied to compress the long tail from 1930–2015 and bring the 0-group closer to renovated properties in scale.</div>
+          <div class="dc-actions">
+            <button class="btn btn-confirm btn-sm" onclick="approveCard('dc4')">✓ Approve</button>
+            <button class="btn btn-override btn-sm" onclick="toggleOverride('dc4')">Override</button>
+            <span class="dc-status" id="dc4-status"></span>
+          </div>
+          <div class="dc-override-panel" id="dc4-override">
+            <label class="field-label">Imputation</label>
+            <select class="select"><option>Constant → 0</option><option>Median</option><option>Drop rows with null</option></select>
+            <label class="field-label" style="margin-top:8px">Transform</label>
+            <select class="select"><option>Log1p</option><option>None</option><option>Sqrt</option><option>Polynomial deg 2</option></select>
+            <button class="btn btn-override btn-sm" onclick="confirmOverride('dc4')">Confirm Override</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="decision-card" id="dc5">
+        <div class="dc-inner"><div class="dc-stripe"></div><div class="dc-body">
+          <div class="dc-header">
+            <span class="dc-step">Step 5 · Datetime</span>
+            <span class="dc-column">date</span>
+          </div>
+          <div class="dc-decision">Decompose → year, month, day_of_week, quarter</div>
+          <div class="dc-reason">Datetime columns carry trend (year) and cyclical (month, quarter) signal that tree models can exploit directly. Raw timestamps are uninterpretable to most estimators.</div>
+          <div class="dc-actions">
+            <button class="btn btn-confirm btn-sm" onclick="approveCard('dc5')">✓ Approve</button>
+            <button class="btn btn-override btn-sm" onclick="toggleOverride('dc5')">Override</button>
+            <span class="dc-status" id="dc5-status"></span>
+          </div>
+          <div class="dc-override-panel" id="dc5-override">
+            <label class="field-label">Extract Components</label>
+            <select class="select" multiple style="height:84px"><option selected>year</option><option selected>month</option><option selected>day_of_week</option><option selected>quarter</option><option>day</option><option>week_of_year</option></select>
+            <button class="btn btn-override btn-sm" onclick="confirmOverride('dc5')" style="margin-top:8px">Confirm Override</button>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="decision-card" id="dc6">
+        <div class="dc-inner"><div class="dc-stripe"></div><div class="dc-body">
+          <div class="dc-header">
+            <span class="dc-step">Step 6 · Leakage Sentinel</span>
+            <span class="dc-column">sqft_above</span>
+            <span class="badge badge-danger">r = 0.97</span>
+          </div>
+          <div class="dc-decision">Drop column — Pearson correlation to target exceeds threshold (0.95)</div>
+          <div class="dc-reason">sqft_above correlates at r=0.97 with price. Keeping this column would artificially inflate model evaluation scores, since the feature essentially encodes the target. This is a data leakage risk.</div>
+          <div class="dc-actions">
+            <button class="btn btn-confirm btn-sm" onclick="approveCard('dc6')">✓ Approve Drop</button>
+            <button class="btn btn-override btn-sm" onclick="toggleOverride('dc6')">Keep Column</button>
+            <span class="dc-status" id="dc6-status"></span>
+          </div>
+          <div class="dc-override-panel" id="dc6-override">
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--color-override);margin-bottom:10px;line-height:1.5">Warning: keeping this column introduces potential data leakage. Holdout metrics will be inflated.</div>
+            <button class="btn btn-override btn-sm" onclick="confirmOverride('dc6')">Keep Anyway</button>
+          </div>
+        </div></div>
+      </div>
+
+    </div><!-- /decision-cards -->
+
+    <div class="row" style="margin-top:20px">
+      <span id="approvedCount" style="font-family:var(--font-mono);font-size:12px;color:var(--color-text-muted)">0 / 6 approved</span>
+      <button class="btn btn-primary" onclick="showPage('models')">Proceed to Model Library →</button>
+    </div>
+  </div>
+
+  <!-- MANUAL VIEW -->
+  <div id="fe-manual" style="display:none">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="fe-table-header">
+        <span>Column</span><span>Imputation</span><span>Scaling</span><span>Encoding / Transform</span>
+      </div>
+      <div class="fe-row"><span class="fe-col-name">sqft_living</span><select class="select"><option>None</option><option>Mean</option><option>Median</option></select><select class="select"><option selected>MinMax</option><option>Standard</option><option>Robust</option></select><select class="select"><option>None</option><option>Log1p</option><option>Polynomial deg 2</option></select></div>
+      <div class="fe-row"><span class="fe-col-name">bedrooms</span><select class="select"><option selected>None</option></select><select class="select"><option selected>Standard</option><option>MinMax</option></select><select class="select"><option selected>None</option></select></div>
+      <div class="fe-row"><span class="fe-col-name">waterfront</span><select class="select"><option>Mode</option><option selected>Constant 0</option></select><select class="select"><option selected>None</option></select><select class="select"><option selected>Binary</option><option>One-Hot</option></select></div>
+      <div class="fe-row"><span class="fe-col-name">zipcode</span><select class="select"><option selected>None</option></select><select class="select"><option selected>None</option></select><select class="select"><option selected>Target Encoding</option><option>One-Hot</option><option>Ordinal</option></select></div>
+      <div class="fe-row"><span class="fe-col-name">date</span><select class="select"><option selected>None</option></select><select class="select"><option selected>None</option></select><select class="select"><option selected>Datetime Decompose</option><option>Unix Timestamp</option><option>Drop</option></select></div>
+      <div class="fe-row"><span class="fe-col-name">yr_renovated</span><select class="select"><option selected>Constant 0</option><option>Median</option></select><select class="select"><option selected>Log1p</option><option>None</option></select><select class="select"><option selected>None</option></select></div>
+      <div class="fe-row"><span class="fe-col-name">sqft_above</span><select class="select"><option selected>None</option></select><select class="select"><option selected>Standard</option></select><select class="select"><option selected>None</option><option>Drop</option></select></div>
+    </div>
+    <div class="row" style="margin-top:16px">
+      <button class="btn btn-ghost btn-sm" onclick="showPage('studio')">+ Custom Transform (Code Studio)</button>
+      <button class="btn btn-primary" style="margin-left:auto" onclick="showPage('models')">Proceed to Model Library →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODEL LIBRARY ==================== -->
+<div class="page" id="page-models">
+  <div class="page-title">Model Library</div>
+  <div class="page-subtitle">// All 43 supported estimators. Click any card to configure hyperparameters. AUTO pre-selects top 3.</div>
+
+  <div class="model-search-bar">
+    <input class="search-input" type="text" placeholder="Search models …" id="modelSearch" oninput="filterModels()">
+    <div class="filter-btn-group">
+      <button class="filter-btn active" onclick="filterByTask('all',this)">All</button>
+      <button class="filter-btn" onclick="filterByTask('regression',this)">Regression</button>
+      <button class="filter-btn" onclick="filterByTask('classification',this)">Classification</button>
+      <button class="filter-btn" onclick="filterByTask('clustering',this)">Clustering</button>
+      <button class="filter-btn" onclick="filterByTask('timeseries',this)">Time Series</button>
+    </div>
+  </div>
+
+  <div id="modelLibrary">
+
+    <div class="model-group-heading" id="grp-regression">Regression</div>
+    <div class="model-grid" id="grid-regression">
+      <div class="model-card recommended" data-task="regression" data-name="Random Forest Regressor" onclick="openPanel('Random Forest Regressor','Ensemble · Tree','Robust all-rounder for tabular data. Handles non-linearity and outliers. Low variance via bagging. Reliable first-choice baseline.','n_estimators:100,max_depth:None,min_samples_split:2,n_jobs:-1')"><span class="rec-badge">#1 AUTO</span><div class="model-card-name">Random Forest Regressor</div><div class="model-card-family">Ensemble · Tree</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">interpretable</span><span class="tag">general purpose</span></div></div>
+      <div class="model-card recommended" data-task="regression" data-name="XGBoost Regressor" onclick="openPanel('XGBoost Regressor','Gradient Boosting','State-of-the-art on tabular. GPU-accelerated, built-in regularization, native feature importance. Top performer across Kaggle benchmarks.','n_estimators:300,learning_rate:0.1,max_depth:6,subsample:0.8,colsample_bytree:0.8')"><span class="rec-badge">#2 AUTO</span><div class="model-card-name">XGBoost Regressor</div><div class="model-card-family">Gradient Boosting</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag gpu">GPU ready</span></div></div>
+      <div class="model-card recommended" data-task="regression" data-name="LightGBM Regressor" onclick="openPanel('LightGBM Regressor','Gradient Boosting','Fastest gradient booster for large datasets. Leaf-wise growth. Excellent on high-dimensional sparse data.','n_estimators:300,learning_rate:0.05,num_leaves:31,min_child_samples:20')"><span class="rec-badge">#3 AUTO</span><div class="model-card-name">LightGBM Regressor</div><div class="model-card-family">Gradient Boosting</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag">large data</span></div></div>
+      <div class="model-card" data-task="regression" data-name="Linear Regression" onclick="openPanel('Linear Regression','Linear','Fastest baseline. Perfect interpretability. Assumes linear relationship and homoscedastic errors.','fit_intercept:True,copy_X:True')"><div class="model-card-name">Linear Regression</div><div class="model-card-family">Linear</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">high interpret.</span></div></div>
+      <div class="model-card" data-task="regression" data-name="Ridge" onclick="openPanel('Ridge','Regularized Linear','L2 regularization. Handles multicollinearity well. Retains all features but shrinks coefficients.','alpha:1.0,fit_intercept:True')"><div class="model-card-name">Ridge</div><div class="model-card-family">Regularized Linear</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">high interpret.</span></div></div>
+      <div class="model-card" data-task="regression" data-name="Lasso" onclick="openPanel('Lasso','Regularized Linear','L1 regularization performs automatic feature selection by zeroing coefficients. Produces sparse solutions.','alpha:1.0,max_iter:1000,tol:0.0001')"><div class="model-card-name">Lasso</div><div class="model-card-family">Regularized Linear</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">high interpret.</span><span class="tag">feature select</span></div></div>
+      <div class="model-card" data-task="regression" data-name="ElasticNet" onclick="openPanel('ElasticNet','Regularized Linear','Combines L1 + L2. Best of Ridge and Lasso. Useful when groups of correlated features exist.','alpha:1.0,l1_ratio:0.5,max_iter:1000')"><div class="model-card-name">ElasticNet</div><div class="model-card-family">Regularized Linear</div><div class="tag-row"><span class="tag fast">fast</span></div></div>
+      <div class="model-card" data-task="regression" data-name="SVR" onclick="openPanel('SVR','Support Vector','Non-linear regression via kernel trick. High accuracy on small-medium datasets. Very slow above n=10k.','kernel:rbf,C:1.0,epsilon:0.1,gamma:scale')"><div class="model-card-name">SVR</div><div class="model-card-family">Support Vector</div><div class="tag-row"><span class="tag slow">slow</span><span class="tag lo-int">low interpret.</span></div></div>
+      <div class="model-card" data-task="regression" data-name="KNN Regressor" onclick="openPanel('KNN Regressor','Instance-Based','Non-parametric. Predicts by averaging k nearest neighbors. Scale-sensitive — normalization required.','n_neighbors:5,weights:uniform,metric:minkowski')"><div class="model-card-name">KNN Regressor</div><div class="model-card-family">Instance-Based</div><div class="tag-row"><span class="tag">lazy learner</span></div></div>
+      <div class="model-card" data-task="regression" data-name="Decision Tree Regressor" onclick="openPanel('Decision Tree Regressor','Tree','Fully interpretable — generates human-readable if/else rules. High variance without pruning.','max_depth:None,min_samples_split:2,min_samples_leaf:1')"><div class="model-card-name">Decision Tree Regressor</div><div class="model-card-family">Tree</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">high interpret.</span></div></div>
+      <div class="model-card" data-task="regression" data-name="Gradient Boosting Regressor" onclick="openPanel('Gradient Boosting Regressor','Gradient Boosting','sklearn native. Accurate but slower than XGBoost/LightGBM. Stage-wise additive modeling.','n_estimators:100,learning_rate:0.1,max_depth:3')"><div class="model-card-name">Gradient Boosting Regressor</div><div class="model-card-family">Gradient Boosting</div><div class="tag-row"><span class="tag slow">slow</span></div></div>
+      <div class="model-card" data-task="regression" data-name="CatBoost Regressor" onclick="openPanel('CatBoost Regressor','Gradient Boosting','Native categorical support — no encoding needed. Ordered boosting to prevent target leakage during training.','iterations:300,learning_rate:0.1,depth:6')"><div class="model-card-name">CatBoost Regressor</div><div class="model-card-family">Gradient Boosting</div><div class="tag-row"><span class="tag">cat features</span></div></div>
+      <div class="model-card" data-task="regression" data-name="AdaBoost Regressor" onclick="openPanel('AdaBoost Regressor','Boosting','Adaptive boosting. Focuses successive weak learners on misclassified samples. Sensitive to outliers.','n_estimators:50,learning_rate:1.0,loss:linear')"><div class="model-card-name">AdaBoost Regressor</div><div class="model-card-family">Boosting</div><div class="tag-row"><span class="tag">ensemble</span></div></div>
+      <div class="model-card" data-task="regression" data-name="Bayesian Ridge" onclick="openPanel('Bayesian Ridge','Bayesian','Probabilistic ridge. Estimates uncertainty via posterior distribution over weights. Auto-tunes regularization.','n_iter:300,tol:0.001')"><div class="model-card-name">Bayesian Ridge</div><div class="model-card-family">Bayesian</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag">uncertainty</span></div></div>
+      <div class="model-card" data-task="regression" data-name="Huber Regressor" onclick="openPanel('Huber Regressor','Robust Linear','Robust to outliers via Huber loss — transitions between L1 and L2 based on residual magnitude.','epsilon:1.35,max_iter:100,alpha:0.0001')"><div class="model-card-name">Huber Regressor</div><div class="model-card-family">Robust Linear</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag">outlier robust</span></div></div>
+      <div class="model-card" data-task="regression" data-name="MLP Regressor" onclick="openPanel('MLP Regressor','Neural Network','Multi-layer perceptron. Learns non-linear representations. Requires careful tuning of architecture and LR.','hidden_layer_sizes:(100,),activation:relu,max_iter:200,learning_rate_init:0.001')"><div class="model-card-name">MLP Regressor</div><div class="model-card-family">Neural Network</div><div class="tag-row"><span class="tag slow">slow</span><span class="tag lo-int">low interpret.</span></div></div>
+    </div>
+
+    <div class="model-group-heading" id="grp-classification">Classification</div>
+    <div class="model-grid" id="grid-classification">
+      <div class="model-card" data-task="classification" data-name="Logistic Regression" onclick="openPanel('Logistic Regression','Linear','Fast, interpretable binary/multiclass baseline. Outputs calibrated probabilities. Well-understood decision boundary.','C:1.0,max_iter:100,solver:lbfgs,multi_class:auto')"><div class="model-card-name">Logistic Regression</div><div class="model-card-family">Linear</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">high interpret.</span></div></div>
+      <div class="model-card" data-task="classification" data-name="Random Forest Classifier" onclick="openPanel('Random Forest Classifier','Ensemble','Strong all-rounder. Handles class imbalance with class_weight. Low variance via bagging.','n_estimators:100,max_depth:None,class_weight:None')"><div class="model-card-name">Random Forest Classifier</div><div class="model-card-family">Ensemble</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">interpretable</span></div></div>
+      <div class="model-card" data-task="classification" data-name="XGBoost Classifier" onclick="openPanel('XGBoost Classifier','Gradient Boosting','Top tabular classification performer. GPU support, scale_pos_weight for imbalanced classes.','n_estimators:300,learning_rate:0.1,max_depth:6,eval_metric:logloss')"><div class="model-card-name">XGBoost Classifier</div><div class="model-card-family">Gradient Boosting</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag gpu">GPU ready</span></div></div>
+      <div class="model-card" data-task="classification" data-name="LightGBM Classifier" onclick="openPanel('LightGBM Classifier','Gradient Boosting','Fastest for large-scale classification. is_unbalance param for class imbalance.','n_estimators:300,num_leaves:31,is_unbalance:False')"><div class="model-card-name">LightGBM Classifier</div><div class="model-card-family">Gradient Boosting</div><div class="tag-row"><span class="tag fast">fast</span></div></div>
+      <div class="model-card" data-task="classification" data-name="SVC" onclick="openPanel('SVC','Support Vector','High accuracy with proper tuning. Very slow above n=10k. Set probability=True for score output.','C:1.0,kernel:rbf,probability:True,gamma:scale')"><div class="model-card-name">SVC</div><div class="model-card-family">Support Vector</div><div class="tag-row"><span class="tag slow">slow</span></div></div>
+      <div class="model-card" data-task="classification" data-name="Naive Bayes (Gaussian)" onclick="openPanel('Naive Bayes (Gaussian)','Probabilistic','Fast baseline. Assumes feature independence and Gaussian distributions. Works well on small datasets.','var_smoothing:1e-9')"><div class="model-card-name">Naive Bayes (Gaussian)</div><div class="model-card-family">Probabilistic</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">interpretable</span></div></div>
+      <div class="model-card" data-task="classification" data-name="Naive Bayes (Bernoulli)" onclick="openPanel('Naive Bayes (Bernoulli)','Probabilistic','For binary feature spaces. Ideal for text classification with binary bag-of-words.','alpha:1.0,binarize:0.0')"><div class="model-card-name">Naive Bayes (Bernoulli)</div><div class="model-card-family">Probabilistic</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag">text/binary</span></div></div>
+      <div class="model-card" data-task="classification" data-name="Naive Bayes (Multinomial)" onclick="openPanel('Naive Bayes (Multinomial)','Probabilistic','For count data (e.g. TF-IDF). Requires non-negative features. Popular in NLP pipelines.','alpha:1.0')"><div class="model-card-name">Naive Bayes (Multinomial)</div><div class="model-card-family">Probabilistic</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag">count data</span></div></div>
+      <div class="model-card" data-task="classification" data-name="MLP Classifier" onclick="openPanel('MLP Classifier','Neural Network','Deep non-linear classifier. Learns complex decision boundaries. Requires scaling and careful HP tuning.','hidden_layer_sizes:(100,),activation:relu,max_iter:200')"><div class="model-card-name">MLP Classifier</div><div class="model-card-family">Neural Network</div><div class="tag-row"><span class="tag slow">slow</span><span class="tag lo-int">low interpret.</span></div></div>
+      <div class="model-card" data-task="classification" data-name="CatBoost Classifier" onclick="openPanel('CatBoost Classifier','Gradient Boosting','Native categorical support. auto_class_weights for imbalance. Symmetric tree structure reduces overfitting.','iterations:300,depth:6,auto_class_weights:None')"><div class="model-card-name">CatBoost Classifier</div><div class="model-card-family">Gradient Boosting</div><div class="tag-row"><span class="tag">cat features</span></div></div>
+      <div class="model-card" data-task="classification" data-name="LDA" onclick="openPanel('LDA','Linear Discriminant','Linear dimensionality reduction + classifier. Maximizes class separability. Also used as preprocessing.','solver:svd,n_components:None')"><div class="model-card-name">LDA</div><div class="model-card-family">Linear Discriminant</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">interpretable</span></div></div>
+      <div class="model-card" data-task="classification" data-name="QDA" onclick="openPanel('QDA','Quadratic Discriminant','Quadratic decision boundary. Assumes different covariance matrices per class. No regularization.','reg_param:0.0')"><div class="model-card-name">QDA</div><div class="model-card-family">Quadratic Discriminant</div><div class="tag-row"><span class="tag fast">fast</span></div></div>
+      <div class="model-card" data-task="classification" data-name="Ridge Classifier" onclick="openPanel('Ridge Classifier','Regularized Linear','Converts classification to regression via class label encoding. Fast and often surprisingly competitive.','alpha:1.0,fit_intercept:True')"><div class="model-card-name">Ridge Classifier</div><div class="model-card-family">Regularized Linear</div><div class="tag-row"><span class="tag fast">fast</span></div></div>
+      <div class="model-card" data-task="classification" data-name="KNN Classifier" onclick="openPanel('KNN Classifier','Instance-Based','Distance-based majority voting. Lazy learner. Very scale-sensitive — always normalise features first.','n_neighbors:5,weights:uniform,metric:minkowski')"><div class="model-card-name">KNN Classifier</div><div class="model-card-family">Instance-Based</div><div class="tag-row"><span class="tag">lazy learner</span></div></div>
+      <div class="model-card" data-task="classification" data-name="AdaBoost Classifier" onclick="openPanel('AdaBoost Classifier','Boosting','Adaptive boosting with decision stump weak learners. Sensitive to noise and outliers in labels.','n_estimators:50,learning_rate:1.0')"><div class="model-card-name">AdaBoost Classifier</div><div class="model-card-family">Boosting</div><div class="tag-row"><span class="tag">ensemble</span></div></div>
+    </div>
+
+    <div class="model-group-heading" id="grp-clustering">Clustering</div>
+    <div class="model-grid" id="grid-clustering">
+      <div class="model-card" data-task="clustering" data-name="KMeans" onclick="openPanel('KMeans','Centroid-Based','Fast and scalable. Requires k upfront. Assumes spherical, equally-sized clusters. Use elbow/silhouette to pick k.','n_clusters:8,init:k-means++,n_init:10,max_iter:300')"><div class="model-card-name">KMeans</div><div class="model-card-family">Centroid-Based</div><div class="tag-row"><span class="tag fast">fast</span></div></div>
+      <div class="model-card" data-task="clustering" data-name="DBSCAN" onclick="openPanel('DBSCAN','Density-Based','No k required. Discovers arbitrary shapes. Marks outliers as noise (-1). eps and min_samples are critical.','eps:0.5,min_samples:5,metric:euclidean')"><div class="model-card-name">DBSCAN</div><div class="model-card-family">Density-Based</div><div class="tag-row"><span class="tag">noise robust</span><span class="tag">arbitrary shape</span></div></div>
+      <div class="model-card" data-task="clustering" data-name="Agglomerative Clustering" onclick="openPanel('Agglomerative Clustering','Hierarchical','Bottom-up merging. Produces dendrogram. Ward linkage minimizes intra-cluster variance.','n_clusters:2,linkage:ward,affinity:euclidean')"><div class="model-card-name">Agglomerative Clustering</div><div class="model-card-family">Hierarchical</div><div class="tag-row"><span class="tag slow">slow</span></div></div>
+      <div class="model-card" data-task="clustering" data-name="Gaussian Mixture" onclick="openPanel('Gaussian Mixture','Probabilistic','Soft assignments. Assumes data from mixture of Gaussian distributions. EM algorithm.','n_components:1,covariance_type:full,max_iter:100')"><div class="model-card-name">Gaussian Mixture</div><div class="model-card-family">Probabilistic</div><div class="tag-row"><span class="tag">soft assign</span></div></div>
+      <div class="model-card" data-task="clustering" data-name="Spectral Clustering" onclick="openPanel('Spectral Clustering','Graph-Based','Graph Laplacian approach. Excellent for non-convex clusters. Very slow on large datasets.','n_clusters:8,affinity:rbf,n_neighbors:10')"><div class="model-card-name">Spectral Clustering</div><div class="model-card-family">Graph-Based</div><div class="tag-row"><span class="tag slow">slow</span></div></div>
+      <div class="model-card" data-task="clustering" data-name="OPTICS" onclick="openPanel('OPTICS','Density-Based','DBSCAN generalization. Handles variable-density clusters. Produces reachability plot for visual analysis.','min_samples:5,max_eps:Inf,metric:minkowski')"><div class="model-card-name">OPTICS</div><div class="model-card-family">Density-Based</div><div class="tag-row"><span class="tag">variable density</span></div></div>
+      <div class="model-card" data-task="clustering" data-name="Birch" onclick="openPanel('Birch','Hierarchical','Very fast for large datasets. Uses CF tree structure. Good when memory is constrained.','threshold:0.5,n_clusters:3,branching_factor:50')"><div class="model-card-name">Birch</div><div class="model-card-family">Hierarchical</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag">large data</span></div></div>
+      <div class="model-card" data-task="clustering" data-name="MeanShift" onclick="openPanel('MeanShift','Centroid-Based','Automatically detects number of clusters via bandwidth kernel. No k required. Slow on large n.','bandwidth:None,bin_seeding:False')"><div class="model-card-name">MeanShift</div><div class="model-card-family">Centroid-Based</div><div class="tag-row"><span class="tag slow">slow</span><span class="tag">auto-k</span></div></div>
+    </div>
+
+    <div class="model-group-heading" id="grp-timeseries">Time Series</div>
+    <div class="model-grid" id="grid-timeseries">
+      <div class="model-card" data-task="timeseries" data-name="Prophet" onclick="openPanel('Prophet','Decomposition','Facebook Prophet. Trend + seasonality + holidays decomposition. Handles missing data and outliers gracefully.','yearly_seasonality:auto,weekly_seasonality:auto,changepoint_prior_scale:0.05')"><div class="model-card-name">Prophet</div><div class="model-card-family">Decomposition</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag">seasonality</span><span class="tag">holidays</span></div></div>
+      <div class="model-card" data-task="timeseries" data-name="ARIMA" onclick="openPanel('ARIMA','Statistical','Classic AR + differencing + MA. Requires stationarity. Manual order selection (p,d,q). Run ADF test first.','p:1,d:1,q:1,trend:c')"><div class="model-card-name">ARIMA</div><div class="model-card-family">Statistical</div><div class="tag-row"><span class="tag hi-int">interpretable</span></div></div>
+      <div class="model-card" data-task="timeseries" data-name="SARIMA" onclick="openPanel('SARIMA','Statistical','ARIMA with seasonal component. Handles periodic patterns with period s. More params, more tuning required.','p:1,d:1,q:1,P:1,D:1,Q:1,s:12')"><div class="model-card-name">SARIMA</div><div class="model-card-family">Statistical</div><div class="tag-row"><span class="tag">seasonal</span><span class="tag hi-int">interpretable</span></div></div>
+      <div class="model-card" data-task="timeseries" data-name="Exponential Smoothing" onclick="openPanel('Exponential Smoothing','Statistical','Holt-Winters triple exponential smoothing. Simple, reliable, fast. Add trend and seasonal components.','trend:add,seasonal:add,seasonal_periods:12,damped_trend:False')"><div class="model-card-name">Exponential Smoothing</div><div class="model-card-family">Statistical</div><div class="tag-row"><span class="tag fast">fast</span><span class="tag hi-int">interpretable</span></div></div>
+    </div>
+
+  </div><!-- /modelLibrary -->
+</div>
+
+<!-- Model Detail Side Panel -->
+<div class="model-side-panel" id="modelPanel">
+  <button class="panel-close-btn" onclick="closePanel()">✕ Close</button>
+  <div style="margin-top:8px">
+    <div class="page-title" id="panelName" style="font-size:16px;margin-bottom:2px"></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--color-text-muted);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px" id="panelFamily"></div>
+    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.55;margin-bottom:16px" id="panelDesc"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="card-title">Hyperparameters</div>
+  <div id="panelHPs"></div>
+  <div class="row" style="margin-top:16px">
+    <button class="btn btn-confirm btn-sm" onclick="selectModel()">Select This Model</button>
+    <button class="btn btn-ghost btn-sm" onclick="closePanel()">Cancel</button>
+  </div>
+</div>
+
+<!-- ==================== TRAINING ==================== -->
+<div class="page" id="page-training">
+  <div class="page-title">Training</div>
+  <div class="page-subtitle">// Live Optuna HPO monitor. Bayesian search across your selected models on local hardware — no cloud, no API keys.</div>
+
+  <div class="training-status-grid">
+    <div class="training-stat-card">
+      <div class="stat-label">Trial</div>
+      <div class="stat-value" id="trialCount">0 / 50</div>
+      <div class="progress-track"><div class="progress-fill" id="trialBar" style="width:0%"></div></div>
+    </div>
+    <div class="training-stat-card">
+      <div class="stat-label">Best RMSE</div>
+      <div class="stat-value confirm" id="bestMetric">—</div>
+      <div class="stat-sub">lower is better</div>
+    </div>
+    <div class="training-stat-card">
+      <div class="stat-label">Elapsed</div>
+      <div class="stat-value" id="elapsed">00:00</div>
+      <div class="stat-sub" id="etaLabel">ETA —</div>
+    </div>
+    <div class="training-stat-card">
+      <div class="stat-label">Device</div>
+      <div class="stat-value accent">CUDA</div>
+      <div class="stat-sub">RTX 4090 · 24 GB VRAM</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Run Configuration</div>
+    <div class="toggle-row"><button class="toggle-switch on" onclick="this.classList.toggle('on')"></button><span class="toggle-label">Optuna HPO — 50 trials, TPE Bayesian sampler</span></div>
+    <div class="toggle-row"><button class="toggle-switch on" onclick="this.classList.toggle('on')"></button><span class="toggle-label">Cross-validation — 5 stratified K-Folds</span></div>
+    <div class="toggle-row"><button class="toggle-switch" onclick="this.classList.toggle('on')"></button><span class="toggle-label">Early stopping — patience: 10 trials without improvement</span></div>
+    <div class="row" style="margin-top:16px;margin-bottom:0">
+      <button class="btn btn-primary" id="trainBtn" onclick="startTraining()">Start Training</button>
+      <button class="btn btn-danger" id="stopBtn" style="display:none" onclick="stopTraining()">Stop</button>
+    </div>
+  </div>
+
+  <div class="section-label">Trial Log</div>
+  <div class="trial-log" id="trialLog">
+    <div class="log-dim">— Waiting to start —</div>
+  </div>
+</div>
+
+<!-- ==================== EVALUATION ==================== -->
+<div class="page" id="page-eval">
+  <div class="page-title">Evaluation</div>
+  <div class="page-subtitle">// Test set performance · housing_prices_2024.csv · XGBoost Regressor · Trial #37 · 5-fold CV</div>
+
+  <div class="eval-stat-grid">
+    <div class="eval-stat-card"><div class="eval-stat-label">RMSE</div><div class="eval-stat-value">41,203</div><div class="eval-delta delta-up">▲ 8.4% vs linear baseline</div></div>
+    <div class="eval-stat-card"><div class="eval-stat-label">MAE</div><div class="eval-stat-value">28,970</div><div class="eval-delta delta-up">▲ 11.2% vs baseline</div></div>
+    <div class="eval-stat-card"><div class="eval-stat-label">R²</div><div class="eval-stat-value">0.891</div><div class="eval-delta delta-up">89.1% variance explained</div></div>
+    <div class="eval-stat-card"><div class="eval-stat-label">MAPE</div><div class="eval-stat-value">6.8%</div><div class="eval-delta delta-dn">▼ 1.2% vs Lasso</div></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-box">
+      <div class="chart-label">SHAP — Global Feature Importance</div>
+      <svg width="100%" height="200" viewBox="0 0 340 200">
+        <g font-family="IBM Plex Mono" font-size="11" fill="#8A8BA8">
+          <text x="2" y="20">sqft_living</text><rect x="90" y="8" width="220" height="14" rx="2" fill="#6C63FF" opacity=".85"/><text x="315" y="20" font-size="10" fill="#EEEEF5">0.48</text>
+          <text x="2" y="48">grade</text>      <rect x="90" y="36" width="170" height="14" rx="2" fill="#6C63FF" opacity=".65"/><text x="265" y="48" font-size="10" fill="#EEEEF5">0.37</text>
+          <text x="2" y="76">lat</text>         <rect x="90" y="64" width="140" height="14" rx="2" fill="#6C63FF" opacity=".55"/><text x="235" y="76" font-size="10" fill="#EEEEF5">0.31</text>
+          <text x="2" y="104">zipcode</text>    <rect x="90" y="92" width="110" height="14" rx="2" fill="#6C63FF" opacity=".45"/><text x="205" y="104" font-size="10" fill="#EEEEF5">0.24</text>
+          <text x="2" y="132">bathrooms</text>  <rect x="90" y="120" width="80"  height="14" rx="2" fill="#6C63FF" opacity=".35"/><text x="175" y="132" font-size="10" fill="#EEEEF5">0.17</text>
+          <text x="2" y="160">yr_built</text>   <rect x="90" y="148" width="55"  height="14" rx="2" fill="#6C63FF" opacity=".28"/><text x="150" y="160" font-size="10" fill="#EEEEF5">0.12</text>
+          <text x="2" y="188">bedrooms</text>   <rect x="90" y="176" width="35"  height="14" rx="2" fill="#4A4B62" opacity=".8"/> <text x="130" y="188" font-size="10" fill="#EEEEF5">0.08</text>
+        </g>
+      </svg>
+    </div>
+    <div class="chart-box">
+      <div class="chart-label">Predicted vs Actual (200-row sample)</div>
+      <svg width="100%" height="200" viewBox="0 0 340 200">
+        <line x1="30" y1="10" x2="30" y2="182" stroke="#272836" stroke-width="1"/>
+        <line x1="30" y1="182" x2="330" y2="182" stroke="#272836" stroke-width="1"/>
+        <line x1="30" y1="182" x2="330" y2="10" stroke="#272836" stroke-width="1" stroke-dasharray="4,3"/>
+        <g fill="#6C63FF" opacity=".6">
+          <circle cx="55" cy="162" r="3"/><circle cx="72" cy="145" r="3"/><circle cx="90" cy="130" r="3"/>
+          <circle cx="108" cy="116" r="3"/><circle cx="124" cy="103" r="3"/><circle cx="140" cy="92" r="3"/>
+          <circle cx="157" cy="80" r="3"/><circle cx="172" cy="68" r="3"/><circle cx="190" cy="58" r="3"/>
+          <circle cx="207" cy="48" r="3"/><circle cx="224" cy="38" r="3"/><circle cx="242" cy="30" r="3"/>
+          <circle cx="258" cy="22" r="3"/><circle cx="276" cy="16" r="3"/>
+          <circle cx="65" cy="155" r="3"/><circle cx="82" cy="138" r="3"/><circle cx="100" cy="124" r="3"/>
+          <circle cx="117" cy="110" r="3"/><circle cx="134" cy="98" r="3"/><circle cx="150" cy="86" r="3"/>
+          <circle cx="167" cy="74" r="3"/><circle cx="185" cy="63" r="3"/><circle cx="202" cy="52" r="3"/>
+          <circle cx="220" cy="42" r="3"/><circle cx="238" cy="33" r="3"/><circle cx="255" cy="25" r="3"/>
+        </g>
+        <circle cx="95" cy="148" r="4" fill="#F05C5C" opacity=".9"/>
+        <circle cx="192" cy="46" r="4" fill="#F5A623" opacity=".9"/>
+        <g font-family="IBM Plex Mono" font-size="9" fill="#4A4B62">
+          <text x="2"  y="186">$0</text>
+          <text x="2"  y="16">$2M</text>
+          <text x="100" y="197">Actual →</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-box">
+      <div class="chart-label">Residual Distribution</div>
+      <svg width="100%" height="140" viewBox="0 0 340 140">
+        <line x1="170" y1="8" x2="170" y2="120" stroke="#272836" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="20" y1="120" x2="320" y2="120" stroke="#272836" stroke-width="1"/>
+        <g fill="#6C63FF" opacity=".65">
+          <rect x="26" y="112" width="18" height="8"  rx="1"/>
+          <rect x="48" y="104" width="18" height="16" rx="1"/>
+          <rect x="70" y="88"  width="18" height="32" rx="1"/>
+          <rect x="92" y="66"  width="18" height="54" rx="1"/>
+          <rect x="114" y="44" width="18" height="76" rx="1"/>
+          <rect x="136" y="20" width="18" height="100" rx="1"/>
+          <rect x="158" y="12" width="18" height="108" rx="1"/>
+          <rect x="180" y="22" width="18" height="98" rx="1"/>
+          <rect x="202" y="46" width="18" height="74" rx="1"/>
+          <rect x="224" y="68" width="18" height="52" rx="1"/>
+          <rect x="246" y="90" width="18" height="30" rx="1"/>
+          <rect x="268" y="106" width="18" height="14" rx="1"/>
+          <rect x="290" y="114" width="18" height="6"  rx="1"/>
+        </g>
+        <g font-family="IBM Plex Mono" font-size="9" fill="#4A4B62">
+          <text x="2"   y="132">-$120k</text>
+          <text x="150" y="132">0</text>
+          <text x="282" y="132">+$120k</text>
+        </g>
+      </svg>
+    </div>
+    <div class="chart-box">
+      <div class="chart-label">Bias Audit — Performance by Slice</div>
+      <table class="schema-table" style="margin-top:6px">
+        <thead><tr><th>Slice</th><th>Group</th><th>n</th><th>RMSE</th><th>vs Overall</th></tr></thead>
+        <tbody>
+          <tr><td>waterfront</td><td>0 (No)</td><td>21,121</td><td style="color:var(--color-confirm)">40,891</td><td style="color:var(--color-confirm)">-0.8%</td></tr>
+          <tr><td>waterfront</td><td>1 (Yes)</td><td>492</td><td style="color:var(--color-danger)">68,403</td><td style="color:var(--color-danger)">+66%</td></tr>
+          <tr><td>bedrooms</td><td>1 – 3</td><td>14,204</td><td>38,200</td><td style="color:var(--color-confirm)">-7.3%</td></tr>
+          <tr><td>bedrooms</td><td>4+</td><td>7,409</td><td style="color:var(--color-override)">47,110</td><td style="color:var(--color-override)">+14.3%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:8px">
+    <button class="btn btn-primary" onclick="showPage('export')">Export Results →</button>
+    <button class="btn btn-ghost" onclick="toast('Experiment saved to history','ok')">Save to History</button>
+  </div>
+</div>
+
+<!-- ==================== CODE STUDIO ==================== -->
+<div class="page" id="page-studio">
+  <div class="page-title">Code Studio</div>
+  <div class="page-subtitle">// Inject custom transforms, model classes, or metrics directly into the pipeline. Every insertion point shown live.</div>
+
+  <div class="row" style="margin-bottom:16px">
+    <select class="select" style="width:250px" id="injectionSelect" onchange="updatePipeline()">
+      <option value="2">Inject before: Encoding</option>
+      <option value="3">Inject before: Scaling</option>
+      <option value="4">Inject after: Scaling</option>
+      <option value="5">Inject before: Model Fit</option>
+    </select>
+    <select class="select" style="width:230px" id="codeTypeSelect" onchange="loadTemplate()">
+      <option value="transform">Custom Transform Function</option>
+      <option value="model">Custom Model Class</option>
+      <option value="metric">Custom Metric</option>
+    </select>
+  </div>
+
+  <div class="studio-grid">
+    <!-- LEFT: editor -->
+    <div>
+      <div class="editor-frame">
+        <div class="editor-chrome">
+          <div class="traffic-lights">
+            <span class="tl-dot tl-close"></span>
+            <span class="tl-dot tl-minimize"></span>
+            <span class="tl-dot tl-max"></span>
+          </div>
+          <span class="editor-filename" id="editorFilename">custom_transform.py</span>
+          <div class="editor-actions">
+            <button class="btn btn-ghost btn-sm" onclick="validateCode()">Validate</button>
+            <button class="btn btn-confirm btn-sm" onclick="runSample()">Run on Sample</button>
+          </div>
+        </div>
+        <div class="editor-body">
+          <div class="line-numbers" id="lineNums">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16</div>
+          <textarea class="code-textarea" id="codeArea" spellcheck="false" oninput="updateLineNums()"># Custom transform — injected before Encoding
+# Required interface: transform(df) -> pd.DataFrame
+
+import numpy as np
+import pandas as pd
+
+def transform(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply log1p to right-skewed numeric columns.
+    VizML calls this once on train, once on test.
+    Shape must be preserved: same row count returned.
+    """
+    skewed = ['sqft_living', 'sqft_lot', 'sqft_above']
+    for col in skewed:
+        if col in df.columns:
+            df[col] = np.log1p(df[col])
+    return df
+</textarea>
+        </div>
+      </div>
+
+      <div class="validation-feedback" id="validationFeedback">
+        <div class="val-ok">✓ Signature valid: transform(df: pd.DataFrame) -&gt; pd.DataFrame</div>
+        <div class="val-ok" style="margin-top:4px">✓ No blocked imports (numpy, pandas allowed)</div>
+        <div class="val-ok" style="margin-top:4px">✓ Return type annotation present</div>
+      </div>
+
+      <div class="section-label" style="margin-top:16px">Sample Output (10 rows)</div>
+      <div class="sample-output" id="sampleOutput">
+        Click "Run on Sample" to test against the first 10 rows of your uploaded dataset.
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn btn-primary btn-sm" onclick="commitCode()">Commit to Pipeline</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadTemplate()">Reset to Template</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: pipeline diagram + contract -->
+    <div>
+      <div class="card-title">Pipeline Injection Point</div>
+      <div class="pipeline-diagram" id="pipelineDiagram"></div>
+
+      <div style="margin-top:24px">
+        <div class="card-title">Interface Contract</div>
+        <div class="code-block" id="contractBox"><span class="syn-cm"># Transform function — required signature</span>
+<span class="syn-kw">def</span> <span class="syn-fn">transform</span>(df: pd.DataFrame) -> pd.DataFrame:
+    ...
+
+<span class="syn-cm"># Rules:</span>
+<span class="syn-cm"># - Must return a DataFrame with the same row count</span>
+<span class="syn-cm"># - Must be stateless — no global state mutation</span>
+<span class="syn-cm"># - No network, filesystem, or OS calls permitted</span></div>
+      </div>
+
+      <div style="margin-top:16px">
+        <div class="card-title">Allowed Imports</div>
+        <div class="row" style="flex-wrap:wrap;gap:6px;margin-top:4px;margin-bottom:0">
+          <span class="badge badge-confirm">numpy</span>
+          <span class="badge badge-confirm">pandas</span>
+          <span class="badge badge-confirm">sklearn</span>
+          <span class="badge badge-confirm">scipy</span>
+          <span class="badge badge-confirm">math</span>
+          <span class="badge badge-danger">os</span>
+          <span class="badge badge-danger">subprocess</span>
+          <span class="badge badge-danger">socket</span>
+          <span class="badge badge-danger">requests</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--color-text-muted);margin-top:8px;line-height:1.5">Blocked imports raise a SecurityError at validation time. VizML sandboxes all custom code at runtime.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== EXPORT ==================== -->
+<div class="page" id="page-export">
+  <div class="page-title">Export</div>
+  <div class="page-subtitle">// Download pipeline artifacts, experiment logs, and model formats for deployment or archiving.</div>
+
+  <div class="export-grid">
+    <div class="export-card">
+      <div class="export-card-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+      <div class="export-card-name">Pipeline Bundle (.pkl)</div>
+      <div class="export-card-desc">Full sklearn pipeline — all preprocessing steps plus trained model, serialized as a single pickle. Load and run inference in 3 lines of Python.</div>
+      <button class="btn btn-primary btn-sm" onclick="toast('Downloading pipeline.pkl…','ok')">Download pipeline.pkl</button>
+    </div>
+    <div class="export-card">
+      <div class="export-card-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-confirm)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="export-card-name">ONNX Export</div>
+      <div class="export-card-desc">Model converted to ONNX for deployment in .NET, C++, mobile, or browser inference engines. Framework-agnostic and production-ready.</div>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Exporting model.onnx…','ok')">Export model.onnx</button>
+    </div>
+    <div class="export-card">
+      <div class="export-card-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-override)" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+      <div class="export-card-name">EDA Report (.html)</div>
+      <div class="export-card-desc">Standalone HTML with schema profiling, null audit heatmap, correlation matrix, and per-column distribution plots. No server required to open.</div>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Generating EDA report…','ok')">Download report.html</button>
+    </div>
+    <div class="export-card">
+      <div class="export-card-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
+      <div class="export-card-name">Experiment Log (.json)</div>
+      <div class="export-card-desc">All trial metadata: hyperparameters, per-trial metrics, CV scores, dataset hash, mode used, timestamps, and final winning config.</div>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Downloading experiment.json…','ok')">Download experiment.json</button>
+    </div>
+    <div class="export-card">
+      <div class="export-card-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-confirm)" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <div class="export-card-name">Inference Snippet</div>
+      <div class="export-card-desc">Copy-paste Python to load the bundle and run predictions on new data in your own scripts or services.</div>
+      <div class="code-block" style="margin-top:10px"><span class="syn-cm"># Load and run inference</span>
+<span class="syn-kw">import</span> pickle, pandas <span class="syn-kw">as</span> pd
+
+<span class="syn-kw">with</span> <span class="syn-fn">open</span>(<span class="syn-str">'pipeline.pkl'</span>, <span class="syn-str">'rb'</span>) <span class="syn-kw">as</span> f:
+    pipe = pickle.load(f)
+
+df   = pd.read_csv(<span class="syn-str">'new_data.csv'</span>)
+preds = pipe.predict(df)</div>
+    </div>
+    <div class="export-card">
+      <div class="export-card-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <div class="export-card-name">SHAP Report (.html)</div>
+      <div class="export-card-desc">Standalone HTML with global SHAP bar chart, beeswarm plot, and per-row waterfall explanations for any row you select by index.</div>
+      <button class="btn btn-ghost btn-sm" onclick="toast('Generating SHAP report…','ok')">Download shap_report.html</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== EXPERIMENT HISTORY ==================== -->
+<div class="page" id="page-history">
+  <div class="page-title">Experiment History</div>
+  <div class="page-subtitle">// All past runs stored locally. Click a row to reload config. Select two rows to compare side-by-side.</div>
+
+  <div class="row" style="margin-bottom:16px">
+    <input class="search-input" type="text" placeholder="Filter by dataset, model, or mode …" style="max-width:340px">
+    <button class="btn btn-ghost btn-sm" id="compareBtn">Compare Selected (0)</button>
+    <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="toast('History cleared','warn')">Clear All</button>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th style="width:32px"><input type="checkbox" onchange="toggleAllRows(this)"></th>
+          <th>Date</th><th>Dataset</th><th>Mode</th><th>Model</th>
+          <th>Task</th><th>Best Metric</th><th>Trials</th><th>Hash</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody">
+        <tr onclick="selectHistoryRow(this)">
+          <td><input type="checkbox" onclick="event.stopPropagation();updateCompareCount()"></td>
+          <td>2024-06-27</td><td>housing_prices_2024.csv</td>
+          <td><span class="mode-pill hybrid">HYBRID</span></td>
+          <td>XGBoost Regressor</td><td>Regression</td>
+          <td style="color:var(--color-confirm)">RMSE: 41,203</td><td>50</td>
+          <td style="color:var(--color-text-muted);font-size:11px">a3f7c1</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();toast('Experiment reloaded','ok')">Reload</button></td>
+        </tr>
+        <tr onclick="selectHistoryRow(this)">
+          <td><input type="checkbox" onclick="event.stopPropagation();updateCompareCount()"></td>
+          <td>2024-06-25</td><td>housing_prices_2024.csv</td>
+          <td><span class="mode-pill auto">AUTO</span></td>
+          <td>LightGBM Regressor</td><td>Regression</td>
+          <td>RMSE: 44,891</td><td>30</td>
+          <td style="color:var(--color-text-muted);font-size:11px">a3f7c1</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();toast('Experiment reloaded','ok')">Reload</button></td>
+        </tr>
+        <tr onclick="selectHistoryRow(this)">
+          <td><input type="checkbox" onclick="event.stopPropagation();updateCompareCount()"></td>
+          <td>2024-06-22</td><td>churn_dataset.csv</td>
+          <td><span class="mode-pill manual">MANUAL</span></td>
+          <td>Random Forest Classifier</td><td>Classification</td>
+          <td style="color:var(--color-confirm)">F1: 0.847</td><td>20</td>
+          <td style="color:var(--color-text-muted);font-size:11px">9b2e44</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();toast('Experiment reloaded','ok')">Reload</button></td>
+        </tr>
+        <tr onclick="selectHistoryRow(this)">
+          <td><input type="checkbox" onclick="event.stopPropagation();updateCompareCount()"></td>
+          <td>2024-06-18</td><td>customer_segments.parquet</td>
+          <td><span class="mode-pill auto">AUTO</span></td>
+          <td>KMeans</td><td>Clustering</td>
+          <td>Silhouette: 0.61</td><td>15</td>
+          <td style="color:var(--color-text-muted);font-size:11px">7dc2f8</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();toast('Experiment reloaded','ok')">Reload</button></td>
+        </tr>
+        <tr onclick="selectHistoryRow(this)">
+          <td><input type="checkbox" onclick="event.stopPropagation();updateCompareCount()"></td>
+          <td>2024-06-14</td><td>sales_forecast.xlsx</td>
+          <td><span class="mode-pill hybrid">HYBRID</span></td>
+          <td>Prophet</td><td>Time Series</td>
+          <td style="color:var(--color-override)">MAE: 12,340</td><td>10</td>
+          <td style="color:var(--color-text-muted);font-size:11px">e1a33b</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();toast('Experiment reloaded','ok')">Reload</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="comparePanel" style="display:none;margin-top:20px">
+    <div class="section-label">Side-by-Side Comparison</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card"><div class="card-title" style="color:var(--color-accent)">Run A — XGBoost · HYBRID</div><div style="font-family:var(--font-mono);font-size:12px;line-height:2.1;color:var(--color-text-secondary)">RMSE: <span style="color:var(--color-confirm)">41,203</span><br>MAE: 28,970 &nbsp;·&nbsp; R²: 0.891<br>Trials: 50 &nbsp;·&nbsp; 5-fold CV<br>Date: 2024-06-27</div></div>
+      <div class="card"><div class="card-title" style="color:var(--color-override)">Run B — LightGBM · AUTO</div><div style="font-family:var(--font-mono);font-size:12px;line-height:2.1;color:var(--color-text-secondary)">RMSE: <span style="color:var(--color-override)">44,891</span><br>MAE: 31,200 &nbsp;·&nbsp; R²: 0.862<br>Trials: 30 &nbsp;·&nbsp; 5-fold CV<br>Date: 2024-06-25</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SETTINGS ==================== -->
+<div class="page" id="page-settings">
+  <div class="page-title">Settings</div>
+  <div class="page-subtitle">// Persistent configuration. All settings apply to future runs on this machine.</div>
+
+  <div class="settings-grid">
+    <div class="settings-group">
+      <div class="settings-group-title">File &amp; Storage</div>
+      <div class="setting-item"><label class="setting-label">Output Folder</label><div class="setting-hint">Where pipelines, models, and reports are saved</div><input class="setting-input" value="~/vizml/outputs" type="text"></div>
+      <div class="setting-item"><label class="setting-label">RAM Warning Threshold (GB)</label><div class="setting-hint">Alert before loading datasets that may exceed available memory</div><input class="setting-input" value="24" type="number"></div>
+      <div class="setting-item"><label class="setting-label">Large File Warning (MB)</label><div class="setting-hint">Show chunked loading dialog above this file size</div><input class="setting-input" value="500" type="number"></div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Pipeline Defaults</div>
+      <div class="setting-item"><label class="setting-label">Train / Val / Test Split</label><div class="setting-hint">Three values must sum to 1.0</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><input class="setting-input" value="0.70" type="number" step="0.05" placeholder="Train"><input class="setting-input" value="0.15" type="number" step="0.05" placeholder="Val"><input class="setting-input" value="0.15" type="number" step="0.05" placeholder="Test"></div></div>
+      <div class="setting-item"><label class="setting-label">Random Seed</label><div class="setting-hint">For reproducibility across splits, models, and HPO sampling</div><input class="setting-input" value="42" type="number"></div>
+      <div class="setting-item"><label class="setting-label">Default CV Folds</label><input class="setting-input" value="5" type="number" min="2" max="20"></div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Sentinel &amp; Detection</div>
+      <div class="setting-item"><label class="setting-label">Leakage Sentinel Threshold</label><div class="setting-hint">Flag columns where Pearson |r| with target exceeds this</div><input class="setting-input" value="0.95" type="number" step="0.01" min="0" max="1"></div>
+      <div class="setting-item"><label class="setting-label">High Cardinality Threshold</label><div class="setting-hint">Auto-switch encoding above this unique value count</div><input class="setting-input" value="20" type="number"></div>
+      <div class="setting-item"><label class="setting-label">Imbalance Ratio Threshold</label><div class="setting-hint">Suggest SMOTE when minority class ratio drops below this</div><input class="setting-input" value="0.15" type="number" step="0.01"></div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">App Behavior</div>
+      <div class="setting-item"><label class="setting-label">Log Level</label><select class="setting-input"><option>INFO</option><option>DEBUG</option><option>WARNING</option><option>ERROR</option></select></div>
+      <div class="setting-item">
+        <div class="setting-inline-row">
+          <div><label class="setting-label" style="margin-bottom:0">Auto-open browser on launch</label><div class="setting-hint">Open VizML UI automatically at app startup</div></div>
+          <button class="toggle-switch on" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-inline-row">
+          <div><label class="setting-label" style="margin-bottom:0">Anonymous usage statistics</label><div class="setting-hint">Aggregated telemetry only. Nothing leaves this machine.</div></div>
+          <button class="toggle-switch" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-inline-row">
+          <div><label class="setting-label" style="margin-bottom:0">Hybrid auto-approve timeout (s)</label><div class="setting-hint">Auto-approve cards with no action after N seconds. 0 = disabled.</div></div>
+          <input class="setting-input" value="0" type="number" style="width:80px;flex-shrink:0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:20px">
+    <button class="btn btn-primary" onclick="toast('Settings saved','ok')">Save Settings</button>
+    <button class="btn btn-ghost" onclick="toast('Reset to factory defaults','warn')">Reset to Defaults</button>
+  </div>
+</div>
+
+</main>
+</div><!-- /layout -->
+
+<div id="toast"></div>
+
+
+<script>
+/* ============================================================
+   VIZML — APPLICATION JAVASCRIPT
+   All state management, interactivity, and simulations live here.
+   No external dependencies. Pure vanilla JS.
+============================================================ */
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+const STATE = {
+  mode: 'auto',
+  approvedCards: new Set(),
+  taskFilter: 'all',
+  trainingTimer: null,
+  trialNum: 0,
+  startTime: null,
+};
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+const MODE_DESCRIPTIONS = {
+  auto:   'Machine decides everything. Zero configuration required.',
+  hybrid: 'Every auto-decision surfaced as a reviewable card. You approve or override each one before the pipeline continues.',
+  manual: 'Full control — configure every transform, model, and hyperparameter yourself. Built for domain experts.',
+};
+
+const CODE_TEMPLATES = {
+  transform: `# Custom transform — injected before Encoding
+# Required interface: transform(df) -> pd.DataFrame
+
+import numpy as np
+import pandas as pd
+
+def transform(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply log1p to right-skewed numeric columns.
+    VizML calls this once on train, once on test.
+    Shape must be preserved: same row count returned.
+    """
+    skewed = ['sqft_living', 'sqft_lot', 'sqft_above']
+    for col in skewed:
+        if col in df.columns:
+            df[col] = np.log1p(df[col])
+    return df
+`,
+  model: `# Custom sklearn-compatible model class
+# Required: fit(X, y) -> self  |  predict(X) -> np.ndarray
+
+import numpy as np
+
+class MyModel:
+    """
+    Minimal sklearn-compatible estimator.
+    Implement fit() and predict() to plug into VizML.
+    """
+    def __init__(self, alpha: float = 1.0):
+        self.alpha = alpha
+        self.weights_ = None
+
+    def fit(self, X, y):
+        # Your training logic here
+        self.weights_ = np.zeros(X.shape[1])
+        return self
+
+    def predict(self, X):
+        # Your inference logic here
+        return X @ self.weights_
+
+    # Optional: predict_proba for classification
+    # def predict_proba(self, X): ...
+`,
+  metric: `# Custom evaluation metric
+# Required interface: metric(y_true, y_pred) -> float
+
+import numpy as np
+
+def metric(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """
+    Custom MAPE variant — masked to avoid division by zero.
+    Returns a single scalar. Lower is better for this metric.
+    VizML will call this after each CV fold.
+    """
+    y_true = np.asarray(y_true, dtype=float)
+    y_pred = np.asarray(y_pred, dtype=float)
+    mask = y_true != 0
+    return float(np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])))
+`,
+};
+
+const CONTRACT_HTML = {
+  transform: `<span class="syn-cm"># Transform function — required signature</span>
+<span class="syn-kw">def</span> <span class="syn-fn">transform</span>(df: pd.DataFrame) -&gt; pd.DataFrame:
+    ...
+
+<span class="syn-cm"># Rules:</span>
+<span class="syn-cm"># - Must return a DataFrame with same row count</span>
+<span class="syn-cm"># - Must be stateless — no global mutation</span>
+<span class="syn-cm"># - No network, filesystem, or OS calls allowed</span>`,
+
+  model: `<span class="syn-cm"># Custom model class — required interface</span>
+<span class="syn-kw">class</span> <span class="syn-fn">MyModel</span>:
+    <span class="syn-kw">def</span> fit(self, X, y) -&gt; self: ...
+    <span class="syn-kw">def</span> predict(self, X) -&gt; np.ndarray: ...
+
+<span class="syn-cm"># Optional: predict_proba(X) for classifiers</span>
+<span class="syn-cm"># get_params() / set_params() for HPO compatibility</span>`,
+
+  metric: `<span class="syn-cm"># Custom metric — required signature</span>
+<span class="syn-kw">def</span> <span class="syn-fn">metric</span>(y_true: np.ndarray, y_pred: np.ndarray) -&gt; float:
+    ...
+
+<span class="syn-cm"># Must return a single scalar float</span>
+<span class="syn-cm"># VizML calls this after each CV fold</span>
+<span class="syn-cm"># Stored in experiment log alongside built-in metrics</span>`,
+};
+
+const PIPELINE_STEPS = [
+  'Raw Data Loaded',
+  'Imputation',
+  'Encoding',
+  'Scaling',
+  'Feature Selection',
+  'Model Fit',
+  'Evaluation',
+];
+
+const TRAINING_LOG = [
+  { cls: 'log-info', msg: '[INFO]  Initializing Optuna study — sampler: TPESampler, n_trials: 50' },
+  { cls: '',         msg: '[00:01] Trial  #1  n_estimators=87,  max_depth=4, lr=0.083  → RMSE: 54,210' },
+  { cls: '',         msg: '[00:03] Trial  #2  n_estimators=150, max_depth=6, lr=0.120  → RMSE: 51,084' },
+  { cls: 'log-ok',   msg: '[00:06] Trial  #3  n_estimators=200, max_depth=5, lr=0.090  → RMSE: 48,332  ★ best' },
+  { cls: '',         msg: '[00:09] Trial  #4  n_estimators=300, max_depth=3, lr=0.050  → RMSE: 49,100' },
+  { cls: 'log-ok',   msg: '[00:13] Trial  #5  n_estimators=280, max_depth=7, lr=0.110  → RMSE: 45,801  ★ best' },
+  { cls: '',         msg: '[00:17] Trial  #6  n_estimators=100, max_depth=5, lr=0.080  → RMSE: 46,220' },
+  { cls: 'log-ok',   msg: '[00:21] Trial  #7  n_estimators=320, max_depth=6, lr=0.095  → RMSE: 43,900  ★ best' },
+  { cls: '',         msg: '[00:26] Trial  #8  n_estimators=250, max_depth=8, lr=0.130  → RMSE: 44,500' },
+  { cls: 'log-ok',   msg: '[00:30] Trial  #9  n_estimators=310, max_depth=6, lr=0.092  → RMSE: 41,203  ★ best' },
+  { cls: '',         msg: '[00:34] Trial #10  n_estimators=295, max_depth=6, lr=0.094  → RMSE: 41,890' },
+  { cls: 'log-info', msg: '[00:36] Starting 5-fold stratified CV on best config (trial #9) …' },
+  { cls: 'log-info', msg: '[00:38] Fold 1/5  → RMSE: 41,887' },
+  { cls: 'log-info', msg: '[00:40] Fold 2/5  → RMSE: 40,210' },
+  { cls: 'log-info', msg: '[00:42] Fold 3/5  → RMSE: 42,100' },
+  { cls: 'log-info', msg: '[00:44] Fold 4/5  → RMSE: 41,500' },
+  { cls: 'log-info', msg: '[00:46] Fold 5/5  → RMSE: 40,320' },
+  { cls: 'log-ok',   msg: '[00:47] CV complete — mean RMSE: 41,203  std: ±687' },
+  { cls: 'log-warn', msg: '[WARN]  Bias audit: waterfront=1 slice RMSE is 66% above overall. Consider class weighting.' },
+  { cls: 'log-ok',   msg: '[00:48] Pipeline serialized → outputs/pipeline.pkl' },
+  { cls: 'log-ok',   msg: '[00:48] Training complete.' },
+];
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+
+  // Activate the matching nav item
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const oc = n.getAttribute('onclick') || '';
+    if (oc.includes(`'${id}'`)) n.classList.add('active');
+  });
+}
+
+// ============================================================
+// MODE TOGGLE
+// ============================================================
+function setMode(mode) {
+  STATE.mode = mode;
+
+  // Update button active states
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // Update description
+  const desc = document.getElementById('modeDesc');
+  if (desc) desc.textContent = MODE_DESCRIPTIONS[mode];
+
+  // Update Feature Engineering page subtitle
+  const subtitles = {
+    auto:   '// AUTO mode — detected transforms shown as read-only approval cards',
+    hybrid: '// HYBRID mode — approve or override each auto-decision before the pipeline continues',
+    manual: '// MANUAL mode — configure every transform column-by-column. Full control, full responsibility.',
+  };
+  const sub = document.getElementById('feSubtitle');
+  if (sub) sub.textContent = subtitles[mode];
+
+  // Show the correct FE view
+  const views = ['fe-auto', 'fe-hybrid', 'fe-manual'];
+  views.forEach(v => {
+    const el = document.getElementById(v);
+    if (el) el.style.display = v.endsWith(mode) ? 'block' : 'none';
+  });
+}
+
+// ============================================================
+// UPLOAD SIMULATION
+// ============================================================
+function simulateUpload() {
+  const dz = document.getElementById('dropzone');
+  dz.style.borderColor = 'var(--color-confirm)';
+  dz.style.background  = 'var(--color-confirm-dim)';
+  dz.innerHTML = `<div style="font-family:var(--font-mono);font-size:13px;color:var(--color-confirm)">
+    Parsing housing_prices_2024.csv …
+  </div>`;
+
+  setTimeout(() => {
+    dz.style.display = 'none';
+    document.getElementById('fileLoadedBar').style.display = 'flex';
+    document.getElementById('metricGrid').style.display    = 'grid';
+    document.getElementById('schemaSection').style.display = 'block';
+    toast('Dataset loaded — 21,613 rows · 21 columns · 4.2 MB', 'ok');
+  }, 700);
+}
+
+// ============================================================
+// HYBRID DECISION CARDS
+// ============================================================
+function approveCard(id) {
+  const card = document.getElementById(id);
+  if (!card) return;
+
+  card.classList.add('state-approved');
+  card.classList.remove('state-overridden');
+
+  const status = document.getElementById(id + '-status');
+  if (status) {
+    status.textContent = '✓ Approved';
+    status.className   = 'dc-status approved';
+  }
+
+  const panel = document.getElementById(id + '-override');
+  if (panel) panel.classList.remove('open');
+
+  STATE.approvedCards.add(id);
+  updateApprovedCount();
+}
+
+function toggleOverride(id) {
+  const panel = document.getElementById(id + '-override');
+  const card  = document.getElementById(id);
+  if (!panel || !card) return;
+
+  const isOpen = panel.classList.contains('open');
+
+  if (isOpen) {
+    panel.classList.remove('open');
+    card.classList.remove('state-overridden');
+  } else {
+    panel.classList.add('open');
+    card.classList.add('state-overridden');
+    card.classList.remove('state-approved');
+    STATE.approvedCards.delete(id);
+    updateApprovedCount();
+  }
+}
+
+function confirmOverride(id) {
+  const card   = document.getElementById(id);
+  const panel  = document.getElementById(id + '-override');
+  const status = document.getElementById(id + '-status');
+  if (!card) return;
+
+  card.classList.add('state-approved');
+  card.classList.remove('state-overridden');
+  if (panel)  panel.classList.remove('open');
+  if (status) {
+    status.textContent = '✎ Overridden';
+    status.className   = 'dc-status overridden';
+  }
+
+  STATE.approvedCards.add(id);
+  updateApprovedCount();
+  toast('Override confirmed', 'warn');
+}
+
+function approveAll() {
+  ['dc1', 'dc2', 'dc3', 'dc4', 'dc5', 'dc6'].forEach(id => approveCard(id));
+  toast('All 6 decisions approved', 'ok');
+}
+
+function updateApprovedCount() {
+  const el = document.getElementById('approvedCount');
+  if (el) el.textContent = `${STATE.approvedCards.size} / 6 approved`;
+}
+
+// ============================================================
+// MODEL LIBRARY — search + filter
+// ============================================================
+function filterModels() {
+  const query = document.getElementById('modelSearch').value.toLowerCase();
+  const groups = ['regression', 'classification', 'clustering', 'timeseries'];
+
+  groups.forEach(grp => {
+    const grid  = document.getElementById('grid-' + grp);
+    const title = document.getElementById('grp-' + grp);
+    if (!grid) return;
+
+    let anyVisible = false;
+    grid.querySelectorAll('.model-card').forEach(card => {
+      const name      = (card.getAttribute('data-name') || '').toLowerCase();
+      const taskMatch = STATE.taskFilter === 'all' || card.getAttribute('data-task') === STATE.taskFilter;
+      const queryMatch = name.includes(query);
+      const show = taskMatch && queryMatch;
+      card.classList.toggle('hidden', !show);
+      if (show) anyVisible = true;
+    });
+
+    grid.style.display  = anyVisible ? 'grid' : 'none';
+    if (title) title.style.display = anyVisible ? 'block' : 'none';
+  });
+}
+
+function filterByTask(task, btn) {
+  STATE.taskFilter = task;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterModels();
+}
+
+// ============================================================
+// MODEL DETAIL SIDE PANEL
+// ============================================================
+function openPanel(name, family, desc, hpString) {
+  document.getElementById('panelName').textContent   = name;
+  document.getElementById('panelFamily').textContent = family;
+  document.getElementById('panelDesc').textContent   = desc;
+
+  const hpContainer = document.getElementById('panelHPs');
+  hpContainer.innerHTML = '';
+
+  hpString.split(',').forEach(pair => {
+    const sepIdx = pair.indexOf(':');
+    if (sepIdx === -1) return;
+    const key = pair.slice(0, sepIdx).trim();
+    const val = pair.slice(sepIdx + 1).trim();
+
+    const row = document.createElement('div');
+    row.className = 'hp-row';
+    row.innerHTML = `
+      <label class="hp-label">${key}</label>
+      <input class="hp-input" type="text" value="${val}">
+    `;
+    hpContainer.appendChild(row);
+  });
+
+  document.getElementById('modelPanel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('modelPanel').classList.remove('open');
+}
+
+function selectModel() {
+  const name = document.getElementById('panelName').textContent;
+
+  // Mark the selected card
+  document.querySelectorAll('.model-card').forEach(c => {
+    c.classList.remove('selected');
+    if (c.getAttribute('data-name') === name) c.classList.add('selected');
+  });
+
+  closePanel();
+  toast(`${name} selected`, 'ok');
+}
+
+// ============================================================
+// TRAINING SIMULATION
+// ============================================================
+function startTraining() {
+  if (STATE.trainingTimer) return;
+
+  document.getElementById('trainBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display  = 'inline-flex';
+
+  const log = document.getElementById('trialLog');
+  log.innerHTML = '';
+
+  STATE.trialNum  = 0;
+  STATE.startTime = Date.now();
+  let lineIdx     = 0;
+
+  STATE.trainingTimer = setInterval(() => {
+    if (lineIdx >= TRAINING_LOG.length) {
+      stopTraining();
+      toast('Training complete — best RMSE: 41,203', 'ok');
+      return;
+    }
+
+    const entry = TRAINING_LOG[lineIdx++];
+    const line  = document.createElement('div');
+    line.className   = entry.cls;
+    line.textContent = entry.msg;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+
+    // Update progress
+    STATE.trialNum = Math.min(Math.round(lineIdx * 2.2), 50);
+    document.getElementById('trialCount').textContent = `${STATE.trialNum} / 50`;
+    document.getElementById('trialBar').style.width   = `${(STATE.trialNum / 50) * 100}%`;
+    if (STATE.trialNum > 3) {
+      document.getElementById('bestMetric').textContent = '41,203';
+    }
+
+    // Update elapsed timer
+    const elapsed = Math.floor((Date.now() - STATE.startTime) / 1000);
+    const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const ss = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('elapsed').textContent  = `${mm}:${ss}`;
+    document.getElementById('etaLabel').textContent = 'ETA ~00:48 remaining';
+  }, 380);
+}
+
+function stopTraining() {
+  clearInterval(STATE.trainingTimer);
+  STATE.trainingTimer = null;
+  document.getElementById('trainBtn').style.display = 'inline-flex';
+  document.getElementById('stopBtn').style.display  = 'none';
+}
+
+// ============================================================
+// CODE STUDIO
+// ============================================================
+function updateLineNums() {
+  const lines = document.getElementById('codeArea').value.split('\n').length;
+  document.getElementById('lineNums').innerHTML =
+    Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
+}
+
+function loadTemplate() {
+  const type = document.getElementById('codeTypeSelect').value;
+
+  document.getElementById('codeArea').value = CODE_TEMPLATES[type];
+  document.getElementById('contractBox').innerHTML = CONTRACT_HTML[type];
+
+  const filenames = {
+    transform: 'custom_transform.py',
+    model:     'custom_model.py',
+    metric:    'custom_metric.py',
+  };
+  document.getElementById('editorFilename').textContent = filenames[type];
+
+  updateLineNums();
+
+  document.getElementById('validationFeedback').innerHTML =
+    '<div class="val-dim">Click Validate to check your code.</div>';
+  document.getElementById('sampleOutput').textContent =
+    'Click "Run on Sample" to test against the first 10 rows of your uploaded dataset.';
+}
+
+function validateCode() {
+  const code = document.getElementById('codeArea').value;
+  const type = document.getElementById('codeTypeSelect').value;
+  const box  = document.getElementById('validationFeedback');
+
+  const SIGNATURES = {
+    transform: { sig: 'def transform(df',  label: 'transform(df: pd.DataFrame) -&gt; pd.DataFrame' },
+    model:     { sig: 'def fit',           label: 'fit(X, y) -&gt; self  |  predict(X) -&gt; np.ndarray' },
+    metric:    { sig: 'def metric',        label: 'metric(y_true, y_pred) -&gt; float' },
+  };
+
+  const check = SIGNATURES[type];
+
+  // Check for blocked imports
+  const blocked = ['import os', 'import subprocess', 'import socket', 'import requests'];
+  const foundBlocked = blocked.find(b => code.includes(b));
+
+  if (foundBlocked) {
+    box.innerHTML = `
+      <div class="val-err">✗ Blocked import detected: <strong>${foundBlocked.replace('import ', '')}</strong></div>
+      <div class="val-dim" style="margin-top:4px">Blocked imports raise SecurityError at runtime. Remove it and try again.</div>
+    `;
+    toast('Validation failed — blocked import', 'err');
+    return;
+  }
+
+  if (code.includes(check.sig)) {
+    box.innerHTML = `
+      <div class="val-ok">✓ Signature valid: ${check.label}</div>
+      <div class="val-ok" style="margin-top:4px">✓ No blocked imports detected</div>
+      <div class="val-ok" style="margin-top:4px">✓ Function body is non-empty</div>
+    `;
+    toast('Validation passed', 'ok');
+  } else {
+    box.innerHTML = `
+      <div class="val-err">✗ Missing required function. Expected: <code>${check.label}</code></div>
+      <div class="val-dim" style="margin-top:6px">See the interface contract panel on the right →</div>
+    `;
+    toast('Validation failed — check signature', 'err');
+  }
+}
+
+function runSample() {
+  const type = document.getElementById('codeTypeSelect').value;
+  const out  = document.getElementById('sampleOutput');
+
+  const outputs = {
+    transform: `<div style="color:var(--color-confirm);margin-bottom:8px">✓ transform() ran on 10-row sample in 11ms — shape preserved (10, 21)</div>
+<div style="color:var(--color-text-muted)">sqft_living:  [1180 → 7.074,  2570 → 7.852,  770 → 6.647  …]</div>
+<div style="color:var(--color-text-muted)">sqft_lot:     [5650 → 8.639,  7242 → 8.888, 10000 → 9.211  …]</div>
+<div style="color:var(--color-text-muted)">sqft_above:   [1180 → 7.074,  2170 → 7.683,  770 → 6.647  …]</div>
+<div style="color:var(--color-text-secondary);margin-top:8px">No NaN introduced. All 21 columns present. Output dtype: float64.</div>`,
+
+    model: `<div style="color:var(--color-confirm);margin-bottom:8px">✓ MyModel.fit() completed in 3ms — weights_ initialized (21,)</div>
+<div style="color:var(--color-text-muted)">predict() output: [487200.  623100.  341800.  710000.  295000. …]</div>
+<div style="color:var(--color-text-secondary);margin-top:8px">Output shape: (10,). dtype: float64. No NaN in predictions.</div>`,
+
+    metric: `<div style="color:var(--color-confirm);margin-bottom:8px">✓ metric() executed in 1ms</div>
+<div style="color:var(--color-text-muted)">metric(y_true, y_pred) = <strong style="color:var(--color-text-primary)">0.0681</strong></div>
+<div style="color:var(--color-text-secondary);margin-top:8px">Returns float. VizML will call this after each of the 5 CV folds.</div>`,
+  };
+
+  out.innerHTML = outputs[type];
+  toast('Sample run complete', 'ok');
+}
+
+function buildPipeline(injectIdx) {
+  const diagram  = document.getElementById('pipelineDiagram');
+  if (!diagram) return;
+  diagram.innerHTML = '';
+  const idx = parseInt(injectIdx, 10);
+
+  PIPELINE_STEPS.forEach((step, i) => {
+    // Insert injection marker before the target step
+    if (i === idx) {
+      const inj = document.createElement('div');
+      inj.className = 'pipe-step inject';
+      inj.innerHTML = `<span class="pipe-step-num">→</span> <strong>YOUR CODE RUNS HERE</strong><span class="inject-label">injection point</span>`;
+      diagram.appendChild(inj);
+    }
+
+    const div = document.createElement('div');
+    div.className = 'pipe-step';
+    div.innerHTML = `<span class="pipe-step-num">${i + 1}</span> ${step}`;
+    diagram.appendChild(div);
+  });
+}
+
+function updatePipeline() {
+  buildPipeline(document.getElementById('injectionSelect').value);
+}
+
+function commitCode() {
+  const sel = document.getElementById('injectionSelect');
+  const label = sel.options[sel.selectedIndex].text;
+  toast(`Code committed — ${label}`, 'ok');
+}
+
+// ============================================================
+// EXPERIMENT HISTORY
+// ============================================================
+function selectHistoryRow(row) {
+  document.querySelectorAll('#historyBody tr').forEach(r => r.classList.remove('selected-row'));
+  row.classList.add('selected-row');
+  toast('Experiment config loaded', 'ok');
+}
+
+function toggleAllRows(master) {
+  document.querySelectorAll('#historyBody input[type=checkbox]').forEach(cb => {
+    cb.checked = master.checked;
+  });
+  updateCompareCount();
+}
+
+function updateCompareCount() {
+  const checked = document.querySelectorAll('#historyBody input[type=checkbox]:checked').length;
+  document.getElementById('compareBtn').textContent = `Compare Selected (${checked})`;
+
+  const panel = document.getElementById('comparePanel');
+  if (checked === 2) {
+    panel.style.display = 'block';
+    toast('Comparing 2 selected runs', 'ok');
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+let _toastTimer = null;
+
+function toast(message, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = message;
+  el.className   = `show toast-${type}`;
+
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    el.className = '';
+  }, 2800);
+}
+
+// ============================================================
+// INIT — run on DOMContentLoaded
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Apply default mode
+  setMode('auto');
+
+  // Build the code studio pipeline diagram
+  buildPipeline(2);
+
+  // Set initial line numbers in code editor
+  updateLineNums();
+
+  // Keyboard shortcut: Escape closes the model panel
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePanel();
+  });
+});
+</script>
+
+</body>
+</html>
