@@ -7,6 +7,14 @@ from src.cleaner import DataCleaner
 # Configure page settings
 st.set_page_config(page_title="VizML - Data Upload & Clean", layout="wide")
 
+def show_toast(message, icon=None):
+    if hasattr(st, "toast"):
+        st.toast(message, icon=icon)
+    else:
+        icon_str = f"{icon} " if icon else ""
+        st.sidebar.info(f"{icon_str}{message}")
+
+
 # Modern CSS Injection for Premium Look
 st.markdown("""
     <style>
@@ -74,6 +82,17 @@ st.markdown("""
         font-weight: 600;
         border: 1px solid #6EE7B7;
     }
+
+    /* Force expander header text to be visible regardless of theme/extensions */
+    div[data-testid="stExpander"] summary,
+    div[data-testid="stExpander"] summary p,
+    div[data-testid="stExpander"] summary span,
+    .streamlit-expanderHeader,
+    .streamlit-expanderHeader p {
+        color: #FFFFFF !important;
+        opacity: 1 !important;
+        font-weight: 600 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -100,7 +119,7 @@ def load_data(uploaded_file):
         st.session_state["original_df"] = df.copy()
         st.session_state["history"] = []
         st.session_state["coercion_flags"] = {}
-        st.toast("Dataset uploaded and initialized successfully!", icon="✅")
+        show_toast("Dataset uploaded and initialized successfully!", icon="✅")
     except Exception as e:
         st.error(f"Error loading file: {str(e)}")
 
@@ -131,7 +150,7 @@ if st.session_state["df"] is not None:
         undo_disabled = len(st.session_state["history"]) == 0
         if st.button("⏪ Undo Last Action", disabled=undo_disabled, use_container_width=True):
             st.session_state["df"] = st.session_state["history"].pop()
-            st.toast("Undid last cleaning operation.", icon="↩️")
+            show_toast("Undid last cleaning operation.", icon="↩️")
             st.rerun()
             
     with col_hist2:
@@ -139,10 +158,10 @@ if st.session_state["df"] is not None:
             st.session_state["df"] = st.session_state["original_df"].copy()
             st.session_state["history"] = []
             st.session_state["coercion_flags"] = {}
-            st.toast("Reset dataset to original state.", icon="🔄")
+            show_toast("Reset dataset to original state.", icon="🔄")
             st.rerun()
             
-    st.divider()
+    st.markdown("---")
 
     # Create two primary columns: Controls (left) and Visual Diff + Data (right)
     col_left, col_right = st.columns([5, 7])
@@ -160,7 +179,7 @@ if st.session_state["df"] is not None:
         operation_applied = None
 
         # Operation 1: Missing values
-        with st.expander("1. Missing-Value Imputation", expanded=False):
+        with st.expander(r"1\. Missing-Value Imputation", expanded=False):
             st.markdown("Impute missing values based on columns types.")
             
             # Numeric columns config
@@ -188,13 +207,13 @@ if st.session_state["df"] is not None:
                 if st.button("Apply Imputation", key="btn_apply_missing", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_missing
-                    st.toast("Missing values imputed!", icon="🧹")
+                    show_toast("Missing values imputed!", icon="🧹")
                     st.rerun()
             else:
                 st.success("No missing values detected in the current dataset!")
 
         # Operation 2: Type Coercion
-        with st.expander("2. Smart Type Coercion", expanded=False):
+        with st.expander(r"2\. Smart Type Coercion", expanded=False):
             st.markdown("""
                 Automatically convert columns of text/object types that represent numeric or datetime values to their actual types.
                 *Unparseable columns are flagged rather than silently dropped.*
@@ -235,11 +254,11 @@ if st.session_state["df"] is not None:
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_coercion
                     st.session_state["coercion_flags"] = cleaner.flagged_columns
-                    st.toast("Type coercion completed!", icon="⚙️")
+                    show_toast("Type coercion completed!", icon="⚙️")
                     st.rerun()
 
         # Operation 3: Outlier Handling
-        with st.expander("3. Outlier Handling (IQR Method)", expanded=False):
+        with st.expander(r"3\. Outlier Handling (IQR Method)", expanded=False):
             st.markdown("Detect outliers using the IQR range ($Q1 - 1.5 \\times IQR$, $Q3 + 1.5 \\times IQR$).")
             
             num_cols = [c for c in df_current.columns if pd.api.types.is_numeric_dtype(df_current[c])]
@@ -263,13 +282,13 @@ if st.session_state["df"] is not None:
                 if st.button("Apply Outlier Action", key="btn_apply_outliers", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_outliers
-                    st.toast(f"Outliers handled using {outlier_action}!", icon="🚨")
+                    show_toast(f"Outliers handled using {outlier_action}!", icon="🚨")
                     st.rerun()
             else:
                 st.info("No numeric columns available for outlier detection.")
 
         # Operation 4: Duplicate Removal
-        with st.expander("4. Duplicate Removal", expanded=False):
+        with st.expander(r"4\. Duplicate Removal", expanded=False):
             dup_count = cleaner.get_duplicate_count()
             st.write(f"Exact duplicate rows detected: **{dup_count}**")
             
@@ -280,13 +299,13 @@ if st.session_state["df"] is not None:
                 if st.button("Remove Duplicates", key="btn_apply_dups", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_dups
-                    st.toast(f"Removed {dup_count} duplicate rows!", icon="👥")
+                    show_toast(f"Removed {dup_count} duplicate rows!", icon="👥")
                     st.rerun()
             else:
                 st.success("No duplicate rows found!")
 
         # Operation 5: Categorical Encoding
-        with st.expander("5. Categorical Encoding (Prep Step)", expanded=False):
+        with st.expander(r"5\. Categorical Encoding (Prep Step)", expanded=False):
             st.markdown("""
                 Convert categorical columns into numerical representation. 
                 *Note: You can defer this until modeling if you want to keep categories human-readable for visualization.*
@@ -311,7 +330,7 @@ if st.session_state["df"] is not None:
                 if st.button("Apply Categorical Encoding", key="btn_apply_encoding", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_encode
-                    st.toast(f"Encoded categories using {encoding_method}!", icon="🏷️")
+                    show_toast(f"Encoded categories using {encoding_method}!", icon="🏷️")
                     st.rerun()
             else:
                 st.info("No categorical columns detected in the current dataset.")
