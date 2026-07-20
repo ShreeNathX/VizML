@@ -4,3 +4,7 @@ pandas
 matplotlib
 scikit-learn
 psutil
+plotly
+joblib
+openpyxl
+statsmodels

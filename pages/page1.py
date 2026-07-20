@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import io
+import importlib
+import src.cleaner
+importlib.reload(src.cleaner)
 from src.cleaner import DataCleaner
 
 # Configure page settings
@@ -184,11 +187,11 @@ if st.session_state["df"] is not None:
             
             # Numeric columns config
             st.markdown("**Numeric Columns**")
-            num_strat = st.radio("Numeric Imputation Strategy", ["median", "mean"], index=0, key="missing_num_strat", horizontal=True)
+            num_strat = st.radio("Numeric Imputation Strategy", ["median", "mean", "ffill", "bfill"], index=0, key="missing_num_strat", horizontal=True)
             
             # Categorical columns config
             st.markdown("**Categorical Columns**")
-            cat_strat = st.radio("Categorical Imputation Strategy", ["mode", "constant"], index=0, key="missing_cat_strat", horizontal=True)
+            cat_strat = st.radio("Categorical Imputation Strategy", ["mode", "constant", "ffill", "bfill"], index=0, key="missing_cat_strat", horizontal=True)
             cat_const = st.text_input("Constant Fill Token", value="Unknown", key="missing_cat_const")
             
             # Identify columns with nulls
@@ -261,7 +264,7 @@ if st.session_state["df"] is not None:
         with st.expander(r"3\. Outlier Handling (IQR Method)", expanded=False):
             st.markdown("Detect outliers using the IQR range ($Q1 - 1.5 \\times IQR$, $Q3 + 1.5 \\times IQR$).")
             
-            num_cols = [c for c in df_current.columns if pd.api.types.is_numeric_dtype(df_current[c])]
+            num_cols = [c for c in df_current.columns if pd.api.types.is_numeric_dtype(df_current[c]) and not pd.api.types.is_bool_dtype(df_current[c])]
             if num_cols:
                 outlier_cols = st.multiselect("Select columns to handle outliers (Default: All)", num_cols, default=num_cols)
                 outlier_action = st.radio("Outlier Action", ["clip", "remove", "flag"], index=0, key="outlier_action_choice", horizontal=True)

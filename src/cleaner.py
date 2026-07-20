@@ -60,29 +60,38 @@ class DataCleaner:
             if df_new[col].isna().sum() == 0:
                 continue
 
-            # Determine if column is numeric
-            if pd.api.types.is_numeric_dtype(df_new[col]):
-                if numeric_strategy == "mean":
-                    val = df_new[col].mean()
-                else:  # default is median
-                    val = df_new[col].median()
-                
-                # Check if val is NaN (all values were NaN)
-                if pd.isna(val):
-                    val = 0.0
-                df_new[col] = df_new[col].fillna(val)
+            # Determine if column is numeric (excluding boolean)
+            if pd.api.types.is_numeric_dtype(df_new[col]) and not pd.api.types.is_bool_dtype(df_new[col]):
+                if numeric_strategy == "ffill":
+                    df_new[col] = df_new[col].ffill().bfill()
+                elif numeric_strategy == "bfill":
+                    df_new[col] = df_new[col].bfill().ffill()
+                else:
+                    if numeric_strategy == "mean":
+                        val = df_new[col].mean()
+                    else:  # default is median
+                        val = df_new[col].median()
+                    
+                    # Check if val is NaN (all values were NaN)
+                    if pd.isna(val):
+                        val = 0.0
+                    df_new[col] = df_new[col].fillna(val)
             else:
                 # Categorical/object/string/bool/datetime columns
-                if categorical_strategy == "mode":
+                if categorical_strategy == "ffill":
+                    df_new[col] = df_new[col].ffill().bfill()
+                elif categorical_strategy == "bfill":
+                    df_new[col] = df_new[col].bfill().ffill()
+                elif categorical_strategy == "mode":
                     mode_series = df_new[col].mode()
                     if not mode_series.empty:
                         val = mode_series.iloc[0]
                     else:
                         val = categorical_constant
+                    df_new[col] = df_new[col].fillna(val)
                 else:  # default is constant
                     val = categorical_constant
-                
-                df_new[col] = df_new[col].fillna(val)
+                    df_new[col] = df_new[col].fillna(val)
 
         return df_new
 
@@ -152,18 +161,22 @@ class DataCleaner:
             if col not in self.df.columns:
                 continue
 
-            if pd.api.types.is_numeric_dtype(self.df[col]):
+            if pd.api.types.is_numeric_dtype(self.df[col]) and not pd.api.types.is_bool_dtype(self.df[col]):
                 col_data = self.df[col].dropna()
                 if len(col_data) == 0:
                     continue
-                q1 = col_data.quantile(0.25)
-                q3 = col_data.quantile(0.75)
-                iqr = q3 - q1
-                lower_bound = q1 - 1.5 * iqr
-                upper_bound = q3 + 1.5 * iqr
+                try:
+                    q1 = col_data.quantile(0.25)
+                    q3 = col_data.quantile(0.75)
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
 
-                # Mark cells outside bounds as outlier
-                outlier_mask[col] = (self.df[col] < lower_bound) | (self.df[col] > upper_bound)
+                    # Mark cells outside bounds as outlier
+                    outlier_mask[col] = (self.df[col] < lower_bound) | (self.df[col] > upper_bound)
+                except Exception:
+                    # Catch any calculation errors (e.g. mixed types, uncoerced columns)
+                    continue
 
         return outlier_mask
 
@@ -177,7 +190,7 @@ class DataCleaner:
         """
         df_new = self.df.copy()
         cols_to_process = columns if columns is not None else df_new.columns
-        numeric_cols = [col for col in cols_to_process if col in df_new.columns and pd.api.types.is_numeric_dtype(df_new[col])]
+        numeric_cols = [col for col in cols_to_process if col in df_new.columns and pd.api.types.is_numeric_dtype(df_new[col]) and not pd.api.types.is_bool_dtype(df_new[col])]
 
         if action == "remove":
             # Identify row indices that contain any outliers in the numeric columns
@@ -189,16 +202,20 @@ class DataCleaner:
                 col_data = df_new[col].dropna()
                 if len(col_data) == 0:
                     continue
-                q1 = col_data.quantile(0.25)
-                q3 = col_data.quantile(0.75)
-                iqr = q3 - q1
-                lower_bound = q1 - 1.5 * iqr
-                upper_bound = q3 + 1.5 * iqr
+                try:
+                    q1 = col_data.quantile(0.25)
+                    q3 = col_data.quantile(0.75)
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
 
-                if action == "clip":
-                    df_new[col] = df_new[col].clip(lower_bound, upper_bound)
-                elif action == "flag":
-                    df_new[f"{col}_outlier"] = (df_new[col] < lower_bound) | (df_new[col] > upper_bound)
+                    if action == "clip":
+                        df_new[col] = df_new[col].clip(lower_bound, upper_bound)
+                    elif action == "flag":
+                        df_new[f"{col}_outlier"] = (df_new[col] < lower_bound) | (df_new[col] > upper_bound)
+                except Exception:
+                    # Catch any calculation errors (e.g. mixed types, uncoerced columns)
+                    continue
 
         return df_new
 

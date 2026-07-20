@@ -42,6 +42,26 @@ def test_handle_missing():
     assert res_custom["num"].tolist() == [1.0, 3.0, 3.0, 5.0]
     assert res_custom["cat"].tolist() == ["apple", "Unknown", "banana", "apple"]
 
+    # 3. ffill
+    res_ffill = cleaner.handle_missing(
+        numeric_strategy="ffill",
+        categorical_strategy="ffill"
+    )
+    # ffill of [1, 3, nan, 5] is [1, 3, 3, 5]
+    assert res_ffill["num"].tolist() == [1.0, 3.0, 3.0, 5.0]
+    # ffill of ['apple', nan, 'banana', 'apple'] is ['apple', 'apple', 'banana', 'apple']
+    assert res_ffill["cat"].tolist() == ["apple", "apple", "banana", "apple"]
+
+    # 4. bfill
+    res_bfill = cleaner.handle_missing(
+        numeric_strategy="bfill",
+        categorical_strategy="bfill"
+    )
+    # bfill of [1, 3, nan, 5] is [1, 3, 5, 5]
+    assert res_bfill["num"].tolist() == [1.0, 3.0, 5.0, 5.0]
+    # bfill of ['apple', nan, 'banana', 'apple'] is ['apple', 'banana', 'banana', 'apple']
+    assert res_bfill["cat"].tolist() == ["apple", "banana", "banana", "apple"]
+
 def test_coerce_types():
     df = pd.DataFrame({
         "num_str": ["1", "2.5", "3", "bad_num"],      # 75% numeric
