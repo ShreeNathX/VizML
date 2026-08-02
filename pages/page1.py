@@ -122,7 +122,7 @@ def load_data(uploaded_file):
         st.session_state["original_df"] = df.copy()
         st.session_state["history"] = []
         st.session_state["coercion_flags"] = {}
-        show_toast("Dataset uploaded and initialized successfully!", icon="✅")
+        show_toast("Dataset uploaded and initialized successfully.")
     except Exception as e:
         st.error(f"Error loading file: {str(e)}")
 
@@ -136,8 +136,9 @@ if uploaded_file is not None:
         load_data(uploaded_file)
 else:
     import os
-    if st.session_state["df"] is None and os.path.exists("d:\\Vizml\\messy_data.csv"):
-        df_fallback = pd.read_csv("d:\\Vizml\\messy_data.csv")
+    sample_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "messy_data.csv")
+    if st.session_state["df"] is None and os.path.exists(sample_path):
+        df_fallback = pd.read_csv(sample_path)
         st.session_state["df"] = df_fallback
         st.session_state["original_df"] = df_fallback.copy()
         st.session_state["history"] = []
@@ -151,17 +152,17 @@ if st.session_state["df"] is not None:
     col_hist1, col_hist2, col_hist3 = st.columns([1, 1, 6])
     with col_hist1:
         undo_disabled = len(st.session_state["history"]) == 0
-        if st.button("⏪ Undo Last Action", disabled=undo_disabled, use_container_width=True):
+        if st.button("Undo Last Action", disabled=undo_disabled, use_container_width=True):
             st.session_state["df"] = st.session_state["history"].pop()
-            show_toast("Undid last cleaning operation.", icon="↩️")
+            show_toast("Undid last cleaning operation.")
             st.rerun()
             
     with col_hist2:
-        if st.button("🔄 Reset to Original", use_container_width=True):
+        if st.button("Reset to Original", use_container_width=True):
             st.session_state["df"] = st.session_state["original_df"].copy()
             st.session_state["history"] = []
             st.session_state["coercion_flags"] = {}
-            show_toast("Reset dataset to original state.", icon="🔄")
+            show_toast("Reset dataset to original state.")
             st.rerun()
             
     st.markdown("---")
@@ -170,7 +171,7 @@ if st.session_state["df"] is not None:
     col_left, col_right = st.columns([5, 7])
 
     with col_left:
-        st.subheader("🧹 Cleaning Operations")
+        st.subheader("Cleaning Operations")
         
         # Instantiate a cleaner with the current state of df
         cleaner = DataCleaner(df_current)
@@ -210,7 +211,7 @@ if st.session_state["df"] is not None:
                 if st.button("Apply Imputation", key="btn_apply_missing", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_missing
-                    show_toast("Missing values imputed!", icon="🧹")
+                    show_toast("Missing values imputed.")
                     st.rerun()
             else:
                 st.success("No missing values detected in the current dataset!")
@@ -240,7 +241,7 @@ if st.session_state["df"] is not None:
             if coerced_cols:
                 st.markdown("**Proposed Type Changes:**")
                 for col, old_t, new_t in coerced_cols:
-                    st.write(f"• `{col}`: `{old_t}` ➡️ `{new_t}`")
+                    st.write(f"• `{col}`: `{old_t}` -> `{new_t}`")
             else:
                 st.info("No columns suitable for type coercion detected.")
                 
@@ -248,16 +249,16 @@ if st.session_state["df"] is not None:
                 st.markdown("**Parser Status & Flags:**")
                 for col, flag in flagged_cols:
                     if "Partial" in flag:
-                        st.markdown(f"⚠️ `{col}`: <span class='flag-warning'>Partial Cast</span> - {flag}", unsafe_allow_html=True)
+                        st.markdown(f"`{col}`: <span class='flag-warning'>Partial Cast</span> - {flag}", unsafe_allow_html=True)
                     else:
-                        st.markdown(f"🚫 `{col}`: <span class='flag-error'>Unparseable</span> - {flag}", unsafe_allow_html=True)
+                        st.markdown(f"`{col}`: <span class='flag-error'>Unparseable</span> - {flag}", unsafe_allow_html=True)
                         
             if coerced_cols or flagged_cols:
                 if st.button("Apply Type Coercion", key="btn_apply_coercion", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_coercion
                     st.session_state["coercion_flags"] = cleaner.flagged_columns
-                    show_toast("Type coercion completed!", icon="⚙️")
+                    show_toast("Type coercion completed.")
                     st.rerun()
 
         # Operation 3: Outlier Handling
@@ -285,7 +286,7 @@ if st.session_state["df"] is not None:
                 if st.button("Apply Outlier Action", key="btn_apply_outliers", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_outliers
-                    show_toast(f"Outliers handled using {outlier_action}!", icon="🚨")
+                    show_toast(f"Outliers handled using {outlier_action}.")
                     st.rerun()
             else:
                 st.info("No numeric columns available for outlier detection.")
@@ -302,7 +303,7 @@ if st.session_state["df"] is not None:
                 if st.button("Remove Duplicates", key="btn_apply_dups", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_dups
-                    show_toast(f"Removed {dup_count} duplicate rows!", icon="👥")
+                    show_toast(f"Removed {dup_count} duplicate rows.")
                     st.rerun()
             else:
                 st.success("No duplicate rows found!")
@@ -317,9 +318,8 @@ if st.session_state["df"] is not None:
             cat_cols = []
             for col in df_current.columns:
                 if (pd.api.types.is_object_dtype(df_current[col]) or 
-                    pd.api.types.is_categorical_dtype(df_current[col]) or 
-                    # If pandas version supports string/bool check safely
-                    getattr(df_current[col], 'dtype', None) == 'string' or
+                    isinstance(df_current[col].dtype, pd.CategoricalDtype) or 
+                    pd.api.types.is_string_dtype(df_current[col]) or
                     pd.api.types.is_bool_dtype(df_current[col])):
                     cat_cols.append(col)
                     
@@ -333,14 +333,14 @@ if st.session_state["df"] is not None:
                 if st.button("Apply Categorical Encoding", key="btn_apply_encoding", type="primary"):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_encode
-                    show_toast(f"Encoded categories using {encoding_method}!", icon="🏷️")
+                    show_toast(f"Encoded categories using {encoding_method}.")
                     st.rerun()
             else:
                 st.info("No categorical columns detected in the current dataset.")
 
     # ----------------- DISPLAY PREVIEW & LIVE DIFF -----------------
     with col_right:
-        st.subheader("📊 Data Preview & Change Tracker")
+        st.subheader("Data Preview & Change Tracker")
         
         # Figure out if any expander is focused or we have active configurations
         # We can dynamically show a diff if we have a proposed dataframe
@@ -348,7 +348,7 @@ if st.session_state["df"] is not None:
         # Check which expander controls are active (we can guess based on session state changes or simply provide a selector)
         available_props = list(proposed_dfs.keys())
         
-        tab_data, tab_diff, tab_profile = st.tabs(["Active Dataset", "🔎 Live Diff Finder", "📋 Data Profile"])
+        tab_data, tab_diff, tab_profile = st.tabs(["Active Dataset", "Live Diff Finder", "Data Profile"])
         
         with tab_data:
             st.markdown(f"**Shape:** `{df_current.shape[0]}` rows, `{df_current.shape[1]}` columns")
@@ -360,7 +360,7 @@ if st.session_state["df"] is not None:
             csv_bytes = csv_buffer.getvalue().encode('utf-8')
             
             st.download_button(
-                label="📥 Export Cleaned Dataset",
+                label="Export Cleaned Dataset",
                 data=csv_bytes,
                 file_name="cleaned_dataset.csv",
                 mime="text/csv",
@@ -411,7 +411,7 @@ if st.session_state["df"] is not None:
                 st.write("### Proposed DataFrame Preview:")
                 st.dataframe(df_proposed.head(50), use_container_width=True)
                 
-                st.info("💡 Review the changes above. If they look correct, click the **Apply** button in the corresponding cleaning panel on the left to commit them.", icon="ℹ️")
+                st.info("Review the changes above. If they look correct, click the **Apply** button in the corresponding cleaning panel on the left to commit them.")
             else:
                 st.info("Configure a cleaning operation on the left to view a live diff.")
 

@@ -245,7 +245,7 @@ class DataCleaner:
                 continue
             # Categorical check: object, category, string, or boolean
             if (pd.api.types.is_object_dtype(df_new[col]) or 
-                pd.api.types.is_categorical_dtype(df_new[col]) or 
+                isinstance(df_new[col].dtype, pd.CategoricalDtype) or 
                 pd.api.types.is_string_dtype(df_new[col]) or
                 pd.api.types.is_bool_dtype(df_new[col])):
                 cat_cols.append(col)
@@ -258,13 +258,19 @@ class DataCleaner:
             # Convert dummy indicators to int (0/1) for modeling compatibility
             df_new = pd.get_dummies(df_new, columns=cat_cols, drop_first=False, dtype=int)
         elif method == "label":
-            # For label encoding, we use LabelEncoder on non-null values to preserve NaNs as NaN
+            # For label encoding, we use LabelEncoder on non-null values to preserve NaNs as NaN.
+            # The encoded result is numeric, so it is built as a standalone Series and used to
+            # replace the column outright, rather than assigned in-place. Assigning numeric
+            # values into a column that pandas has typed as text (str/object/category) raises
+            # a TypeError, since the column's dtype cannot hold integers in place.
             for col in cat_cols:
                 non_null_mask = df_new[col].notna()
                 if non_null_mask.any():
                     le = LabelEncoder()
                     # Convert to string to avoid mixed types causing errors in LabelEncoder
-                    df_new.loc[non_null_mask, col] = le.fit_transform(df_new.loc[non_null_mask, col].astype(str))
-                    df_new[col] = pd.to_numeric(df_new[col], errors='coerce')
+                    encoded_values = le.fit_transform(df_new.loc[non_null_mask, col].astype(str))
+                    encoded_col = pd.Series(np.nan, index=df_new.index, dtype="float64")
+                    encoded_col.loc[non_null_mask] = encoded_values
+                    df_new[col] = encoded_col
 
         return df_new

@@ -1,0 +1,316 @@
+customer_id,full_name,age,signup_date,city,country,department,salary,satisfaction_score,purchase_amount,is_active,email,notes,source_system
+1285.0,Riya Verma,48.0,2023/05/03,bhopal,France,Marketing,,6.3,56.47,False,riya.verma@example.com,,CRM_EXPORT_V2
+1171.0,Isha Mehta,46.0,2022/05/26, Bengaluru ,Canada,Finance,"$70,946.14",9.57,40.23,True,isha.mehta@example.com,,CRM_EXPORT_V2
+1151.0,Isha Sharma,26.0,27 Mar 2022,kolkata,Japan,HR,55489.39,1.01,5073.295902058798,False,isha.sharma@example.com,,CRM_EXPORT_V2
+1105.0,Meera Reddy,26.0,2021/11/09,PUNE,France,Operations,,3.27,112.18,True,MEERA.REDDY@EXAMPLE.COM,,CRM_EXPORT_V2
+1038.0,Riya Gupta,68.0,not a date,Pune,Australia,Engineering,,5.64,198.02,True,riya.gupta@example.com,,CRM_EXPORT_V2
+1102.0,Meera Verma,18.0,31 Oct 2021,Ja ipur,India,Operations,58407.65,8.39,252.11,True,meera.verma@example.com,,CRM_EXPORT_V2
+1267.0,Manish Singh,20.0,2023-03-10,mumbai,Japan,Support,77818.08,6.42,75.92,False,manish.singh@example.com,,CRM_EXPORT_V2
+1243.0,Aditya Mehta,49.0,28 Dec 2022,Kolkata,United States,Marketing,,4.74,44.57,False,ADITYA.MEHTA@EXAMPLE.COM,,CRM_EXPORT_V2
+1287.0,Meera Iyer,59.0,2023-05-09,Bhopal,Australia,Sales,70480.12,,22.48,False,meera.iyer@example.com,,CRM_EXPORT_V2
+1271.0,Sanjay Mehta,24.0,22/03/2023,BENGALURU,United States,Operations,32891.82,4.72,114.05,False,sanjay.mehta@example.com,,CRM_EXPORT_V2
+1264.0,Vikram Sharma,53.0,01 Mar 2023,bengaluru,United Kingdom,Marketing,84917.15,3.12,125.41,True,vikram.sharma@example.com,,CRM_EXPORT_V2
+1074.0,Isha Gupta,46.0,08/08/2021,Mumbai,India,Finance,69922.07,1.08,389.9,True,isha.gupta@example.com,,CRM_EXPORT_V2
+1282.0,Rohan Reddy,42.0,2023/04/24, Kolkata ,Australia,Sales,,4.59,404.86,0,rohan.reddy@example.com,,CRM_EXPORT_V2
+1281.0,Arjun Singh,45.0,21 Apr 2023, Kolkata ,India,Marketing,33173.71,3.81,127.66,0,arjun.singh@example.com,,CRM_EXPORT_V2
+1107.0,Riya Patel,18.0,2021/11/15, Bhopal ,India,Marketing,,2.43,97.14,True,riya.patel@example.com,,CRM_EXPORT_V2
+1255.0,Divya Gupta,65.0,2023-02-02,Mumbai,France,R&D,93883.46,6.38,40.98,False,divya.gupta@example.com,,CRM_EXPORT_V2
+1092.0,Divya Iyer,35.0,01 Oct 2021,HYDERABAD,United Kingdom,Operations,65284.24,,2.22,True,divya.iyer@example.com,,CRM_EXPORT_V2
+1172.0,Aarav Mehta,53.0,2022/05/29,Lucknow,France,Support,77456.0,9.17,305.18,True,aarav.mehta@example.com,,CRM_EXPORT_V2
+1058.0,Priya Verma,64.0,21/06/2021,Benga luru,United States,Support,69092.2,5.19,424.22,False,priya.verma@example.com,,CRM_EXPORT_V2
+1081.0,Divya Gupta,31.0,29/08/2021,BENGALURU,United States,Marketing,,,1528.1612579080027,True,DIVYA.GUPTA@EXAMPLE.COM,,CRM_EXPORT_V2
+1277.0,Kavya Singh,35.0,09 Apr 2023,Pune,United Kingdom,Engineering,27773.02,6.21,3.47,True,kavya.singh@example.com,,CRM_EXPORT_V2
+1243.0,Aditya Mehta,49.0,28 Dec 2022,Kolkata,United States,Marketing,,4.74,44.57,0,aditya.mehta@example.com,,CRM_EXPORT_V2
+1089.0,Manish Rao,38.0,09-22-2021,Delhi,Japan,Support,51550.64,7.94,136.13,True,manish.rao@example.com,,CRM_EXPORT_V2
+1126.0,Riya Sharma,29.0,01-11-2022,,Japan,Operations,52519.41,7.84,166.34,False,riya.sharma@example.com,,CRM_EXPORT_V2
+1004.0,Sneha Mehta,32.0,2021/01/10, Bengaluru ,United States,Engineering,unknown,5.73,114.38,False,sneha.mehta@example.com,,CRM_EXPORT_V2
+1087.0,Kavya Mehta,40.0,2021-09-16,,France,R&D,50633.93,9.53,71.81,no,kavya.mehta@example.com,,CRM_EXPORT_V2
+1280.0,Kavya Gupta,28.0,18/04/2023,lucknow,Germany,R&D,79880.77,6.87,473.11,True,kavya.gupta@example.com,,CRM_EXPORT_V2
+1195.0,Priya Reddy,44.0,2022-08-06, Bhopal ,France,Support,"$72,431.88",1.37,353.91,1,priya.reddy@example.com,,CRM_EXPORT_V2
+1162.0,Isha Rao,49.0,2022-04-29,chennai,France,R&D,38145.87,9.86,53.94,True,isha.rao@example.com,,CRM_EXPORT_V2
+1123.0,Meera Verma,24.0,02/01/2022,chennai,Japan,Operations,89444.07,9.19,27.29,True,meera.verma@example.com,,CRM_EXPORT_V2
+1218.0,Rahul Sharma,66.0,2022-10-14, Mumbai ,Australia,HR,97024.76,7.52,809.9,False,rahul.sharma@example.com,,CRM_EXPORT_V2
+1031.0,Meera Verma,66.0,2021/04/01,,India,R&D,,5.79,110.64,True,,,CRM_EXPORT_V2
+1061.0,Rohan Iyer,25.0,30/06/2021,kolkata,Japan,Marketing,52451.62,8.38,129.12,0,ROHAN.IYER@EXAMPLE.COM,,CRM_EXPORT_V2
+1015.0,Anjali Iyer,150.0,12 Feb 2021,Hyderabad,India,Operations,unknown,8.74,7.96,False,anjali.iyer@example.com,,CRM_EXPORT_V2
+1155.0,Rahul Reddy,59.0,04-08-2022,jaipur,United Kingdom,Finance,57660.54,6.03,156.03,1,rahul.reddy@example.com,,CRM_EXPORT_V2
+1090.0,Pooja Gupta,33.0,2021-09-25,LUCKNOW,Australia,Engineering,51897.8,7.38,118.35,False,pooja.gupta@example.com,,CRM_EXPORT_V2
+1226.0,Sneha Iyer,66.0,07 Nov 2022, Mumbai ,Australia,Sales,unknown,8.85,28.04,False,sneha.iyer at example.com,,CRM_EXPORT_V2
+1292.0,Pooja Sharma,65.0,24 May 2023,kolkata,Canada,,66086.38,3.98,261.62,False,pooja.sharma@example.com,,CRM_EXPORT_V2
+1177.0,Arjun Reddy,39.0,13 Jun 2022,,United States,Support,"$49,807.21",6.14,39.25,1,arjun.reddy at example.com,,CRM_EXPORT_V2
+1085.0,Rohan Mehta,25.0,2021/09/10,chennai,Canada,Operations,41114.59,2.56,141.18,True,rohan.mehta@example.com,,CRM_EXPORT_V2
+1067.0,Rahul Verma,67.0,18/07/2021,Mumbai,United Kingdom,Support,75755.32,3.33,751.68,True,,,CRM_EXPORT_V2
+1003.0,Meera Patel,46.0,01-07-2021,jaipur,India,Finance,,6.38,66.18,True,meera.patel@example.com,,CRM_EXPORT_V2
+1274.0,Isha Mehta,50.0,03-31-2023,Ja ipur,Australia,Support,60984.16,1.88,35.74,False,isha.mehta@example.com,,CRM_EXPORT_V2
+1286.0,Vikram Patel,47.0,05-06-2023, Kolkata ,Germany,Marketing,81037.15,6.39,139.85,False,vikram.patel at example.com,,CRM_EXPORT_V2
+1066.0,Riya Reddy,53.0,15/07/2021,hyderabad,India,Sales,43012.88,7.81,301.98,True,riya.reddy@example.com,,CRM_EXPORT_V2
+1130.0,Karan Iyer,40.0,01-23-2022,Mumbai,United States,HR,,7.52,502.7671822449448,False,karan.iyer@example.com,,CRM_EXPORT_V2
+1075.0,Vikram Nair,35.0,not a date,BENGALURU,India,,"$86,035.67",8.37,86.48,True,vikram.nair@example.com,,CRM_EXPORT_V2
+1207.0,Sneha Iyer,68.0,2022-09-11, Mumbai ,United Kingdom,Support,70955.21,8.05,10.87,False,sneha.iyer@example.com,,CRM_EXPORT_V2
+1140.0,Priya Nair,,2022-02-22, Hyderabad ,Japan,Finance,50680.48,1.82,52.49,True,priya.nair@example.com,,CRM_EXPORT_V2
+1180.0,Arjun Mehta,59.0,2022/06/22, Kolkata ,India,Support,13435.69,2.89,44.54,0,arjun.mehta@example.com,,CRM_EXPORT_V2
+1174.0,Vikram Reddy,49.0,2022-06-04, Kolkata ,India,Operations,75791.45,7.74,114.97,False,vikram.reddy@example.com,,CRM_EXPORT_V2
+1142.0,Suresh Singh,64.0,28/02/2022, Delhi ,Australia,Operations,74335.65,5.08,30.73,True,suresh.singh@example.com,,CRM_EXPORT_V2
+1227.0,Suresh Gupta,34.0,10 Nov 2022,Lucknow,India,HR,90690.66,4.9,79.01,False,suresh.gupta@example.com,,CRM_EXPORT_V2
+1112.0,Sneha Iyer,68.0,not a date,Pune,Japan,Engineering,103994.65,5.74,110.48,False,sneha.iyer@example.com,,CRM_EXPORT_V2
+1164.0,Riya Gupta,47.0,05 May 2022,hyderabad,United States,Finance,66753.99,5.18,285.75,True,riya.gupta@example.com,,CRM_EXPORT_V2
+1071.0,Manish Patel,,2021-07-30,bhopal,India,Marketing,,6.04,17.33,0,manish.patel@example.com,,CRM_EXPORT_V2
+1095.0,Sneha Gupta,43.0,2021-10-10,Chenna i,Germany,Engineering,67197.06,9.91,154.32,True,sneha.gupta@example.com,,CRM_EXPORT_V2
+1211.0,Divya Gupta,32.0,09-23-2022, Bengaluru ,Canada,Engineering,72491.7,5.98,170.98,True,divya.gupta@example.com,,CRM_EXPORT_V2
+1103.0,Priya Nair,42.0,2021/11/03,Hydera bad,India,Marketing,,4.35,17.3,False,priya.nair@example.com,,CRM_EXPORT_V2
+1019.0,Rohan Iyer,19.0,2021/02/24,Bhopal,United States,R&D,19218.77,5.29,13.91,True,rohan.iyer@example.com,,CRM_EXPORT_V2
+1082.0,Priya Gupta,,2021-09-01,,Germany,Finance,66653.12,2.62,157.08,False,priya.gupta@example.com,,CRM_EXPORT_V2
+1091.0,Riya Gupta,62.0,28/09/2021,Mumbai,Canada,HR,73907.98,,88.16,False,riya.gupta@example.com,,CRM_EXPORT_V2
+1242.0,Suresh Reddy,23.0,12-25-2022,JAIPUR,United Kingdom,Marketing,61919.27,9.65,14.63,False,suresh.reddy@example.com,,CRM_EXPORT_V2
+1056.0,Vikram Mehta,37.0,2021-06-15,,Germany,,46269.72,8.93,376.4,True,vikram.mehta at example.com,,CRM_EXPORT_V2
+1119.0,Karan Mehta,59.0,2021-12-21,Lucknow,Japan,Operations,48426.84,8.81,71.72,True,,,CRM_EXPORT_V2
+1200.0,Pooja Rao,56.0,2022/08/21, Mumbai ,Australia,HR,"$73,646.17",6.35,76.92,True,pooja.rao@example.com,,CRM_EXPORT_V2
+1203.0,Pooja Sharma,44.0,2022/08/30, Bhopal ,Canada,Support,unknown,3.69,144.02,True,pooja.sharma@example.com,,CRM_EXPORT_V2
+1147.0,Isha Verma,43.0,03-15-2022,BENGALURU,Canada,Operations,85102.04,9.21,70.14,False,isha.verma@example.com,,CRM_EXPORT_V2
+1241.0,Anjali Rao,49.0,2022-12-22,bhopal,United Kingdom,Finance,61144.4,2.57,167.01,False,anjali.rao@example.com,,CRM_EXPORT_V2
+1116.0,Priya Iyer,52.0,2021-12-12,Chenna i,Germany,Operations,69765.93,7.96,11.09,False,priya.iyer@example.com,,CRM_EXPORT_V2
+1023.0,Sanjay Mehta,55.0,03-08-2021,jaipur,Australia,R&D,47362.42,3.96,75.97,0,sanjay.mehta@example.com,,CRM_EXPORT_V2
+1098.0,Suresh Mehta,58.0,10-19-2021,,Germany,Support,46788.84,6.83,117.25,True,suresh.mehta@example.com,,CRM_EXPORT_V2
+1133.0,Aditya Reddy,52.0,2022/02/01, Kolkata ,Germany,Finance,82239.3,8.81,564.06,True,aditya.reddy@example.com,,CRM_EXPORT_V2
+1229.0,Pooja Sharma,19.0,16/11/2022,LUCKNOW,Japan,HR,unknown,2.46,258.73,True,pooja.sharma@example.com,,CRM_EXPORT_V2
+1208.0,Priya Singh,59.0,14/09/2022,BHOPAL,Canada,Marketing,N/A,,153.32,True,priya.singh@example.com,,CRM_EXPORT_V2
+1160.0,Rahul Verma,,2022-04-23,MUMBAI,Japan,Engineering,71672.87,6.31,122.0,False,rahul.verma@example.com,,CRM_EXPORT_V2
+1115.0,Priya Verma,52.0,09 Dec 2021,Pune,United Kingdom,Marketing,57869.36,8.56,340.54,True,,,CRM_EXPORT_V2
+1300.0,Riya Rao,54.0,17 Jun 2023,Delhi,Germany,Support,88883.64,4.23,19.52,False,riya.rao@example.com,,CRM_EXPORT_V2
+1209.0,Meera Gupta,61.0,09-17-2022,HYDERABAD,France,Support,70671.16,,47.44,True,meera.gupta@example.com,,CRM_EXPORT_V2
+1265.0,Sneha Iyer,36.0,2023/03/04, Jaipur ,France,Operations,70123.23,7.98,74.4,False,sneha.iyer@example.com,,CRM_EXPORT_V2
+1173.0,Divya Verma,30.0,06-01-2022,Bengaluru,Japan,Support,84003.57,7.52,96.05,True,divya.verma@example.com,,CRM_EXPORT_V2
+1100.0,Meera Sharma,32.0,2021/10/25, Bengaluru ,United States,R&D,32760.78,4.45,281.76,True,meera.sharma@example.com,,CRM_EXPORT_V2
+1148.0,Meera Iyer,,18 Mar 2022,Lucknow,Germany,R&D,54851.25,9.71,112.14,yes,meera.iyer@example.com,,CRM_EXPORT_V2
+1246.0,Pooja Rao,34.0,2023/01/06,Lucknow,Australia,Engineering,10750.19,7.62,140.66,True,pooja.rao@example.com,,CRM_EXPORT_V2
+1025.0,Rohan Mehta,38.0,14 Mar 2021,,Japan,HR,,7.62,173.74,True,rohan.mehta@example.com,,CRM_EXPORT_V2
+1185.0,Rahul Patel,61.0,2022/07/07,BHOPAL,India,Sales,"$83,227.52",5.81,136.34,False,rahul.patel@example.com,,CRM_EXPORT_V2
+1260.0,Sanjay Iyer,33.0,not a date,MUMBAI,Canada,Finance,unknown,,309.93,False,,,CRM_EXPORT_V2
+1161.0,Aarav Singh,69.0,2022-04-26, Delhi ,Canada,Marketing,,,44.29,False,aarav.singh@example.com,,CRM_EXPORT_V2
+1063.0,Sanjay Mehta,52.0,2021/07/06,Benga luru,France,Engineering,N/A,9.18,26.03,False,sanjay.mehta@example.com,,CRM_EXPORT_V2
+1254.0,Rohan Gupta,28.0,30 Jan 2023, Delhi ,Japan,Finance,90963.55,6.46,63.77,True,rohan.gupta@example.com,,CRM_EXPORT_V2
+1079.0,Kavya Sharma,27.0,2021-08-23,Chenna i,Canada,R&D,N/A,4.89,304.77,True,kavya.sharma@example.com,,CRM_EXPORT_V2
+1127.0,Rohan Gupta,51.0,2022/01/14,Chenna i,United States,Support,116427.45,4.98,398.05,False,rohan.gupta at example.com,,CRM_EXPORT_V2
+1051.0,Meera Mehta,31.0,31 May 2021,delhi,Australia,Finance,31410.81,3.15,266.57,False,meera.mehta@example.com,,CRM_EXPORT_V2
+1213.0,Karan Iyer,49.0,2022-09-29,Mumba i,United States,Marketing,,8.05,91.56,True,karan.iyer@example.com,,CRM_EXPORT_V2
+1129.0,Kavya Singh,65.0,2022/01/20,Kolka ta,Germany,Support,81251.21,3.89,130.46,0,kavya.singh@example.com,,CRM_EXPORT_V2
+1128.0,Anjali Iyer,50.0,2022/01/17,chennai,Germany,Engineering,N/A,3.81,113.98,0,anjali.iyer@example.com,,CRM_EXPORT_V2
+1146.0,Anjali Verma,,12 Mar 2022,Hyderabad,India,Engineering,79959.61,,253.72,True,anjali.verma@example.com,,CRM_EXPORT_V2
+1053.0,Suresh Iyer,26.0,06/06/2021,Mumbai,Canada,HR,80238.38,1.95,219.49,False,suresh.iyer@example.com,,CRM_EXPORT_V2
+1062.0,Aditya Rao,64.0,2021-07-03,,Canada,Sales,55092.22,3.06,64.29,0,aditya.rao@example.com,,CRM_EXPORT_V2
+1293.0,Karan Iyer,69.0,2023-05-27,lucknow,Canada,Finance,87763.41,5.04,164.63,1,karan.iyer@example.com,,CRM_EXPORT_V2
+1283.0,Meera Reddy,,27/04/2023,Benga luru,India,Engineering,60098.61,8.72,128.41,False,meera.reddy@example.com,,CRM_EXPORT_V2
+1029.0,Priya Gupta,61.0,2021-03-26,Ja ipur,Australia,Sales,84401.56,7.26,130.17,False,priya.gupta@example.com,,CRM_EXPORT_V2
+1070.0,Aarav Reddy,19.0,2021/07/27,MUMBAI,Australia,Support,51192.01,3.94,51.1,False,aarav.reddy at example.com,,CRM_EXPORT_V2
+1037.0,Isha Patel,64.0,19 Apr 2021, Hyderabad ,Germany,Finance,20103.94,8.95,421.56,True,isha.patel@example.com,,CRM_EXPORT_V2
+1041.0,Riya Gupta,20.0,05-01-2021,Mumba i,United Kingdom,Finance,128488.84,6.96,4091.639801928658,False,riya.gupta@example.com,,CRM_EXPORT_V2
+1156.0,Karan Nair,30.0,04-11-2022,Kolka ta,Canada,Support,74447.93,3.03,28.81,False,karan.nair@example.com,,CRM_EXPORT_V2
+1262.0,Aditya Singh,20.0,2023-02-23,PUNE,United States,Sales,N/A,5.19,231.46,True,aditya.singh@example.com,,CRM_EXPORT_V2
+1012.0,Pooja Gupta,28.0,2021-02-03,Hydera bad,Canada,R&D,"$81,114.71",7.73,647.92,True,pooja.gupta@example.com,,CRM_EXPORT_V2
+1291.0,Riya Singh,43.0,2023-05-21,Pune,India,HR,63058.01,4.98,458.0,False,riya.singh@example.com,,CRM_EXPORT_V2
+1278.0,Arjun Gupta,57.0,12 Apr 2023, Bhopal ,France,Support,"$59,005.23",6.96,25.05,1,,,CRM_EXPORT_V2
+1259.0,Isha Verma,23.0,2023/02/14,Kolkata,Canada,Operations,"$89,603.23",3.55,428.1,False,ISHA.VERMA@EXAMPLE.COM,,CRM_EXPORT_V2
+1194.0,Pooja Patel,18.0,08-03-2022,Delhi,United Kingdom,Operations,N/A,8.39,61.7,False,pooja.patel@example.com,,CRM_EXPORT_V2
+1169.0,Anjali Singh,32.0,2022-05-20,Chennai,United Kingdom,Finance,44110.11,6.91,82.73,False,anjali.singh@example.com,,CRM_EXPORT_V2
+1228.0,Arjun Sharma,66.0,11-13-2022,HYDERABAD,India,Sales,78780.72,1.39,82.41,False,arjun.sharma@example.com,,CRM_EXPORT_V2
+1099.0,Meera Rao,46.0,2021/10/22,Lucknow,India,Marketing,47582.71,6.35,453.86,True,meera.rao@example.com,,CRM_EXPORT_V2
+1175.0,Sneha Verma,24.0,07 Jun 2022, Chennai ,Australia,R&D,91934.92,2.31,29.48,True,sneha.verma@example.com,,CRM_EXPORT_V2
+1047.0,Rahul Gupta,56.0,19 May 2021,CHENNAI,United States,Support,unknown,,576.87,False,rahul.gupta@example.com,,CRM_EXPORT_V2
+1263.0,Aditya Gupta,37.0,26/02/2023,jaipur,United Kingdom,Sales,"$60,637.92",8.52,128.2,False,ADITYA.GUPTA@EXAMPLE.COM,,CRM_EXPORT_V2
+1214.0,Rahul Reddy,41.0,02/10/2022,,United States,R&D,57982.69,5.33,31.67,True,rahul.reddy at example.com,,CRM_EXPORT_V2
+1268.0,Priya Mehta,36.0,13/03/2023,bhopal,Germany,Operations,61561.73,6.69,116.39,False,priya.mehta@example.com,,CRM_EXPORT_V2
+1139.0,Suresh Mehta,,2022-02-19,pune,Germany,Sales,69618.88,,30.61,False,suresh.mehta@example.com,,CRM_EXPORT_V2
+1109.0,Kavya Gupta,25.0,21 Nov 2021,mumbai,Australia,HR,85799.85,9.5,119.58,True,kavya.gupta@example.com,,CRM_EXPORT_V2
+1177.0,Arjun Reddy,39.0,13 Jun 2022,,United States,Support,"$49,807.21",6.14,39.25,1,arjun.reddy@example.com,,CRM_EXPORT_V2
+1272.0,Riya Rao,69.0,03-25-2023,mumbai,United States,Sales,76357.07,1.62,191.71,True,riya.rao@example.com,,CRM_EXPORT_V2
+1299.0,Pooja Mehta,22.0,14 Jun 2023, Pune ,India,HR,"$75,305.46",3.27,224.9,False,pooja.mehta@example.com,,CRM_EXPORT_V2
+1016.0,Rahul Reddy,41.0,2021-02-15,BHOPAL,United States,Sales,,5.12,153.25,False,rahul.reddy@example.com,,CRM_EXPORT_V2
+1114.0,Pooja Singh,25.0,06 Dec 2021,Delhi,India,Marketing,unknown,3.69,84.54,True,pooja.singh@example.com,,CRM_EXPORT_V2
+1008.0,Karan Gupta,56.0,01-22-2021,Hydera bad,Canada,Finance,81498.0,9.97,299.5,False,karan.gupta@example.com,,CRM_EXPORT_V2
+1273.0,Rahul Singh,58.0,03-28-2023,BHOPAL,United States,Finance,48879.39,4.93,22.85,True,RAHUL.SINGH@EXAMPLE.COM,,CRM_EXPORT_V2
+1149.0,Sneha Rao,,not a date,pune,Canada,R&D,58413.38,2.67,17.87,True,sneha.rao@example.com,,CRM_EXPORT_V2
+1233.0,Rahul Rao,54.0,2022/11/28,Bengaluru,France,Support,,5.88,96.62,False,rahul.rao@example.com,,CRM_EXPORT_V2
+1074.0,Isha Gupta,46.0,08/08/2021,Mumbai,India,Finance,69922.07,1.08,389.9,True,isha.gupta@example.com,,CRM_EXPORT_V2
+1009.0,Manish Rao,36.0,25 Jan 2021, Chennai ,Australia,Support,100447.56,9.08,2352.8157466989037,True,manish.rao@example.com,,CRM_EXPORT_V2
+1028.0,Karan Verma,39.0,23 Mar 2021, Bengaluru ,India,R&D,"$96,660.62",1.05,542.33,True,KARAN.VERMA@EXAMPLE.COM,,CRM_EXPORT_V2
+1295.0,Aarav Rao,19.0,2023/06/02,pune,United States,Marketing,77362.81,2.31,97.58,True,aarav.rao@example.com,,CRM_EXPORT_V2
+1059.0,Vikram Patel,24.0,24/06/2021,MUMBAI,Germany,Engineering,52947.04,8.91,263.03,True,vikram.patel@example.com,,CRM_EXPORT_V2
+1223.0,Pooja Nair,20.0,not a date,delhi,Canada,HR,78274.74,3.96,489.21,False,pooja.nair@example.com,,CRM_EXPORT_V2
+1249.0,Sanjay Gupta,22.0,01-15-2023,hyderabad,Australia,Finance,,5.89,9.78,True,sanjay.gupta@example.com,,CRM_EXPORT_V2
+1237.0,Rahul Iyer,36.0,10/12/2022,,United States,Support,,2.99,3.03,True,,,CRM_EXPORT_V2
+1032.0,Aditya Reddy,44.0,04 Apr 2021,bhopal,France,Marketing,56493.58,9.66,62.93,False,aditya.reddy@example.com,,CRM_EXPORT_V2
+1002.0,Arjun Gupta,69.0,2021/01/04,Ja ipur,Germany,R&D,74174.2,5.66,139.53,True,arjun.gupta@example.com,,CRM_EXPORT_V2
+1190.0,Rohan Patel,45.0,22/07/2022,Lucknow,Canada,R&D,"$60,686.29",3.9,2.39,True,rohan.patel@example.com,,CRM_EXPORT_V2
+1014.0,Arjun Sharma,53.0,02-09-2021,Mumbai,United States,Marketing,95216.06,9.05,39.43,False,arjun.sharma@example.com,,CRM_EXPORT_V2
+1010.0,Aarav Mehta,40.0,2021-01-28,Hydera bad,France,Marketing,57032.53,5.17,116.45,False,AARAV.MEHTA@EXAMPLE.COM,,CRM_EXPORT_V2
+1290.0,Pooja Nair,33.0,18 May 2023,JAIPUR,United Kingdom,Support,83561.96,8.95,57.31,True,pooja.nair at example.com,,CRM_EXPORT_V2
+1096.0,Meera Verma,42.0,13 Oct 2021, Pune ,United Kingdom,Finance,N/A,7.08,213.66,False,meera.verma@example.com,,CRM_EXPORT_V2
+1035.0,Neha Gupta,33.0,04-13-2021, Bhopal ,Canada,R&D,56874.51,9.92,21.36,yes,,,CRM_EXPORT_V2
+1097.0,Rahul Sharma,62.0,16 Oct 2021,LUCKNOW,United Kingdom,Engineering,53433.72,5.01,104.11,False,,,CRM_EXPORT_V2
+1186.0,Arjun Patel,,not a date,Mumbai,Australia,Operations,46669.08,8.94,168.98,True,arjun.patel@example.com,,CRM_EXPORT_V2
+1189.0,Aarav Verma,28.0,19 Jul 2022,lucknow,India,Operations,120215.24,4.22,193.38,True,AARAV.VERMA@EXAMPLE.COM,,CRM_EXPORT_V2
+1154.0,Suresh Mehta,43.0,05 Apr 2022,Pune,Australia,Sales,N/A,3.23,236.8,True,suresh.mehta@example.com,,CRM_EXPORT_V2
+1244.0,Aarav Reddy,21.0,31 Dec 2022,,Germany,Sales,57811.25,8.62,232.61,False,aarav.reddy@example.com,,CRM_EXPORT_V2
+1267.0,Manish Singh,20.0,2023-03-10,mumbai,Japan,Support,77818.08,6.42,75.92,0,manish.singh@example.com,,CRM_EXPORT_V2
+1046.0,Karan Rao,26.0,2021-05-16,chennai,United Kingdom,Finance,104986.34,8.81,162.54,False,karan.rao@example.com,,CRM_EXPORT_V2
+1217.0,Aditya Mehta,66.0,11 Oct 2022,Mumbai,Canada,Finance,N/A,4.95,67.63,True,aditya.mehta@example.com,,CRM_EXPORT_V2
+1033.0,Sanjay Nair,59.0,04-07-2021,Mumba i,France,Marketing,63964.82,1.99,113.97,True,sanjay.nair@example.com,,CRM_EXPORT_V2
+1078.0,Isha Nair,51.0,20/08/2021,Lucknow,Australia,Sales,81148.35,1.17,57.23,False,isha.nair@example.com,,CRM_EXPORT_V2
+1238.0,Divya Mehta,19.0,13/12/2022,Kolkata,United States,Marketing,59410.02,4.77,200.44,False,divya.mehta@example.com,,CRM_EXPORT_V2
+1134.0,Sanjay Reddy,61.0,02-04-2022,PUNE,United States,HR,77467.99,7.43,259.89,True,sanjay.reddy@example.com,,CRM_EXPORT_V2
+1145.0,Manish Verma,18.0,09/03/2022, Mumbai ,India,Support,,8.17,13.66,no,manish.verma@example.com,,CRM_EXPORT_V2
+1157.0,Meera Reddy,68.0,04-14-2022,Mumba i,Australia,HR,68328.3,2.45,67.12,False,meera.reddy@example.com,,CRM_EXPORT_V2
+1064.0,Arjun Mehta,31.0,09/07/2021, Jaipur ,India,Sales,57214.24,1.01,139.31,True,arjun.mehta@example.com,,CRM_EXPORT_V2
+1083.0,Suresh Verma,65.0,09-04-2021,,Canada,HR,61181.77,7.78,59.71,True,suresh.verma at example.com,,CRM_EXPORT_V2
+1239.0,Vikram Gupta,61.0,2022/12/16, Delhi ,Australia,Operations,72150.52,2.83,219.54,1,vikram.gupta@example.com,,CRM_EXPORT_V2
+1231.0,Karan Nair,45.0,11-22-2022,Lucknow,United States,Sales,92096.9,6.88,53.68,no,karan.nair@example.com,,CRM_EXPORT_V2
+1240.0,Pooja Iyer,43.0,2022-12-19,HYDERABAD,Australia,HR,unknown,8.56,41.89,True,,,CRM_EXPORT_V2
+1042.0,Rahul Sharma,54.0,2021-05-04,BENGALURU,Canada,Finance,,5.89,25.47,False,rahul.sharma@example.com,,CRM_EXPORT_V2
+1178.0,Isha Gupta,45.0,2022-06-16, Mumbai ,Japan,Marketing,,1.17,34.64,True,isha.gupta@example.com,,CRM_EXPORT_V2
+1165.0,Manish Reddy,54.0,2022-05-08, Kolkata ,United States,Support,49113.95,7.12,166.95,True,manish.reddy@example.com,,CRM_EXPORT_V2
+1110.0,Kavya Iyer,41.0,2021-11-24,Hydera bad,Australia,Finance,44987.59,1.92,206.08,True,kavya.iyer@example.com,,CRM_EXPORT_V2
+1182.0,Priya Verma,23.0,06-28-2022,LUCKNOW,Canada,Operations,71284.07,7.98,9.03,True,priya.verma@example.com,,CRM_EXPORT_V2
+1224.0,Rahul Iyer,66.0,01/11/2022,BENGALURU,Canada,Marketing,,,151.16,False,rahul.iyer@example.com,,CRM_EXPORT_V2
+1122.0,Arjun Singh,45.0,2021/12/30, Lucknow ,Germany,Engineering,84030.28,7.58,32.45,True,arjun.singh@example.com,,CRM_EXPORT_V2
+1052.0,Riya Reddy,67.0,2021-06-03,KOLKATA,United Kingdom,Sales,,9.37,299.94,True,riya.reddy@example.com,,CRM_EXPORT_V2
+1057.0,Kavya Verma,45.0,06-18-2021,bhopal,Australia,Sales,47489.5,9.65,137.67,False,kavya.verma@example.com,,CRM_EXPORT_V2
+1250.0,Manish Singh,69.0,18/01/2023,Bengaluru,Australia,Operations,24761.64,5.63,18.77,False,manish.singh at example.com,,CRM_EXPORT_V2
+1159.0,Divya Singh,200.0,20 Apr 2022,LUCKNOW,United Kingdom,R&D,64602.21,3.93,220.42,False,divya.singh@example.com,,CRM_EXPORT_V2
+1086.0,Vikram Patel,,09-13-2021,PUNE,Canada,Operations,70543.63,7.94,124.32,False,vikram.patel@example.com,,CRM_EXPORT_V2
+1121.0,Pooja Patel,58.0,12-27-2021,,Australia,,66272.66,1.28,97.85,no,pooja.patel@example.com,,CRM_EXPORT_V2
+1296.0,Aditya Singh,18.0,05 Jun 2023,LUCKNOW,Japan,Sales,54925.91,5.04,105.82,False,aditya.singh@example.com,,CRM_EXPORT_V2
+1298.0,Divya Iyer,29.0,2023/06/11,bengaluru,United States,Support,N/A,9.54,200.59850522383047,yes,divya.iyer@example.com,,CRM_EXPORT_V2
+1288.0,Vikram Gupta,52.0,12 May 2023,kolkata,France,R&D,66006.13,3.13,342.8,False,vikram.gupta@example.com,,CRM_EXPORT_V2
+1236.0,Divya Iyer,18.0,2022-12-07,bhopal,United States,Finance,54311.87,4.63,548.4,False,divya.iyer@example.com,,CRM_EXPORT_V2
+1215.0,Rohan Reddy,58.0,05/10/2022,KOLKATA,United Kingdom,Engineering,unknown,1.37,8.06,False,rohan.reddy@example.com,,CRM_EXPORT_V2
+1088.0,Anjali Reddy,57.0,19/09/2021, Lucknow ,Canada,Support,"$83,117.75",2.5,119.28,True,anjali.reddy@example.com,,CRM_EXPORT_V2
+1166.0,Vikram Nair,40.0,05-11-2022,Mumbai,Japan,Finance,97415.36,4.56,248.74,False,vikram.nair@example.com,,CRM_EXPORT_V2
+1148.0,Meera Iyer,,18 Mar 2022,Lucknow,Germany,R&D,54851.25,9.71,112.14,True,meera.iyer@example.com,,CRM_EXPORT_V2
+1256.0,Karan Patel,33.0,02-05-2023,Pune,France,Engineering,26909.76,8.14,106.92,False,karan.patel at example.com,,CRM_EXPORT_V2
+1106.0,Kavya Gupta,41.0,2021-11-12,Ja ipur,France,Support,unknown,1.01,42.37,True,kavya.gupta@example.com,,CRM_EXPORT_V2
+1247.0,Isha Nair,55.0,09 Jan 2023,Kolkata,Germany,R&D,91957.12,7.91,106.04,True,isha.nair@example.com,,CRM_EXPORT_V2
+1183.0,Pooja Reddy,45.0,2022-07-01,kolkata,United States,R&D,56515.69,9.47,22.93,True,POOJA.REDDY@EXAMPLE.COM,,CRM_EXPORT_V2
+1050.0,Arjun Patel,42.0,2021-05-28,hyderabad,France,Sales,51394.77,4.01,41.99,False,arjun.patel@example.com,,CRM_EXPORT_V2
+1222.0,Sneha Rao,19.0,2022/10/26, Bengaluru ,United Kingdom,Support,51822.03,6.54,13.94,False,SNEHA.RAO@EXAMPLE.COM,,CRM_EXPORT_V2
+1006.0,Pooja Sharma,25.0,2021-01-16,Benga luru,Germany,Finance,77162.28,5.64,183.31,False,pooja.sharma@example.com,,CRM_EXPORT_V2
+1018.0,Rahul Verma,39.0,21/02/2021,Hyderabad,United States,Operations,18208.14,3.46,29.77,True,rahul.verma at example.com,,CRM_EXPORT_V2
+1297.0,Aarav Nair,65.0,not a date,KOLKATA,India,Finance,"$56,682.65",6.29,39.7,True,aarav.nair@example.com,,CRM_EXPORT_V2
+1117.0,Rahul Verma,50.0,15 Dec 2021,Benga luru,United States,R&D,53645.62,3.07,464.03,True,rahul.verma@example.com,,CRM_EXPORT_V2
+1245.0,Divya Gupta,28.0,03 Jan 2023,Bhopa l,India,Support,92132.67,6.66,300.02,True,divya.gupta@example.com,,CRM_EXPORT_V2
+1107.0,Riya Patel,18.0,2021/11/15, Bhopal ,India,Marketing,,2.43,97.14,1,riya.patel@example.com,,CRM_EXPORT_V2
+1188.0,Pooja Mehta,47.0,16/07/2022,pune,United Kingdom,Marketing,unknown,8.42,88.53,1,pooja.mehta@example.com,,CRM_EXPORT_V2
+1163.0,Sneha Verma,21.0,2022-05-02,Ja ipur,India,Marketing,,2.35,197.49,False,sneha.verma@example.com,,CRM_EXPORT_V2
+1135.0,Pooja Mehta,,07 Feb 2022,Bhopa l,Germany,Sales,65260.01,6.06,110.87,True,pooja.mehta@example.com,,CRM_EXPORT_V2
+1289.0,Rohan Iyer,24.0,2023-05-15,Pune,United States,R&D,"$69,869.91",3.11,265.21,False,rohan.iyer@example.com,,CRM_EXPORT_V2
+1191.0,Riya Sharma,42.0,2022-07-25, Chennai ,India,Finance,58534.69,9.8,62.58,True,riya.sharma@example.com,,CRM_EXPORT_V2
+1065.0,Aarav Verma,34.0,2021/07/12, Kolkata ,France,,40301.11,6.01,57.43,False,,,CRM_EXPORT_V2
+1027.0,Neha Rao,29.0,20/03/2021,CHENNAI,Canada,HR,unknown,3.27,58.54,False,neha.rao@example.com,,CRM_EXPORT_V2
+1221.0,Arjun Sharma,,2022-10-23,Delhi,India,Engineering,N/A,5.31,130.29,False,arjun.sharma@example.com,,CRM_EXPORT_V2
+1170.0,Riya Reddy,60.0,2022/05/23,Pune,Canada,Support,"$60,552.11",7.81,24.91,False,riya.reddy@example.com,,CRM_EXPORT_V2
+1181.0,Kavya Reddy,62.0,06-25-2022,lucknow,United Kingdom,Support,,4.11,149.96,False,kavya.reddy@example.com,,CRM_EXPORT_V2
+1101.0,Rohan Sharma,,2021-10-28,DELHI,France,Marketing,,1.59,368.42,yes,rohan.sharma@example.com,,CRM_EXPORT_V2
+1198.0,Meera Verma,58.0,15/08/2022, Bengaluru ,Japan,HR,N/A,2.12,155.47,True,MEERA.VERMA@EXAMPLE.COM,,CRM_EXPORT_V2
+1210.0,Sanjay Nair,41.0,09-20-2022,Delhi,Canada,Sales,59387.68,6.95,134.77,True,sanjay.nair@example.com,,CRM_EXPORT_V2
+1136.0,Kavya Patel,39.0,2022/02/10, Chennai ,Germany,HR,66231.37,5.24,19.73,no,kavya.patel@example.com,,CRM_EXPORT_V2
+1294.0,Aditya Rao,66.0,05-30-2023, Lucknow ,Germany,R&D,58368.27,7.02,19.48,False,aditya.rao@example.com,,CRM_EXPORT_V2
+1270.0,Sanjay Patel,49.0,19/03/2023,Chennai,Australia,,unknown,5.61,168.27,True,,,CRM_EXPORT_V2
+1199.0,Neha Mehta,20.0,18 Aug 2022,lucknow,France,Marketing,69609.74,9.07,135.86,False,,,CRM_EXPORT_V2
+1118.0,Meera Gupta,22.0,18 Dec 2021,Ja ipur,Japan,Sales,"$60,569.56",2.18,159.5,True,MEERA.GUPTA@EXAMPLE.COM,,CRM_EXPORT_V2
+1167.0,Rohan Gupta,56.0,14/05/2022, Pune ,Australia,Sales,77347.8,9.77,218.29,False,rohan.gupta@example.com,,CRM_EXPORT_V2
+1232.0,Pooja Verma,40.0,11-25-2022,DELHI,Germany,Engineering,85572.85,3.99,596.38,False,pooja.verma@example.com,,CRM_EXPORT_V2
+1137.0,Karan Reddy,44.0,2022/02/13,bhopal,Canada,Engineering,31134.68,5.89,294.29,1,karan.reddy@example.com,,CRM_EXPORT_V2
+1030.0,Divya Verma,42.0,29 Mar 2021, Bhopal ,Germany,Marketing,79415.46,1.44,44.0,True,divya.verma@example.com,,CRM_EXPORT_V2
+1080.0,Sneha Nair,53.0,2021-08-26,lucknow,Australia,Sales,N/A,8.56,70.66,True,sneha.nair@example.com,,CRM_EXPORT_V2
+1205.0,Pooja Gupta,54.0,2022/09/05,Pune,Canada,,64003.83,9.53,7371.104448816184,False,pooja.gupta@example.com,,CRM_EXPORT_V2
+1141.0,Priya Sharma,54.0,2022/02/25, Bhopal ,United Kingdom,Engineering,"$78,776.76",2.38,236.55,False,priya.sharma@example.com,,CRM_EXPORT_V2
+1158.0,Aditya Patel,49.0,17/04/2022,Lucknow,United States,Engineering,45480.4,,354.5,False,,,CRM_EXPORT_V2
+1132.0,Aditya Sharma,54.0,2022/01/29,Kolka ta,United States,Sales,"$84,565.86",2.8,76.6,False,aditya.sharma@example.com,,CRM_EXPORT_V2
+1040.0,Aditya Reddy,69.0,28/04/2021,MUMBAI,France,Marketing,46327.24,6.14,31.3,True,aditya.reddy@example.com,,CRM_EXPORT_V2
+1179.0,Rahul Gupta,19.0,06-19-2022, Bhopal ,France,,63620.39,5.34,152.4,True,rahul.gupta@example.com,,CRM_EXPORT_V2
+1206.0,Arjun Patel,50.0,09-08-2022,delhi,Australia,R&D,42617.7,6.63,166.12,True,arjun.patel at example.com,,CRM_EXPORT_V2
+1216.0,Neha Mehta,69.0,2022/10/08,BENGALURU,India,Marketing,29388.87,2.48,71.34,True,neha.mehta@example.com,,CRM_EXPORT_V2
+1235.0,Divya Mehta,50.0,2022-12-04,pune,France,Support,,1.73,19.15,True,divya.mehta at example.com,,CRM_EXPORT_V2
+1055.0,Neha Gupta,19.0,2021-06-12,kolkata,United States,Support,82356.98,2.7,238.09,True,neha.gupta@example.com,,CRM_EXPORT_V2
+1124.0,Sanjay Mehta,26.0,2022-01-05,MUMBAI,Germany,Sales,21513.53,8.72,144.1,False,sanjay.mehta@example.com,,CRM_EXPORT_V2
+1201.0,Vikram Gupta,23.0,2022/08/24,hyderabad,Germany,Operations,75820.04,6.55,68.58,False,vikram.gupta@example.com,,CRM_EXPORT_V2
+1044.0,Rahul Iyer,24.0,2021/05/10,PUNE,Australia,HR,57289.24,7.61,495.94,True,rahul.iyer@example.com,,CRM_EXPORT_V2
+1266.0,Meera Patel,43.0,2023-03-07,MUMBAI,Australia,R&D,,4.65,104.32,False,meera.patel@example.com,,CRM_EXPORT_V2
+1049.0,Sanjay Patel,21.0,25/05/2021,CHENNAI,United Kingdom,Support,41444.29,2.44,2.65,1,sanjay.patel@example.com,,CRM_EXPORT_V2
+1036.0,Arjun Verma,32.0,16/04/2021,Hydera bad,Germany,Engineering,70210.58,1.55,592.1452508991324,1,arjun.verma@example.com,,CRM_EXPORT_V2
+1060.0,Pooja Rao,61.0,2021/06/27,Mumbai,Germany,Finance,91036.98,1.05,164.93,False,pooja.rao@example.com,,CRM_EXPORT_V2
+1144.0,Anjali Sharma,20.0,06 Mar 2022,Bengaluru,India,Operations,84165.08,1.16,82.88,True,anjali.sharma@example.com,,CRM_EXPORT_V2
+1054.0,Suresh Iyer,,2021/06/09,mumbai,Canada,Engineering,,7.29,18.01,True,suresh.iyer at example.com,,CRM_EXPORT_V2
+1021.0,Neha Rao,61.0,02 Mar 2021,JAIPUR,Canada,Marketing,89294.44,8.67,131.8,True,neha.rao@example.com,,CRM_EXPORT_V2
+1125.0,Sneha Sharma,,08/01/2022, Bhopal ,Canada,Sales,N/A,9.68,111.06,False,sneha.sharma@example.com,,CRM_EXPORT_V2
+1143.0,Manish Mehta,31.0,03 Mar 2022, Lucknow ,France,HR,92347.41,5.77,374.7,True,manish.mehta@example.com,,CRM_EXPORT_V2
+1111.0,Karan Verma,28.0,2021-11-27,bengaluru,United Kingdom,Engineering,113596.95,8.69,188.55,0,KARAN.VERMA@EXAMPLE.COM,,CRM_EXPORT_V2
+1257.0,Aarav Sharma,50.0,2023/02/08, Hyderabad ,France,HR,68508.42,6.9,261.69,True,aarav.sharma@example.com,,CRM_EXPORT_V2
+1077.0,Manish Sharma,61.0,08-17-2021,Jaipur,India,HR,,3.55,315.43,False,manish.sharma@example.com,,CRM_EXPORT_V2
+1284.0,Rahul Nair,40.0,2023/04/30,JAIPUR,Japan,HR,47336.86,1.08,3813.493826830315,True,rahul.nair@example.com,,CRM_EXPORT_V2
+1275.0,Pooja Mehta,57.0,2023-04-03,Benga luru,France,HR,70739.48,4.65,256.17,False,pooja.mehta@example.com,,CRM_EXPORT_V2
+1108.0,Suresh Rao,61.0,11-18-2021,Bhopa l,Canada,Operations,88330.02,5.22,75.22,False,suresh.rao@example.com,,CRM_EXPORT_V2
+1094.0,Manish Singh,41.0,2021-10-07,Jaipur,Canada,R&D,32413.95,8.67,27.67,False,manish.singh@example.com,,CRM_EXPORT_V2
+1013.0,Sanjay Rao,41.0,2021-02-06,bhopal,Japan,Marketing,18472.97,,19.68,True,sanjay.rao at example.com,,CRM_EXPORT_V2
+1017.0,Vikram Gupta,20.0,2021-02-18,Chenna i,United Kingdom,Operations,"$78,736.64",4.52,38.18,True,vikram.gupta@example.com,,CRM_EXPORT_V2
+1048.0,Kavya Iyer,35.0,05-22-2021,BENGALURU,United States,Finance,96351.89,,70.33,False,kavya.iyer@example.com,,CRM_EXPORT_V2
+1187.0,Sanjay Mehta,37.0,13/07/2022,kolkata,United Kingdom,Marketing,,1.74,87.7,False,sanjay.mehta@example.com,,CRM_EXPORT_V2
+1204.0,Anjali Nair,999.0,2022-09-02,HYDERABAD,France,Sales,"$62,633.53",9.42,87.62,False,anjali.nair@example.com,,CRM_EXPORT_V2
+1269.0,Meera Verma,37.0,03-16-2023,jaipur,United States,Marketing,64514.45,4.36,148.31,False,meera.verma@example.com,,CRM_EXPORT_V2
+1120.0,Sanjay Patel,56.0,2021-12-24, Chennai ,Japan,Finance,83432.69,9.67,32.94,False,sanjay.patel@example.com,,CRM_EXPORT_V2
+1022.0,Arjun Sharma,47.0,05 Mar 2021,Benga luru,Canada,Support,47382.73,1.32,174.81,True,arjun.sharma@example.com,,CRM_EXPORT_V2
+1084.0,Rohan Singh,32.0,07/09/2021,Delhi,Japan,Operations,"$71,259.48",8.1,149.22,False,rohan.singh@example.com,,CRM_EXPORT_V2
+1131.0,Priya Patel,41.0,26 Jan 2022,Hyderabad,Japan,Sales,,,189.68,False,,,CRM_EXPORT_V2
+1230.0,Manish Mehta,19.0,11-19-2022,Lucknow,Japan,Operations,92359.71,1.19,0.19,True,manish.mehta@example.com,,CRM_EXPORT_V2
+1128.0,Anjali Iyer,50.0,2022/01/17,chennai,Germany,Engineering,N/A,3.81,113.98,False,anjali.iyer@example.com,,CRM_EXPORT_V2
+1124.0,Sanjay Mehta,26.0,2022-01-05,MUMBAI,Germany,Sales,21513.53,8.72,144.1,False,SANJAY.MEHTA@EXAMPLE.COM,,CRM_EXPORT_V2
+1034.0,Anjali Nair,45.0,2021-04-10, Kolkata ,India,Finance,N/A,9.05,20.16,True,anjali.nair at example.com,,CRM_EXPORT_V2
+1005.0,Rohan Rao,60.0,13/01/2021,Benga luru,United States,Support,"$59,519.11",3.34,228.34,False,rohan.rao@example.com,,CRM_EXPORT_V2
+1020.0,Sneha Nair,41.0,27/02/2021,BENGALURU,Canada,Operations,,1.4,16.36,True,sneha.nair@example.com,,CRM_EXPORT_V2
+1220.0,Anjali Rao,29.0,2022-10-20,Lucknow,Australia,Support,,6.85,60.87,no,anjali.rao@example.com,,CRM_EXPORT_V2
+1276.0,Sanjay Patel,56.0,2023-04-06,Jaipur,United Kingdom,HR,"$23,295.65",6.34,58.41,1,sanjay.patel@example.com,,CRM_EXPORT_V2
+1150.0,Meera Rao,44.0,24 Mar 2022,LUCKNOW,Germany,Sales,63063.48,5.16,0.39,yes,meera.rao@example.com,,CRM_EXPORT_V2
+1225.0,Isha Mehta,54.0,04 Nov 2022,,Germany,,47627.86,7.7,210.88,True,isha.mehta@example.com,,CRM_EXPORT_V2
+1248.0,Sanjay Singh,41.0,12 Jan 2023,Jaipur,Canada,Engineering,90948.12,5.54,26.03,False,sanjay.singh at example.com,,CRM_EXPORT_V2
+1279.0,Arjun Mehta,18.0,15/04/2023,BENGALURU,United States,Finance,74091.27,1.86,37.97,False,arjun.mehta@example.com,,CRM_EXPORT_V2
+1152.0,Isha Verma,32.0,2022-03-30,Lucknow,Canada,Marketing,85313.74,6.38,108.6,False,isha.verma at example.com,,CRM_EXPORT_V2
+1234.0,Rahul Verma,49.0,2022/12/01,JAIPUR,Japan,R&D,"$57,350.34",5.44,72.32,yes,,,CRM_EXPORT_V2
+1011.0,Karan Mehta,,31/01/2021,mumbai,Australia,Marketing,"$70,003.81",6.61,5.22,False,karan.mehta@example.com,,CRM_EXPORT_V2
+1072.0,Manish Verma,59.0,08-02-2021, Kolkata ,France,Operations,52391.75,,157.69,True,manish.verma@example.com,,CRM_EXPORT_V2
+1253.0,Isha Nair,39.0,01-27-2023,Bhopa l,India,Engineering,14413.25,4.56,71.93,False,isha.nair@example.com,,CRM_EXPORT_V2
+1093.0,Neha Singh,64.0,2021/10/04, Mumbai ,Germany,Support,unknown,1.67,132.67,True,neha.singh at example.com,,CRM_EXPORT_V2
+1193.0,Riya Patel,50.0,2022/07/31,Bhopal,India,R&D,56625.9,7.24,138.66,True,riya.patel@example.com,,CRM_EXPORT_V2
+1258.0,Meera Singh,26.0,11 Feb 2023,Pune,France,Sales,92771.82,9.93,49.21,0,meera.singh@example.com,,CRM_EXPORT_V2
+1214.0,Rahul Reddy,41.0,02/10/2022,,United States,R&D,57982.69,5.33,31.67,True,RAHUL.REDDY@EXAMPLE.COM,,CRM_EXPORT_V2
+1196.0,Neha Sharma,69.0,08-09-2022,LUCKNOW,India,Engineering,62632.04,7.03,222.17,False,neha.sharma@example.com,,CRM_EXPORT_V2
+1138.0,Karan Sharma,52.0,16 Feb 2022,Benga luru,India,Marketing,46989.34,2.43,241.25,False,karan.sharma@example.com,,CRM_EXPORT_V2
+1261.0,Suresh Gupta,,02-20-2023,Pune,Australia,Sales,12054.94,4.45,26.47,True,suresh.gupta@example.com,,CRM_EXPORT_V2
+1039.0,Anjali Singh,61.0,25 Apr 2021, Bengaluru ,Germany,Marketing,"$110,143.97",9.16,26.58,True,anjali.singh@example.com,,CRM_EXPORT_V2
+1202.0,Anjali Patel,25.0,2022/08/27,,India,Support,unknown,6.52,63.14,False,ANJALI.PATEL@EXAMPLE.COM,,CRM_EXPORT_V2
+1190.0,Rohan Patel,45.0,22/07/2022,Lucknow,Canada,R&D,"$60,686.29",3.9,2.39,True,rohan.patel@example.com,,CRM_EXPORT_V2
+1252.0,Divya Mehta,23.0,2023-01-24,Benga luru,India,HR,63997.62,1.26,62.71,False,,,CRM_EXPORT_V2
+1113.0,Neha Iyer,34.0,03 Dec 2021, Delhi ,France,Support,unknown,8.43,259.23,True,NEHA.IYER@EXAMPLE.COM,,CRM_EXPORT_V2
+1184.0,Priya Sharma,45.0,2022/07/04, Pune ,France,,52075.81,,48.14,1,PRIYA.SHARMA@EXAMPLE.COM,,CRM_EXPORT_V2
+1153.0,Pooja Rao,200.0,04-02-2022,Kolka ta,Canada,Engineering,,,135.04,False,pooja.rao@example.com,,CRM_EXPORT_V2
+1192.0,Neha Rao,56.0,07-28-2022,Kolkata,United States,HR,87861.32,2.81,256.15,True,neha.rao@example.com,,CRM_EXPORT_V2
+1045.0,Arjun Verma,38.0,05-13-2021, Chennai ,France,Engineering,91608.77,5.69,44.22,1,arjun.verma@example.com,,CRM_EXPORT_V2
+1276.0,Sanjay Patel,56.0,2023-04-06,Jaipur,United Kingdom,HR,"$23,295.65",6.34,58.41,True,sanjay.patel at example.com,,CRM_EXPORT_V2
+1007.0,Aarav Verma,38.0,19 Jan 2021,BHOPAL,India,Engineering,99185.85,,88.69,True,aarav.verma@example.com,,CRM_EXPORT_V2
+1251.0,Anjali Verma,51.0,2023/01/21,Mumba i,United Kingdom,Engineering,85377.74,6.29,38.69,1,anjali.verma@example.com,,CRM_EXPORT_V2
+1076.0,Anjali Mehta,43.0,2021/08/14, Delhi ,Japan,Engineering,60052.64,2.16,347.47,False,anjali.mehta@example.com,,CRM_EXPORT_V2
+1001.0,Sneha Sharma,56.0,not a date,pune,France,HR,56151.35,2.95,71.55,False,sneha.sharma@example.com,,CRM_EXPORT_V2
+1069.0,Anjali Singh,,24/07/2021,Bengaluru,Germany,,92943.29,1.76,14.23,True,,,CRM_EXPORT_V2
+1168.0,Neha Reddy,62.0,2022/05/17,Kolka ta,United States,Sales,40996.6,7.5,24.33,True,neha.reddy@example.com,,CRM_EXPORT_V2
+1219.0,Sneha Reddy,200.0,17/10/2022,Hydera bad,India,Finance,49060.97,6.34,88.68,False,sneha.reddy@example.com,,CRM_EXPORT_V2
+1043.0,Meera Sharma,68.0,05-07-2021,Chennai,Germany,Engineering,13541.38,8.78,40.1,False,meera.sharma@example.com,,CRM_EXPORT_V2
+1073.0,Divya Mehta,21.0,05/08/2021,PUNE,Germany,R&D,,4.39,217.35,True,divya.mehta@example.com,,CRM_EXPORT_V2
+1024.0,Sneha Iyer,19.0,2021/03/11,Delhi,United Kingdom,R&D,75252.1,9.38,3626.578023735779,False,,,CRM_EXPORT_V2
+1186.0,Arjun Patel,,not a date,Mumbai,Australia,Operations,46669.08,8.94,168.98,True,arjun.patel@example.com,,CRM_EXPORT_V2
+1104.0,Rohan Mehta,24.0,06/11/2021,,Australia,Operations,22518.04,,24.2,0,rohan.mehta@example.com,,CRM_EXPORT_V2
+1212.0,Meera Sharma,49.0,09-26-2022,mumbai,Canada,Operations,44023.43,6.38,39.37,False,meera.sharma@example.com,,CRM_EXPORT_V2
+1068.0,Divya Iyer,57.0,07-21-2021,,Canada,,N/A,2.74,209.41,0,divya.iyer@example.com,,CRM_EXPORT_V2
+1026.0,Divya Rao,50.0,2021/03/17,delhi,Japan,R&D,,3.53,2.63,False,divya.rao@example.com,,CRM_EXPORT_V2
+1197.0,Neha Gupta,30.0,2022/08/12,lucknow,Canada,HR,60499.88,9.56,46.16,True,neha.gupta@example.com,,CRM_EXPORT_V2
+1176.0,Riya Patel,68.0,06-10-2022,Ja ipur,India,HR,67535.86,1.93,56.15,False,riya.patel@example.com,,CRM_EXPORT_V2
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,

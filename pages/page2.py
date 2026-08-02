@@ -20,7 +20,7 @@ st.markdown("""
     div[data-testid="stMetricValue"] {
         font-size: 28px;
         font-weight: 700;
-        color: #6C63FF !important;
+        color: #6366F1 !important;
     }
     div[data-testid="stMetricLabel"] {
         font-size: 14px;
@@ -33,7 +33,7 @@ st.markdown("""
         font-family: 'Space Grotesk', 'Outfit', 'Inter', sans-serif;
         font-size: 38px;
         font-weight: 800;
-        background: linear-gradient(135deg, #6C63FF 0%, #EC4899 100%);
+        background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 5px;
@@ -85,7 +85,7 @@ st.markdown("""
     }
     .alert-info {
         background-color: rgba(108, 99, 255, 0.1);
-        border: 1px solid #6C63FF;
+        border: 1px solid #6366F1;
         color: #EEEEF5;
     }
     </style>
@@ -98,7 +98,7 @@ if "df" not in st.session_state or st.session_state["df"] is None:
     
     st.markdown("""
     <div class="diag-card" style="text-align: center; padding: 40px; margin-top: 20px;">
-        <h3 style="color: #F5A623; margin-bottom: 15px;">⚠️ No Active Dataset Found</h3>
+        <h3 style="color: #F5A623; margin-bottom: 15px;">No Active Dataset Found</h3>
         <p style="color: #8A8BA8; margin-bottom: 25px; font-size: 15px;">
             You need to upload and clean a dataset before exploring its visualizations. 
             All visualizations on this page run in-memory on your curated session state.
@@ -106,7 +106,7 @@ if "df" not in st.session_state or st.session_state["df"] is None:
     </div>
     """, unsafe_allow_html=True)
     
-    st.page_link("pages/page1.py", label="Go to Data Curation Page", icon="🧹")
+    st.page_link("pages/page1.py", label="Go to Data Curation Page")
 
 else:
     df = st.session_state["df"]
@@ -133,7 +133,7 @@ else:
     st.markdown("---")
 
     # ----------------- STAGE 3.1: AUTO-GENERATED INSIGHTS DASHBOARD -----------------
-    st.markdown('<div class="section-header">📊 Section 1: Auto-Generated Insights Dashboard</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Section 1: Auto-Generated Insights Dashboard</div>', unsafe_allow_html=True)
     st.write("VizML scans your dataset schemas and automatically compiles baseline visual diagnostics.")
     
     auto_plots = []
@@ -255,7 +255,7 @@ else:
             x=prim_num, 
             marginal="box",
             template="plotly_dark",
-            color_discrete_sequence=["#6C63FF"]
+            color_discrete_sequence=["#6366F1"]
         )
         fig_num.update_layout(
             title=dict(text=f"Distribution of {prim_num}", font=dict(family="Space Grotesk", size=14)),
@@ -324,16 +324,16 @@ else:
         st.markdown('</div>', unsafe_allow_html=True)
 
     # ----------------- STAGE 3.2: DIAGNOSTIC EXPLORATION SUITE -----------------
-    st.markdown('<div class="section-header">🔍 Section 2: Multidimensional Diagnostic Suite</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Section 2: Multidimensional Diagnostic Suite</div>', unsafe_allow_html=True)
     st.write("Use specialized multi-variable diagnostic views to detect feature redundancy, multicollinearity, or high-dimensional clustering.")
     
     if len(numeric_cols) < 2:
         st.info("At least 2 numeric columns are required to unlock the Multidimensional Diagnostic Suite.")
     else:
         tab_corr, tab_scatter, tab_3d = st.tabs([
-            "📊 Correlation Matrix & Redundancy Inspector", 
-            "📈 2D Scatter Matrix", 
-            "🌌 3D Scatter Explorer"
+            "Correlation Matrix & Redundancy Inspector", 
+            "2D Scatter Matrix", 
+            "3D Scatter Explorer"
         ])
         
         # 1. Correlation Matrix Tab
@@ -364,7 +364,7 @@ else:
                     )
             
             if len(selected_corr_cols) < 2:
-                st.warning("⚠️ Select at least 2 columns to calculate correlation.")
+                st.warning("Select at least 2 columns to calculate correlation.")
             else:
                 corr_matrix = df[selected_corr_cols].corr(method=corr_method)
                 redundant_pairs = []
@@ -398,22 +398,22 @@ else:
                     st.plotly_chart(fig_heat, use_container_width=True)
                     
                 with col_inspect:
-                    st.markdown("#### 🔍 Feature Redundancy Inspector")
+                    st.markdown("#### Feature Redundancy Inspector")
                     if redundant_pairs:
                         st.markdown(
                             f'<div class="alert-box alert-warning">'
                             f'Found <strong>{len(redundant_pairs)}</strong> pairs with absolute correlation '
-                            f'$\geq$ <strong>{threshold:.2f}</strong>.'
+                            rf'$\geq$ <strong>{threshold:.2f}</strong>.'
                             f'</div>',
                             unsafe_allow_html=True
                         )
                         st.write("Highly correlated features convey redundant information. Consider dropping one of the features in each pair:")
                         for col_a, col_b, r_val in redundant_pairs:
-                            st.markdown(f"• `{col_a}` ↔️ `{col_b}` : **{r_val:.3f}** ({'positive' if r_val > 0 else 'negative'})")
+                            st.markdown(f"• `{col_a}` <-> `{col_b}` : **{r_val:.3f}** ({'positive' if r_val > 0 else 'negative'})")
                     else:
                         st.markdown(
                             f'<div class="alert-box alert-info" style="color: #2DD4A0; border-color: #2DD4A0; background-color: rgba(45, 212, 160, 0.1);">'
-                            f'✅ No redundant feature pairs detected at threshold <strong>{threshold:.2f}</strong>.'
+                            f'No redundant feature pairs detected at threshold <strong>{threshold:.2f}</strong>.'
                             f'</div>',
                             unsafe_allow_html=True
                         )
@@ -438,10 +438,10 @@ else:
                 )
             
             if len(selected_dims) < 2:
-                st.info("💡 Please select at least 2 dimensions to generate the scatter matrix.")
+                st.info("Please select at least 2 dimensions to generate the scatter matrix.")
             else:
                 if len(selected_dims) > 6:
-                    st.markdown('<div class="alert-box alert-warning">⚠️ Selecting more than 6 dimensions can slow down rendering.</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="alert-box alert-warning">Selecting more than 6 dimensions can slow down rendering.</div>', unsafe_allow_html=True)
                 
                 with st.spinner("Generating Scatter Matrix..."):
                     fig_matrix = px.scatter_matrix(
@@ -519,7 +519,7 @@ else:
     st.markdown("---")
 
     # ----------------- SECTION 3: INTERACTIVE CUSTOM CHART BUILDER -----------------
-    st.markdown('<div class="section-header">🎨 Section 3: Interactive Custom Chart Builder</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Section 3: Interactive Custom Chart Builder</div>', unsafe_allow_html=True)
     st.write("Configure and create custom 2D or 3D charts tailored to specific features of interest below.")
     
     st.markdown('<div class="diag-card">', unsafe_allow_html=True)
@@ -573,7 +573,7 @@ else:
             z_col = st.selectbox("Z-Axis Column", df.columns.tolist(), index=min(2, len(df.columns)-1))
 
     # Secondary settings expander
-    with st.expander("🛠️ Advanced Aesthetic & Subplot Settings", expanded=False):
+    with st.expander("Advanced Aesthetic & Subplot Settings", expanded=False):
         col_sub_a, col_sub_b, col_sub_c = st.columns(3)
         with col_sub_a:
             color_col = st.selectbox("Color Grouping (Hue)", ["None"] + df.columns.tolist(), key="custom_color_v3")
@@ -599,12 +599,25 @@ else:
         try:
             kwargs = {
                 "data_frame": df,
-                "opacity": opacity_val,
                 "template": "plotly_dark",
-                "color_discrete_sequence": px.colors.qualitative.Safe,
-                "color_continuous_scale": "Plasma"
             }
-            
+
+            # Not every Plotly Express chart function accepts these arguments.
+            # Passing an argument to a function that doesn't support it raises a
+            # TypeError, so each is only included for chart types whose underlying
+            # function actually supports it.
+            opacity_unsupported_charts = ["Line Chart", "Box Plot", "Violin Plot", "World Map (Choropleth)", "3D Line Plot", "Heatmap (2D Density)"]
+            if chart_type not in opacity_unsupported_charts:
+                kwargs["opacity"] = opacity_val
+
+            color_discrete_unsupported_charts = ["Heatmap (2D Density)"]
+            if chart_type not in color_discrete_unsupported_charts:
+                kwargs["color_discrete_sequence"] = px.colors.qualitative.Safe
+
+            color_continuous_unsupported_charts = ["Line Chart", "Box Plot", "Violin Plot", "Donut Chart", "3D Line Plot", "Histogram"]
+            if chart_type not in color_continuous_unsupported_charts:
+                kwargs["color_continuous_scale"] = "Plasma"
+
             # Map specific layout arguments
             if chart_type in ["3D Scatter Plot", "3D Line Plot"]:
                 kwargs["x"] = x_col
@@ -637,7 +650,7 @@ else:
                 if y_col != "None":
                     kwargs["y"] = y_col
                 elif chart_type in ["Scatter Plot", "Line Chart", "Box Plot", "Violin Plot"]:
-                    st.warning(f"⚠️ Y-Axis Column is required for {chart_type}.")
+                    st.warning(f"Y-Axis Column is required for {chart_type}.")
                     st.stop()
             
             # Color coding (exclude if already mapped)
@@ -704,7 +717,7 @@ else:
         except Exception as chart_err:
             st.markdown(f"""
             <div class="alert-box alert-danger">
-                <strong>⚠️ Chart Execution Failure</strong><br>
+                <strong>Chart Execution Failure</strong><br>
                 Plotly Express failed to render with this dataset configuration. Ensure variables are compatible (e.g. numeric variables for continuous axes or valid country names for map coordinates).<br><br>
                 <em>Details: {str(chart_err)}</em>
             </div>

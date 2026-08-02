@@ -12,7 +12,7 @@ def test_profile():
     
     assert prof["shape"] == [3, 2]
     assert prof["dtypes"]["A"] == "float64"
-    assert prof["dtypes"]["B"] == "object"
+    assert prof["dtypes"]["B"] in ("object", "str")
     assert prof["null_counts"]["A"] == 1
     assert prof["null_counts"]["B"] == 0
     assert prof["unique_counts"]["B"] == 2
@@ -165,4 +165,3 @@ if __name__ == "__main__":
     test_categorical_encoding()
     print("- test_categorical_encoding passed.")
     print("All tests passed successfully!")
-
