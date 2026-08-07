@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import pandas as pd
 import numpy as np
 from src.cleaner import DataCleaner
@@ -12,7 +16,8 @@ def test_profile():
     
     assert prof["shape"] == [3, 2]
     assert prof["dtypes"]["A"] == "float64"
-    assert prof["dtypes"]["B"] in ("object", "str")
+    # Accept both legacy 'object' and modern pandas 'str'/'string' dtypes
+    assert prof["dtypes"]["B"] in ["object", "string", "str"]
     assert prof["null_counts"]["A"] == 1
     assert prof["null_counts"]["B"] == 0
     assert prof["unique_counts"]["B"] == 2
@@ -144,10 +149,11 @@ def test_categorical_encoding():
     # We check that one-hot columns are integers (0 or 1)
     assert res_oh["cat_apple"].tolist()[:3] == [1, 0, 1]
     
-    # 2. Label encoding
-    res_label = cleaner.encode_categoricals(method="label")
+    # 2. Label encoding - build fresh cleaner so df is unmodified
+    cleaner2 = DataCleaner(df)
+    res_label = cleaner2.encode_categoricals(method="label")
     # Non-null values encoded, NaN remains NaN
-    assert res_label["cat"].tolist()[:3] == [0, 1, 0]
+    assert res_label["cat"].tolist()[:3] == [0.0, 1.0, 0.0]
     assert pd.isna(res_label["cat"].iloc[3])
 
 if __name__ == "__main__":
