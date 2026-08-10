@@ -2,18 +2,19 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+from typing import Any
 
 # Safe check for statsmodels (required for OLS trendlines in Plotly)
 try:
-    import statsmodels
+    import statsmodels  # pyright: ignore[reportMissingImports] # type: ignore
     has_statsmodels = True
 except ImportError:
     has_statsmodels = False
 
-# ── Page config ────────────────────────────────────────────────────
+# ── Page Config ───────────────────────────────────────────────────
 st.set_page_config(page_title="VizML - Diagnostic Visualizations", layout="wide")
 
-# ── CSS ────────────────────────────────────────────────────────────
+# ── CSS ───────────────────────────────────────────────────────────
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -107,7 +108,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── Dataset check ──────────────────────────────────────────────────
+# ── Dataset Check ──────────────────────────────────────────────────
 if "df" not in st.session_state or st.session_state["df"] is None:
     st.markdown('<div class="app-title">Diagnostic Visualizations</div>', unsafe_allow_html=True)
     st.markdown(
@@ -127,7 +128,7 @@ if "df" not in st.session_state or st.session_state["df"] is None:
     </div>
     """, unsafe_allow_html=True)
 
-    st.page_link("pages/page1.py", label="Go to Data Curation Page")
+    st.page_link("pages/1_Data_Curation.py", label="Go to Data Curation Page")
 
 else:
     df = st.session_state["df"]
@@ -137,11 +138,11 @@ else:
 
     st.markdown('<div class="app-title">Diagnostic Visualizations</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="app-subtitle">Explore patterns, spot redundant features, and inspect data geometry. (Diagnostic Stage — Non-Mutating)</div>',
+        '<div class="app-subtitle">Explore patterns, spot redundant features, and inspect data geometry. (Diagnostic Stage - Non-Mutating)</div>',
         unsafe_allow_html=True
     )
 
-    # ── Dataset metrics ────────────────────────────────────────────
+    # ── Dataset Metrics ────────────────────────────────────────────
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     with col_m1:
         st.metric("Total Rows", df.shape[0])
@@ -278,7 +279,6 @@ else:
             )
             auto_plots.append(("3d_projection", fig_3d_proj))
         elif len(numeric_cols) >= 2:
-            # Only use trendline when there are no missing values in the selected columns
             use_trendline = (
                 has_statsmodels
                 and df.shape[0] > 2
@@ -310,10 +310,14 @@ else:
             col_left_auto, col_right_auto = st.columns(2)
             with col_left_auto:
                 if i < cols_count:
-                    st.plotly_chart(auto_plots[i][1], use_container_width=True)
+                    st.plotly_chart(
+                        auto_plots[i][1], use_container_width=True, key=f"auto_plot_{auto_plots[i][0]}"
+                    )
             with col_right_auto:
                 if i + 1 < cols_count:
-                    st.plotly_chart(auto_plots[i + 1][1], use_container_width=True)
+                    st.plotly_chart(
+                        auto_plots[i + 1][1], use_container_width=True, key=f"auto_plot_{auto_plots[i + 1][0]}"
+                    )
         st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Section 2: Multidimensional Diagnostic Suite ───────────────
@@ -395,7 +399,7 @@ else:
                         st.write("Highly correlated features convey redundant information. Consider dropping one of each pair:")
                         for col_a, col_b, r_val in redundant_pairs:
                             direction = "positive" if r_val > 0 else "negative"
-                            st.markdown(f"- `{col_a}` — `{col_b}`: **{r_val:.3f}** ({direction})")
+                            st.markdown(f"- `{col_a}` - `{col_b}`: **{r_val:.3f}** ({direction})")
                     else:
                         st.markdown(
                             f'<div class="alert-box alert-success">'
@@ -581,13 +585,16 @@ else:
         chart_error = None
         fig_custom = None
         try:
-            kwargs = {
+            kwargs: dict[str, Any] = {
                 "data_frame": df,
-                "opacity": opacity_val,
                 "template": "plotly_dark",
-                "color_discrete_sequence": px.colors.qualitative.Safe,
-                "color_continuous_scale": "Plasma"
             }
+            if chart_type in ["Scatter Plot", "Bar Chart", "Histogram", "Heatmap (2D Density)", "Donut Chart", "3D Scatter Plot"]:
+                kwargs["opacity"] = opacity_val
+            if chart_type != "Heatmap (2D Density)":
+                kwargs["color_discrete_sequence"] = px.colors.qualitative.Safe
+            if chart_type in ["Scatter Plot", "Bar Chart", "Heatmap (2D Density)", "World Map (Choropleth)", "3D Scatter Plot"]:
+                kwargs["color_continuous_scale"] = "Plasma"
 
             if chart_type in ["3D Scatter Plot", "3D Line Plot"]:
                 kwargs["x"] = x_col

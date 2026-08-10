@@ -1,6 +1,4 @@
 import streamlit as st
-import pandas as pd
-import os
 
 st.set_page_config(
     page_title="VizML",
@@ -196,7 +194,8 @@ with c3:
         <div class="feature-card-title">Machine Learning</div>
         <div class="feature-card-desc">
             Train, evaluate, and compare machine learning models directly on your curated
-            session dataset. Feature selection, cross-validation, and model export — coming soon.
+            session dataset. Automated feature engineering, cross-validation benchmarking,
+            interactive What-If inference, and one-click model export.
         </div>
     </div>
     """, unsafe_allow_html=True)

@@ -8,10 +8,10 @@ import src.cleaner
 importlib.reload(src.cleaner)
 from src.cleaner import DataCleaner
 
-# ── Page config ────────────────────────────────────────────────────
+# ── Page Config ───────────────────────────────────────────────────
 st.set_page_config(page_title="VizML - Data Curation", layout="wide")
 
-# ── CSS ────────────────────────────────────────────────────────────
+# ── CSS ───────────────────────────────────────────────────────────
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -111,7 +111,7 @@ def show_toast(message, icon=None):
         st.sidebar.info(message)
 
 
-# ── Session state ──────────────────────────────────────────────────
+# ── Session State ──────────────────────────────────────────────────
 for key, default in [
     ("df", None),
     ("original_df", None),
@@ -122,7 +122,7 @@ for key, default in [
         st.session_state[key] = default
 
 
-# ── File loader ────────────────────────────────────────────────────
+# ── File Loader ────────────────────────────────────────────────────
 def load_data(uploaded_file):
     try:
         if uploaded_file.name.endswith(".csv"):
@@ -138,7 +138,7 @@ def load_data(uploaded_file):
         st.error(f"Error loading file: {str(e)}")
 
 
-# ── Upload widget ──────────────────────────────────────────────────
+# ── Upload Widget ──────────────────────────────────────────────────
 uploaded_file = st.file_uploader("Drop your dataset here (CSV or Excel)", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
@@ -148,7 +148,9 @@ if uploaded_file is not None:
         load_data(uploaded_file)
 else:
     # Fallback: load sample dataset from workspace root if no file uploaded
-    sample_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "messy_data.csv")
+    sample_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "Test Dataset", "messy_data.csv"
+    )
     if st.session_state["df"] is None and os.path.exists(sample_path):
         df_fallback = pd.read_csv(sample_path)
         st.session_state["df"] = df_fallback
@@ -158,7 +160,7 @@ else:
         st.session_state["current_file_name"] = "messy_data.csv (sample)"
 
 
-# ── Main content ───────────────────────────────────────────────────
+# ── Main Content ───────────────────────────────────────────────────
 if st.session_state["df"] is not None:
     df_current = st.session_state["df"]
 
@@ -253,7 +255,7 @@ if st.session_state["df"] is not None:
             if coerced_cols:
                 st.markdown("**Proposed Type Changes:**")
                 for col, old_t, new_t in coerced_cols:
-                    st.write(f"- `{col}`: `{old_t}` → `{new_t}`")
+                    st.write(f"- `{col}`: `{old_t}` -> `{new_t}`")
             else:
                 st.info("No columns suitable for type coercion detected.")
 
@@ -262,12 +264,12 @@ if st.session_state["df"] is not None:
                 for col, flag in flagged_cols:
                     if "Partial" in flag:
                         st.markdown(
-                            f"[Warning] `{col}`: <span class='flag-warning'>Partial Cast</span> — {flag}",
+                            f"[Warning] `{col}`: <span class='flag-warning'>Partial Cast</span> - {flag}",
                             unsafe_allow_html=True
                         )
                     else:
                         st.markdown(
-                            f"[Error] `{col}`: <span class='flag-error'>Unparseable</span> — {flag}",
+                            f"[Error] `{col}`: <span class='flag-error'>Unparseable</span> - {flag}",
                             unsafe_allow_html=True
                         )
 
@@ -281,7 +283,7 @@ if st.session_state["df"] is not None:
 
         # 3. Outlier handling
         with st.expander("3. Outlier Handling (IQR Method)", expanded=False):
-            st.markdown("Detect outliers using the IQR range (Q1 - 1.5 × IQR, Q3 + 1.5 × IQR).")
+            st.markdown("Detect outliers using the IQR range (Q1 - 1.5 x IQR, Q3 + 1.5 x IQR).")
 
             num_cols = [
                 c for c in df_current.columns
