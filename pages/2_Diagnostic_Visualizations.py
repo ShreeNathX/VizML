@@ -11,116 +11,169 @@ try:
 except ImportError:
     has_statsmodels = False
 
-st.set_page_config(page_title="VizML - Diagnostic Visualizations", layout="wide")
+st.set_page_config(page_title="VizML — Diagnostic Visualizations", layout="wide")
 
+# Senior Designer Custom CSS Design System
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    :root {
+        --bg-main: #090A10;
+        --bg-card: #121420;
+        --bg-card-hover: #181B2B;
+        --border-color: rgba(255, 255, 255, 0.08);
+        --border-hover: rgba(99, 102, 241, 0.35);
+        --accent-indigo: #6366F1;
+        --accent-emerald: #10B981;
+        --accent-amber: #F59E0B;
+        --accent-rose: #F43F5E;
+        --text-primary: #F1F3F9;
+        --text-secondary: #94A3B8;
+        --text-muted: #64748B;
+    }
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-primary);
+    }
+
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
+    header { visibility: hidden; }
 
-    div[data-testid="stMetricValue"] {
-        font-size: 28px;
+    .stApp {
+        background-color: var(--bg-main);
+        background-image: 
+            radial-gradient(at 85% 15%, rgba(99, 102, 241, 0.07) 0px, transparent 40%),
+            radial-gradient(at 15% 85%, rgba(16, 185, 129, 0.05) 0px, transparent 40%);
+        background-attachment: fixed;
+    }
+
+    section[data-testid="stSidebar"] {
+        background: #0C0D16 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+    }
+
+    /* Page Header */
+    .header-box {
+        background: linear-gradient(135deg, rgba(18, 20, 32, 0.9) 0%, rgba(12, 13, 22, 0.95) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 32px 36px;
+        margin-bottom: 28px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .header-eyebrow {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 11px;
         font-weight: 700;
-        color: #6C63FF !important;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #A5B4FC;
+        margin-bottom: 8px;
     }
-    div[data-testid="stMetricLabel"] {
-        font-size: 13px;
-        color: #8A8BA8 !important;
-        font-weight: 500;
-    }
-
-    .app-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 36px;
+    .page-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 34px;
         font-weight: 800;
-        background: linear-gradient(135deg, #6C63FF 0%, #EC4899 100%);
+        letter-spacing: -0.8px;
+        background: linear-gradient(135deg, #FFFFFF 0%, #C7D2FE 60%, #818CF8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
-    .app-subtitle {
+    .page-sub {
         font-size: 14px;
-        color: #8A8BA8;
-        margin-bottom: 24px;
+        color: var(--text-secondary);
+        max-width: 650px;
     }
 
+    /* Card Containers */
     .diag-card {
-        border-radius: 12px;
+        border-radius: 16px;
         padding: 24px;
-        background: #13141A;
-        border: 1px solid #1E2030;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
         margin-bottom: 25px;
     }
 
     .section-header {
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 20px;
         font-weight: 700;
-        color: #EEEEF5;
-        margin-top: 10px;
-        margin-bottom: 12px;
-        background: linear-gradient(135deg, #EEEEF5 30%, #8A8BA8 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-primary);
+        margin-top: 14px;
+        margin-bottom: 8px;
     }
 
     .alert-box {
         padding: 14px 18px;
-        border-radius: 8px;
+        border-radius: 10px;
         margin-bottom: 14px;
         font-size: 13px;
         line-height: 1.6;
     }
     .alert-warning {
-        background-color: rgba(245, 166, 35, 0.08);
-        border: 1px solid rgba(245, 166, 35, 0.5);
-        color: #F5A623;
+        background-color: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.35);
+        color: #FBBF24;
     }
     .alert-danger {
-        background-color: rgba(240, 92, 92, 0.08);
-        border: 1px solid rgba(240, 92, 92, 0.5);
-        color: #F05C5C;
+        background-color: rgba(244, 63, 94, 0.1);
+        border: 1px solid rgba(244, 63, 94, 0.35);
+        color: #FB7185;
     }
     .alert-info {
-        background-color: rgba(108, 99, 255, 0.08);
-        border: 1px solid rgba(108, 99, 255, 0.4);
-        color: #EEEEF5;
+        background-color: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.35);
+        color: #C7D2FE;
     }
     .alert-success {
-        background-color: rgba(45, 212, 160, 0.08);
-        border: 1px solid rgba(45, 212, 160, 0.4);
-        color: #2DD4A0;
+        background-color: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: #34D399;
     }
 
-    hr { border-color: #1E2030; }
+    div[data-testid="stMetricValue"] {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--accent-indigo) !important;
+    }
+    div[data-testid="stMetricLabel"] {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-muted) !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.markdown('<div class="app-title">Diagnostic Visualizations</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="app-subtitle">Spot correlations, redundant features, and distribution shapes before modeling.</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <div class="header-box">
+        <div class="header-eyebrow">Phase 02 — Exploratory Analytics</div>
+        <div class="page-title">Diagnostic Visualizations</div>
+        <div class="page-sub">Spot feature correlations, redundant variables, and high-dimensional distribution geometry.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="diag-card" style="text-align: center; padding: 48px;">
-        <h3 style="color: #F5A623; margin-bottom: 14px; font-family: Space Grotesk, sans-serif;">
-            No Active Dataset Found
+        <h3 style="color: #F59E0B; margin-bottom: 14px; font-family: 'Plus Jakarta Sans', sans-serif;">
+            No Active Dataset Loaded
         </h3>
-        <p style="color: #8A8BA8; margin-bottom: 20px; font-size: 15px; max-width: 480px; margin-left: auto; margin-right: auto;">
-            You need to upload and clean a dataset before exploring its visualizations.
-            All visualizations run in-memory on your curated session state.
+        <p style="color: #94A3B8; margin-bottom: 20px; font-size: 14px; max-width: 480px; margin-left: auto; margin-right: auto;">
+            Please upload a dataset in the Data Curation module first to unlock interactive diagnostic charts.
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-    st.page_link("pages/1_Data_Curation.py", label="Go to Data Curation Page")
+    st.page_link("pages/1_Data_Curation.py", label="Go to Data Curation Engine")
 
 else:
     df = st.session_state["df"]
@@ -128,15 +181,19 @@ else:
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
     categorical_cols = [c for c in df.columns if c not in numeric_cols]
 
-    st.markdown('<div class="app-title">Diagnostic Visualizations</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="app-subtitle">Explore patterns, spot redundant features, and inspect data geometry. (Diagnostic Stage - Non-Mutating)</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <div class="header-box">
+        <div class="header-eyebrow">Phase 02 — Exploratory Analytics</div>
+        <div class="page-title">Diagnostic Visualizations</div>
+        <div class="page-sub">
+            Multi-dimensional diagnostic charts, automated feature scans, correlation redundancy detection, and custom Plotly visual builders.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     with col_m1:
-        st.metric("Total Rows", df.shape[0])
+        st.metric("Total Rows", f"{df.shape[0]:,}")
     with col_m2:
         st.metric("Total Columns", df.shape[1])
     with col_m3:
@@ -144,7 +201,7 @@ else:
     with col_m4:
         st.metric("Categorical Features", len(categorical_cols))
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown('<div class="section-header">Section 1: Auto-Generated Insights Dashboard</div>', unsafe_allow_html=True)
     st.write("VizML scans your dataset schemas and automatically compiles baseline visual diagnostics.")
@@ -160,9 +217,9 @@ else:
             color_discrete_sequence=px.colors.qualitative.Safe
         )
         fig_donut.update_layout(
-            title=dict(text=f"Proportion Share: {prim_cat} (Donut)", font=dict(family="Space Grotesk", size=14)),
+            title=dict(text=f"Proportion Share: {prim_cat} (Donut)", font=dict(family="Plus Jakarta Sans", size=14)),
             paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#EEEEF5"),
+            font=dict(color="#F1F3F9"),
             margin=dict(t=40, b=10, l=10, r=10)
         )
         auto_plots.append(("donut_prop", fig_donut))
@@ -179,7 +236,7 @@ else:
             template="plotly_dark", color_continuous_scale="Plasma"
         )
         fig_map.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#EEEEF5"),
+            paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F1F3F9"),
             margin=dict(t=40, b=10, l=10, r=10)
         )
         auto_plots.append(("geo_map", fig_map))
@@ -198,7 +255,7 @@ else:
             template="plotly_dark", color_continuous_scale="Plasma"
         )
         fig_map.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#EEEEF5"),
+            paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F1F3F9"),
             margin=dict(t=40, b=10, l=10, r=10)
         )
         auto_plots.append(("geo_map", fig_map))
@@ -208,7 +265,7 @@ else:
         potential_dates = [c for c in categorical_cols if any(kw in c.lower() for kw in ["date", "time", "year", "month"])]
         if potential_dates:
             try:
-                temp_dates = pd.to_datetime(df[potential_dates[0]], errors="coerce")
+                temp_dates = pd.to_datetime(df[potential_dates[0]], errors="coerce", format="mixed")
                 if temp_dates.notna().sum() > 0.5 * len(df):
                     df_temp = df.copy()
                     df_temp[potential_dates[0]] = temp_dates
@@ -223,12 +280,12 @@ else:
         ts_df = df[[date_col, num_target]].dropna().sort_values(by=date_col)
         fig_ts = px.line(
             ts_df, x=date_col, y=num_target,
-            template="plotly_dark", color_discrete_sequence=["#F5A623"]
+            template="plotly_dark", color_discrete_sequence=["#F59E0B"]
         )
         fig_ts.update_layout(
-            title=dict(text=f"Temporal Trend: {num_target} over time", font=dict(family="Space Grotesk", size=14)),
+            title=dict(text=f"Temporal Trend: {num_target} over time", font=dict(family="Plus Jakarta Sans", size=14)),
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#EEEEF5"), margin=dict(t=40, b=10, l=10, r=10)
+            font=dict(color="#F1F3F9"), margin=dict(t=40, b=10, l=10, r=10)
         )
         auto_plots.append(("time_series", fig_ts))
 
@@ -236,12 +293,12 @@ else:
         prim_num = numeric_cols[0]
         fig_num = px.histogram(
             df, x=prim_num, marginal="box",
-            template="plotly_dark", color_discrete_sequence=["#6C63FF"]
+            template="plotly_dark", color_discrete_sequence=["#6366F1"]
         )
         fig_num.update_layout(
-            title=dict(text=f"Distribution of {prim_num}", font=dict(family="Space Grotesk", size=14)),
+            title=dict(text=f"Distribution of {prim_num}", font=dict(family="Plus Jakarta Sans", size=14)),
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#EEEEF5"), margin=dict(t=40, b=10, l=10, r=10)
+            font=dict(color="#F1F3F9"), margin=dict(t=40, b=10, l=10, r=10)
         )
         auto_plots.append(("numeric_dist", fig_num))
 
@@ -257,10 +314,10 @@ else:
             fig_3d_proj.update_layout(
                 title=dict(
                     text=f"3D Feature Projection: {numeric_cols[0]} / {numeric_cols[1]} / {numeric_cols[2]}",
-                    font=dict(family="Space Grotesk", size=14)
+                    font=dict(family="Plus Jakarta Sans", size=14)
                 ),
                 paper_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#EEEEF5"), margin=dict(t=40, b=10, l=10, r=10)
+                font=dict(color="#F1F3F9"), margin=dict(t=40, b=10, l=10, r=10)
             )
             auto_plots.append(("3d_projection", fig_3d_proj))
         elif len(numeric_cols) >= 2:
@@ -273,15 +330,15 @@ else:
                 df, x=numeric_cols[0], y=numeric_cols[1],
                 trendline="ols" if use_trendline else None,
                 template="plotly_dark",
-                color_discrete_sequence=["#2DD4A0"], opacity=0.7
+                color_discrete_sequence=["#10B981"], opacity=0.7
             )
             fig_scatter.update_layout(
                 title=dict(
                     text=f"Numerical Interaction: {numeric_cols[0]} vs {numeric_cols[1]}",
-                    font=dict(family="Space Grotesk", size=14)
+                    font=dict(family="Plus Jakarta Sans", size=14)
                 ),
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#EEEEF5"), margin=dict(t=40, b=10, l=10, r=10)
+                font=dict(color="#F1F3F9"), margin=dict(t=40, b=10, l=10, r=10)
             )
             auto_plots.append(("scatter_interaction", fig_scatter))
 
@@ -364,7 +421,7 @@ else:
                     )
                     fig_heat.update_layout(
                         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                        font=dict(color="#EEEEF5"), margin=dict(t=10, b=10, l=10, r=10)
+                        font=dict(color="#F1F3F9"), margin=dict(t=10, b=10, l=10, r=10)
                     )
                     st.plotly_chart(fig_heat, use_container_width=True)
 
@@ -381,7 +438,7 @@ else:
                         st.write("Highly correlated features convey redundant information. Consider dropping one of each pair:")
                         for col_a, col_b, r_val in redundant_pairs:
                             direction = "positive" if r_val > 0 else "negative"
-                            st.markdown(f"- `{col_a}` - `{col_b}`: **{r_val:.3f}** ({direction})")
+                            st.markdown(f"- `{col_a}` — `{col_b}`: **{r_val:.3f}** ({direction})")
                     else:
                         st.markdown(
                             f'<div class="alert-box alert-success">'
@@ -424,7 +481,7 @@ else:
                     )
                     fig_matrix.update_layout(
                         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                        font=dict(color="#EEEEF5"), margin=dict(t=20, b=20, l=20, r=20)
+                        font=dict(color="#F1F3F9"), margin=dict(t=20, b=20, l=20, r=20)
                     )
                     fig_matrix.update_traces(diagonal_visible=True, showupperhalf=True)
                     st.plotly_chart(fig_matrix, use_container_width=True)
@@ -473,7 +530,7 @@ else:
                     color_continuous_scale="Plasma"
                 )
                 fig_3d.update_layout(
-                    paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#EEEEF5"),
+                    paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F1F3F9"),
                     margin=dict(t=10, b=10, l=10, r=10),
                     scene=dict(
                         xaxis=dict(backgroundcolor="rgba(0,0,0,0)", gridcolor="#272836", showbackground=True),
@@ -483,7 +540,7 @@ else:
                 )
                 st.plotly_chart(fig_3d, use_container_width=True)
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown('<div class="section-header">Section 3: Interactive Custom Chart Builder</div>', unsafe_allow_html=True)
     st.write("Configure and create custom 2D or 3D charts tailored to specific features of interest.")
@@ -647,9 +704,9 @@ else:
                     title_text = custom_title if custom_title else default_title
 
                     fig_custom.update_layout(
-                        title=dict(text=title_text, font=dict(family="Space Grotesk", size=16)),
+                        title=dict(text=title_text, font=dict(family="Plus Jakarta Sans", size=16)),
                         paper_bgcolor="rgba(0,0,0,0)",
-                        font=dict(color="#EEEEF5")
+                        font=dict(color="#F1F3F9")
                     )
                     if chart_type not in ["3D Scatter Plot", "3D Line Plot", "World Map (Choropleth)"]:
                         fig_custom.update_layout(plot_bgcolor="rgba(0,0,0,0)")
@@ -663,11 +720,10 @@ else:
             st.markdown(f"""
             <div class="alert-box alert-danger">
                 <strong>Chart Execution Failure</strong><br>
-                Plotly Express failed to render with this dataset configuration.
-                Ensure variables are compatible (e.g. numeric variables for continuous axes
-                or valid country names for map coordinates).<br><br>
+                Plotly Express failed to render with this dataset configuration.<br><br>
                 <em>Details: {chart_error}</em>
             </div>
             """, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
+

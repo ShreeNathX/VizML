@@ -2,198 +2,282 @@ import streamlit as st
 
 st.set_page_config(
     page_title="VizML",
-    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS Design System
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    :root {
+        --bg-main: #090A10;
+        --bg-card: #121420;
+        --bg-card-hover: #181B2B;
+        --border-color: rgba(255, 255, 255, 0.08);
+        --border-hover: rgba(99, 102, 241, 0.35);
+        --accent-indigo: #6366F1;
+        --accent-emerald: #10B981;
+        --accent-amber: #F59E0B;
+        --accent-rose: #F43F5E;
+        --text-primary: #F1F3F9;
+        --text-secondary: #94A3B8;
+        --text-muted: #64748B;
+    }
 
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-primary);
     }
 
+    /* Hide standard header & footer chrome */
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
+    header { visibility: hidden; }
 
+    /* Main Container Background */
+    .stApp {
+        background-color: var(--bg-main);
+        background-image: 
+            radial-gradient(at 12% 15%, rgba(99, 102, 241, 0.07) 0px, transparent 40%),
+            radial-gradient(at 88% 85%, rgba(16, 185, 129, 0.05) 0px, transparent 40%),
+            radial-gradient(at 50% 50%, rgba(244, 63, 94, 0.03) 0px, transparent 60%);
+        background-attachment: fixed;
+    }
+
+    /* Sidebar Styling */
     section[data-testid="stSidebar"] {
-        background: #0D0E14;
-        border-right: 1px solid #1E2030;
-    }
-    section[data-testid="stSidebar"] .stMarkdown p {
-        color: #8A8BA8;
-        font-size: 13px;
+        background: #0C0D16 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
     }
 
+    /* Hero Wrapper */
     .hero-wrap {
-        background: linear-gradient(135deg, #0D0E14 0%, #13141F 100%);
-        border: 1px solid #1E2030;
-        border-radius: 16px;
-        padding: 48px 40px;
+        position: relative;
+        background: linear-gradient(135deg, rgba(18, 20, 32, 0.95) 0%, rgba(12, 13, 22, 0.98) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 44px 40px;
         margin-bottom: 32px;
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        overflow: hidden;
     }
-    .hero-badge {
-        display: inline-block;
-        background: rgba(108, 99, 255, 0.12);
-        color: #6C63FF;
-        font-family: 'Inter', sans-serif;
+    .hero-wrap::before {
+        content: '';
+        position: absolute;
+        top: 0; right: 0; width: 350px; height: 100%;
+        background: radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.15), transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-badge-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--accent-emerald);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--accent-emerald);
+        animation: pulse-glow 2s infinite;
+    }
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.3; transform: scale(0.85); }
+    }
+    .hero-badge-text {
+        font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 1.5px;
         text-transform: uppercase;
+        color: #A5B4FC;
+        background: rgba(99, 102, 241, 0.12);
         padding: 5px 14px;
-        border-radius: 50px;
-        border: 1px solid rgba(108, 99, 255, 0.3);
-        margin-bottom: 20px;
+        border-radius: 20px;
+        border: 1px solid rgba(99, 102, 241, 0.25);
     }
+
     .hero-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 52px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 48px;
         font-weight: 800;
-        background: linear-gradient(135deg, #EEEEF5 0%, #6C63FF 60%, #EC4899 100%);
+        letter-spacing: -1.2px;
+        background: linear-gradient(135deg, #FFFFFF 0%, #C7D2FE 50%, #818CF8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        line-height: 1.15;
-        margin-bottom: 16px;
+        line-height: 1.1;
+        margin-bottom: 14px;
     }
     .hero-sub {
-        font-size: 17px;
-        color: #8A8BA8;
-        max-width: 600px;
-        line-height: 1.7;
-        margin-bottom: 32px;
+        font-size: 15px;
+        color: var(--text-secondary);
+        max-width: 680px;
+        line-height: 1.65;
+        margin-bottom: 0;
     }
 
+    /* Workflow Feature Cards */
     .feature-card {
-        background: #13141A;
-        border: 1px solid #1E2030;
-        border-radius: 12px;
-        padding: 24px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 26px 24px;
         height: 100%;
-        transition: border-color 0.2s;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
     }
     .feature-card:hover {
-        border-color: #6C63FF;
+        border-color: var(--border-hover);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(99, 102, 241, 0.1);
+        background: var(--bg-card-hover);
     }
-    .feature-card-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 16px;
+    .feature-step-pill {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
         font-weight: 700;
-        color: #EEEEF5;
+        color: var(--accent-indigo);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        background: rgba(99, 102, 241, 0.1);
+        padding: 3px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        margin-bottom: 14px;
+    }
+    .feature-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-primary);
         margin-bottom: 8px;
     }
-    .feature-card-desc {
+    .feature-desc {
         font-size: 13px;
-        color: #8A8BA8;
+        color: var(--text-secondary);
         line-height: 1.6;
     }
-    .feature-card-num {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 11px;
-        font-weight: 700;
-        color: #6C63FF;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        margin-bottom: 12px;
-    }
 
-    .status-panel {
-        background: #13141A;
-        border: 1px solid #1E2030;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-bottom: 24px;
+    /* Status & Metrics Panel */
+    .status-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        margin-top: 24px;
     }
-    .status-label {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 1.2px;
+    .status-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .status-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: var(--text-primary);
         text-transform: uppercase;
-        color: #8A8BA8;
-        margin-bottom: 12px;
     }
     .status-row {
         display: flex;
         justify-content: space-between;
         font-size: 13px;
-        color: #EEEEF5;
-        padding: 6px 0;
-        border-bottom: 1px solid #1E2030;
+        padding: 8px 0;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
     }
     .status-row:last-child { border-bottom: none; }
-    .status-val { color: #6C63FF; font-weight: 600; font-family: 'Space Grotesk', sans-serif; }
-    .status-val-none { color: #4B4C65; font-style: italic; }
+    .status-key { color: var(--text-muted); }
+    .status-val-active {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 600;
+        color: var(--accent-emerald);
+    }
+    .status-val-empty {
+        font-style: italic;
+        color: var(--text-muted);
+    }
 
+    /* Streamlit Widget Overrides */
     div[data-testid="stMetricValue"] {
-        font-size: 28px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 26px;
         font-weight: 700;
-        color: #6C63FF;
+        color: var(--accent-indigo);
     }
     div[data-testid="stMetricLabel"] {
-        font-size: 13px;
-        color: #8A8BA8;
-        font-weight: 500;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-muted);
     }
     </style>
 """, unsafe_allow_html=True)
 
-
+# Bespoke Hero Section
 st.markdown("""
 <div class="hero-wrap">
-    <div class="hero-badge">Machine Learning Toolkit</div>
+    <div class="hero-badge-container">
+        <div class="pulse-dot"></div>
+        <div class="hero-badge-text">Interactive Machine Learning & Analytics Studio</div>
+    </div>
     <div class="hero-title">VizML</div>
     <div class="hero-sub">
-        An end-to-end data intelligence platform. Upload raw datasets, curate and clean them with
-        intelligent tooling, explore multi-dimensional diagnostics, and prepare data for modeling —
-        all within a unified, session-aware workspace.
+        An end-to-end data intelligence workspace. Upload raw tabular datasets, perform multi-stage data curation with full undo history, explore diagnostic visual analytics, and build predictive machine learning models seamlessly.
     </div>
 </div>
 """, unsafe_allow_html=True)
 
+# Workflow Steps Grid
+col1, col2, col3 = st.columns(3)
 
-c1, c2, c3 = st.columns(3)
-with c1:
+with col1:
     st.markdown("""
     <div class="feature-card">
-        <div class="feature-card-num">Step 01</div>
-        <div class="feature-card-title">Data Curation Engine</div>
-        <div class="feature-card-desc">
-            Upload CSV or Excel files, profile missing values, coerce types, handle outliers,
-            remove duplicates, and encode categoricals — with live diffs and full undo history.
+        <span class="feature-step-pill">Phase 01</span>
+        <div class="feature-title">Data Curation Engine</div>
+        <div class="feature-desc">
+            Profile dataset health, coerce unparseable types, impute missing values, handle outliers with custom thresholds, eliminate duplicate rows, and encode categoricals with full undo step control.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-with c2:
+with col2:
     st.markdown("""
     <div class="feature-card">
-        <div class="feature-card-num">Step 02</div>
-        <div class="feature-card-title">Diagnostic Visualizations</div>
-        <div class="feature-card-desc">
-            Auto-generated insight dashboard, correlation matrices, scatter matrix, 3D scatter
-            explorer, and a fully configurable custom chart builder with 11 chart types.
+        <span class="feature-step-pill">Phase 02</span>
+        <div class="feature-title">Diagnostic Visualizations</div>
+        <div class="feature-desc">
+            Explore automated correlation matrices, scatter matrix projections, 3D spatial feature explorers, and a high-flexibility chart builder offering 10+ Plotly interactive chart types.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-with c3:
+with col3:
     st.markdown("""
     <div class="feature-card">
-        <div class="feature-card-num">Step 03</div>
-        <div class="feature-card-title">Machine Learning</div>
-        <div class="feature-card-desc">
-            Train, evaluate, and compare machine learning models directly on your curated
-            session dataset. Automated feature engineering, cross-validation benchmarking,
-            interactive What-If inference, and one-click model export.
+        <span class="feature-step-pill">Phase 03</span>
+        <div class="feature-title">Machine Learning Studio</div>
+        <div class="feature-desc">
+            Automated task inference (Classification or Regression), multi-model cross-validated benchmark leaderboards, interactive residual & confusion matrix diagnostics, and live What-If scenario prediction.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-
+# Session State Inspection
 df = st.session_state.get("df", None)
 original_df = st.session_state.get("original_df", None)
 history = st.session_state.get("history", [])
@@ -204,56 +288,75 @@ if df is not None:
     dups = int(df.duplicated().sum())
     undo_steps = len(history)
 
-    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-    col_m1.metric("Rows", f"{rows:,}")
-    col_m2.metric("Columns", cols)
-    col_m3.metric("Missing Cells", f"{missing:,}")
-    col_m4.metric("Undo Steps Available", undo_steps)
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Active Rows", f"{rows:,}")
+    m2.metric("Active Columns", cols)
+    m3.metric("Missing Values", f"{missing:,}")
+    m4.metric("Undo History", f"{undo_steps} steps")
 
-    file_name = st.session_state.get("current_file_name", "Unknown")
+    file_name = st.session_state.get("current_file_name", "Unknown Dataset")
     st.markdown(f"""
-    <div class="status-panel">
-        <div class="status-label">Active Session</div>
-        <div class="status-row">
-            <span>Dataset</span><span class="status-val">{file_name}</span>
+    <div class="status-card">
+        <div class="status-header">
+            <span class="status-title">Active Workspace Session</span>
+            <span style="color: #10B981; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; background: rgba(16, 185, 129, 0.12); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.25);">SESSION READY</span>
         </div>
         <div class="status-row">
-            <span>Original Shape</span>
-            <span class="status-val">{original_df.shape[0]} x {original_df.shape[1]}</span>
+            <span class="status-key">Loaded File</span>
+            <span class="status-val-active">{file_name}</span>
         </div>
         <div class="status-row">
-            <span>Current Shape</span>
-            <span class="status-val">{rows} x {cols}</span>
+            <span class="status-key">Original Dimensions</span>
+            <span class="status-val-active">{original_df.shape[0]:,} rows x {original_df.shape[1]} cols</span>
         </div>
         <div class="status-row">
-            <span>Duplicate Rows</span>
-            <span class="status-val">{dups}</span>
+            <span class="status-key">Current Curated Shape</span>
+            <span class="status-val-active">{rows:,} rows x {cols} cols</span>
+        </div>
+        <div class="status-row">
+            <span class="status-key">Identified Duplicates</span>
+            <span class="status-val-active">{dups} rows</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.info("Dataset loaded. Navigate to **Data Curation** or **Diagnostic Visualizations** using the sidebar.")
+    st.success("Active dataset detected. Select Data Curation, Diagnostic Visualizations, or ML Studio from the sidebar to continue.")
 else:
     st.markdown("""
-    <div class="status-panel">
-        <div class="status-label">Session Status</div>
-        <div class="status-row">
-            <span>Dataset</span><span class="status-val-none">No dataset loaded</span>
+    <div class="status-card">
+        <div class="status-header">
+            <span class="status-title">Session State</span>
+            <span style="color: #F59E0B; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; background: rgba(245, 158, 11, 0.12); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.25);">NO DATASET</span>
         </div>
         <div class="status-row">
-            <span>Status</span><span class="status-val-none">Waiting for upload</span>
+            <span class="status-key">Current Dataset</span>
+            <span class="status-val-empty">None loaded</span>
+        </div>
+        <div class="status-row">
+            <span class="status-key">Status</span>
+            <span class="status-val-empty">Awaiting CSV / Excel file upload</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.info("No dataset loaded yet. Go to **Data Curation** in the sidebar to upload a CSV or Excel file.")
+    st.info("Getting started? Navigate to Data Curation in the sidebar navigation to upload your dataset.")
 
+# Sidebar Branding & Info
+st.sidebar.markdown("""
+<div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px;">
+    <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #F1F3F9;">
+        VIZML
+    </div>
+    <div style="font-size: 11px; color: #64748B; margin-top: 2px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;">
+        DATA INTELLIGENCE STUDIO
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-st.sidebar.markdown("### VizML")
-st.sidebar.markdown("Select a page from the navigation above to begin.")
+st.sidebar.markdown("Use the navigation menu above to switch between workspace modules.")
 
 if df is not None:
     st.sidebar.markdown("---")
-    st.sidebar.markdown("**Active Dataset**")
-    st.sidebar.markdown(f"Shape: `{df.shape[0]} x {df.shape[1]}`")
+    st.sidebar.markdown("**Active Session File**")
     st.sidebar.markdown(f"File: `{st.session_state.get('current_file_name', 'Unknown')}`")
+    st.sidebar.markdown(f"Shape: `{df.shape[0]:,} rows x {df.shape[1]} cols`")

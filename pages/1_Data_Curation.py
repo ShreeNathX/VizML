@@ -8,91 +8,184 @@ import src.cleaner
 importlib.reload(src.cleaner)
 from src.cleaner import DataCleaner
 
-st.set_page_config(page_title="VizML - Data Curation", layout="wide")
+st.set_page_config(page_title="VizML — Data Curation Engine", layout="wide")
 
+# Senior Designer Custom CSS Design System
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    :root {
+        --bg-main: #090A10;
+        --bg-card: #121420;
+        --bg-card-hover: #181B2B;
+        --border-color: rgba(255, 255, 255, 0.08);
+        --border-hover: rgba(99, 102, 241, 0.35);
+        --accent-indigo: #6366F1;
+        --accent-emerald: #10B981;
+        --accent-amber: #F59E0B;
+        --accent-rose: #F43F5E;
+        --text-primary: #F1F3F9;
+        --text-secondary: #94A3B8;
+        --text-muted: #64748B;
+    }
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-primary);
+    }
+
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
+    header { visibility: hidden; }
 
+    .stApp {
+        background-color: var(--bg-main);
+        background-image: 
+            radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.07) 0px, transparent 40%),
+            radial-gradient(at 90% 90%, rgba(16, 185, 129, 0.05) 0px, transparent 40%);
+        background-attachment: fixed;
+    }
+
+    section[data-testid="stSidebar"] {
+        background: #0C0D16 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+    }
+
+    /* Page Header */
+    .header-box {
+        background: linear-gradient(135deg, rgba(18, 20, 32, 0.9) 0%, rgba(12, 13, 22, 0.95) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 32px 36px;
+        margin-bottom: 28px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .header-eyebrow {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #A5B4FC;
+        margin-bottom: 8px;
+    }
     .page-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 36px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 34px;
         font-weight: 800;
-        background: linear-gradient(135deg, #6366F1 0%, #EC4899 100%);
+        letter-spacing: -0.8px;
+        background: linear-gradient(135deg, #FFFFFF 0%, #C7D2FE 60%, #818CF8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
     .page-sub {
         font-size: 14px;
-        color: #8A8BA8;
-        margin-bottom: 24px;
+        color: var(--text-secondary);
+        max-width: 620px;
     }
 
+    /* Safe Custom Streamlit Expander Styling - Targets label text strictly without corrupting icon fonts */
+    div[data-testid="stExpander"] {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 14px !important;
+        margin-bottom: 14px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+        overflow: hidden !important;
+    }
+    div[data-testid="stExpander"]:hover {
+        border-color: rgba(99, 102, 241, 0.35) !important;
+    }
+    div[data-testid="stExpander"] [data-testid="stMarkdownContainer"] p {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        color: var(--text-primary) !important;
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        margin: 0 !important;
+    }
+
+    /* Metric Card Custom Overrides */
     div[data-testid="stMetricValue"] {
-        font-size: 26px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 24px;
         font-weight: 700;
-        color: #6366F1;
+        color: var(--accent-indigo);
     }
     div[data-testid="stMetricLabel"] {
-        font-size: 13px;
-        color: #8A8BA8;
-        font-weight: 500;
-    }
-
-    div[data-testid="stExpander"] summary,
-    div[data-testid="stExpander"] summary p,
-    div[data-testid="stExpander"] summary span,
-    .streamlit-expanderHeader,
-    .streamlit-expanderHeader p {
-        color: #EEEEF5 !important;
-        opacity: 1 !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-    }
-
-    .flag-warning {
-        background-color: rgba(245, 166, 35, 0.15);
-        color: #F5A623;
-        padding: 3px 8px;
-        border-radius: 5px;
         font-size: 11px;
         font-weight: 600;
-        border: 1px solid rgba(245, 166, 35, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-muted);
+    }
+
+    /* Status Flags */
+    .flag-warning {
+        background-color: rgba(245, 158, 11, 0.12);
+        color: #FBBF24;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid rgba(245, 158, 11, 0.3);
     }
     .flag-error {
-        background-color: rgba(240, 92, 92, 0.15);
-        color: #F05C5C;
-        padding: 3px 8px;
-        border-radius: 5px;
+        background-color: rgba(244, 63, 94, 0.12);
+        color: #FB7185;
+        padding: 3px 10px;
+        border-radius: 6px;
         font-size: 11px;
         font-weight: 600;
-        border: 1px solid rgba(240, 92, 92, 0.4);
+        border: 1px solid rgba(244, 63, 94, 0.3);
     }
     .flag-success {
-        background-color: rgba(45, 212, 160, 0.12);
-        color: #2DD4A0;
-        padding: 3px 8px;
-        border-radius: 5px;
+        background-color: rgba(16, 185, 129, 0.12);
+        color: #34D399;
+        padding: 3px 10px;
+        border-radius: 6px;
         font-size: 11px;
         font-weight: 600;
-        border: 1px solid rgba(45, 212, 160, 0.3);
+        border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
-    hr { border-color: #1E2030; }
+    /* Section Subtitle with Professional UI Badge */
+    .section-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .section-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--accent-indigo);
+        background: rgba(99, 102, 241, 0.12);
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+    }
     </style>
 """, unsafe_allow_html=True)
 
-
-st.markdown('<div class="page-title">Data Curation Engine</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="page-sub">Upload, profile, and clean your dataset with real-time change tracking and undo capability.</div>',
-    unsafe_allow_html=True
-)
+# Page Header
+st.markdown("""
+<div class="header-box">
+    <div class="header-eyebrow">Phase 01 — Pipeline Module</div>
+    <div class="page-title">Data Curation Engine</div>
+    <div class="page-sub">
+        Upload raw datasets, profile feature health, run interactive type coercions & missing value imputations, handle outliers, and inspect real-time diff previews with full session history.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 
 def show_toast(message, icon=None):
@@ -127,7 +220,7 @@ def load_data(uploaded_file):
         st.error(f"Error loading file: {str(e)}")
 
 
-uploaded_file = st.file_uploader("Drop your dataset here (CSV or Excel)", type=["csv", "xlsx"])
+uploaded_file = st.file_uploader("Upload Raw Dataset (CSV or Excel file)", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
     if (st.session_state["original_df"] is None
@@ -144,13 +237,13 @@ else:
         st.session_state["original_df"] = df_fallback.copy()
         st.session_state["history"] = []
         st.session_state["coercion_flags"] = {}
-        st.session_state["current_file_name"] = "messy_data.csv (sample)"
+        st.session_state["current_file_name"] = "messy_data.csv (sample dataset)"
 
 
 if st.session_state["df"] is not None:
     df_current = st.session_state["df"]
 
-    col_hist1, col_hist2, col_hist3 = st.columns([1, 1, 6])
+    col_hist1, col_hist2, col_hist3 = st.columns([2, 2, 8])
     with col_hist1:
         undo_disabled = len(st.session_state["history"]) == 0
         if st.button("Undo Last Action", disabled=undo_disabled, use_container_width=True):
@@ -165,29 +258,29 @@ if st.session_state["df"] is not None:
             show_toast("Reset dataset to original state.")
             st.rerun()
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
     col_left, col_right = st.columns([5, 7])
 
     with col_left:
-        st.subheader("Cleaning Operations")
+        st.markdown('<div class="section-title"><span class="section-badge">TOOLKIT</span> Data Cleaning Operations</div>', unsafe_allow_html=True)
 
         cleaner = DataCleaner(df_current)
         cleaner.flagged_columns = st.session_state["coercion_flags"]
         proposed_dfs = {}
 
         with st.expander("1. Missing-Value Imputation", expanded=False):
-            st.markdown("Impute missing values based on column types.")
+            st.markdown("Select strategies to fill or impute missing values across columns.")
 
-            st.markdown("**Numeric Columns**")
+            st.markdown("**Numeric Columns Strategy**")
             num_strat = st.radio(
-                "Numeric Imputation Strategy",
+                "Numeric Strategy",
                 ["median", "mean", "ffill", "bfill"],
                 index=0, key="missing_num_strat", horizontal=True
             )
-            st.markdown("**Categorical Columns**")
+            st.markdown("**Categorical Columns Strategy**")
             cat_strat = st.radio(
-                "Categorical Imputation Strategy",
+                "Categorical Strategy",
                 ["mode", "constant", "ffill", "bfill"],
                 index=0, key="missing_cat_strat", horizontal=True
             )
@@ -206,7 +299,7 @@ if st.session_state["df"] is not None:
                 )
                 proposed_dfs["missing"] = df_proposed_missing
 
-                if st.button("Apply Imputation", key="btn_apply_missing", type="primary"):
+                if st.button("Apply Imputation", key="btn_apply_missing", type="primary", use_container_width=True):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_missing
                     show_toast("Missing values imputed.")
@@ -216,8 +309,8 @@ if st.session_state["df"] is not None:
 
         with st.expander("2. Smart Type Coercion", expanded=False):
             st.markdown("""
-                Automatically convert object/text columns that represent numeric or datetime values.
-                *Unparseable columns are flagged, never silently dropped.*
+                Automatically infer and parse text/object columns that represent numbers or dates.
+                *Unparseable values are flagged safely without dropping rows.*
             """)
 
             df_proposed_coercion = cleaner.coerce_types()
@@ -242,21 +335,21 @@ if st.session_state["df"] is not None:
                 st.info("No columns suitable for type coercion detected.")
 
             if flagged_cols:
-                st.markdown("**Parser Status & Flags:**")
+                st.markdown("**Parser Flags:**")
                 for col, flag in flagged_cols:
                     if "Partial" in flag:
                         st.markdown(
-                            f"[Warning] `{col}`: <span class='flag-warning'>Partial Cast</span> - {flag}",
+                            f"`{col}`: <span class='flag-warning'>Partial Cast</span> — {flag}",
                             unsafe_allow_html=True
                         )
                     else:
                         st.markdown(
-                            f"[Error] `{col}`: <span class='flag-error'>Unparseable</span> - {flag}",
+                            f"`{col}`: <span class='flag-error'>Unparseable</span> — {flag}",
                             unsafe_allow_html=True
                         )
 
             if coerced_cols or flagged_cols:
-                if st.button("Apply Type Coercion", key="btn_apply_coercion", type="primary"):
+                if st.button("Apply Type Coercion", key="btn_apply_coercion", type="primary", use_container_width=True):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_coercion
                     st.session_state["coercion_flags"] = cleaner.flagged_columns
@@ -264,7 +357,7 @@ if st.session_state["df"] is not None:
                     st.rerun()
 
         with st.expander("3. Outlier Handling (IQR Method)", expanded=False):
-            st.markdown("Detect outliers using the IQR range (Q1 - 1.5 x IQR, Q3 + 1.5 x IQR).")
+            st.markdown("Identify numeric outliers using the Interquartile Range ($Q1 - 1.5 \\times IQR, Q3 + 1.5 \\times IQR$).")
 
             num_cols = [
                 c for c in df_current.columns
@@ -273,7 +366,7 @@ if st.session_state["df"] is not None:
             ]
             if num_cols:
                 outlier_cols = st.multiselect(
-                    "Select columns to handle outliers (Default: All)",
+                    "Select columns to evaluate",
                     num_cols, default=num_cols
                 )
                 outlier_action = st.radio(
@@ -287,13 +380,13 @@ if st.session_state["df"] is not None:
                 outlier_mask = cleaner.detect_outliers(columns=outlier_cols)
                 total_outliers = outlier_mask.sum().sum()
 
-                st.write(f"Total outlier cells detected: **{total_outliers}**")
+                st.write(f"Total outlier cells detected: **{total_outliers:,}**")
                 for col in outlier_cols:
                     col_outlier_count = outlier_mask[col].sum()
                     if col_outlier_count > 0:
                         st.write(f"- `{col}`: {col_outlier_count} outliers")
 
-                if st.button("Apply Outlier Action", key="btn_apply_outliers", type="primary"):
+                if st.button("Apply Outlier Action", key="btn_apply_outliers", type="primary", use_container_width=True):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_outliers
                     show_toast(f"Outliers handled using {outlier_action}.")
@@ -303,13 +396,13 @@ if st.session_state["df"] is not None:
 
         with st.expander("4. Duplicate Removal", expanded=False):
             dup_count = cleaner.get_duplicate_count()
-            st.write(f"Exact duplicate rows detected: **{dup_count}**")
+            st.write(f"Identified duplicate rows: **{dup_count}**")
 
             if dup_count > 0:
                 df_proposed_dups = cleaner.remove_duplicates()
                 proposed_dfs["duplicates"] = df_proposed_dups
 
-                if st.button("Remove Duplicates", key="btn_apply_dups", type="primary"):
+                if st.button("Remove Duplicates", key="btn_apply_dups", type="primary", use_container_width=True):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_dups
                     show_toast(f"Removed {dup_count} duplicate rows.")
@@ -318,10 +411,7 @@ if st.session_state["df"] is not None:
                 st.success("No duplicate rows found.")
 
         with st.expander("5. Categorical Encoding (Prep Step)", expanded=False):
-            st.markdown("""
-                Convert categorical columns into numerical representations.
-                *You can defer this until modeling if you want to keep categories human-readable for visualization.*
-            """)
+            st.markdown("Convert text/categorical attributes into machine-learning compatible numerical representations.")
 
             cat_encode_cols = []
             for col in df_current.columns:
@@ -333,7 +423,7 @@ if st.session_state["df"] is not None:
 
             if cat_encode_cols:
                 cols_to_encode = st.multiselect(
-                    "Select columns to encode (Default: All)",
+                    "Select columns to encode",
                     cat_encode_cols, default=cat_encode_cols
                 )
                 encoding_method = st.radio(
@@ -346,7 +436,7 @@ if st.session_state["df"] is not None:
                 )
                 proposed_dfs["encoding"] = df_proposed_encode
 
-                if st.button("Apply Categorical Encoding", key="btn_apply_encoding", type="primary"):
+                if st.button("Apply Categorical Encoding", key="btn_apply_encoding", type="primary", use_container_width=True):
                     st.session_state["history"].append(df_current.copy())
                     st.session_state["df"] = df_proposed_encode
                     show_toast(f"Encoded categories using {encoding_method}.")
@@ -355,15 +445,15 @@ if st.session_state["df"] is not None:
                 st.info("No categorical columns detected in the current dataset.")
 
     with col_right:
-        st.subheader("Data Preview & Change Tracker")
+        st.markdown('<div class="section-title"><span class="section-badge">INSPECTOR</span> Dataset Preview & Change Tracker</div>', unsafe_allow_html=True)
 
         available_props = list(proposed_dfs.keys())
         tab_data, tab_diff, tab_profile = st.tabs(
-            ["Active Dataset", "Live Diff Finder", "Data Profile"]
+            ["Active Dataset", "Live Diff Finder", "Health Profile"]
         )
 
         with tab_data:
-            st.markdown(f"**Shape:** `{df_current.shape[0]}` rows, `{df_current.shape[1]}` columns")
+            st.markdown(f"**Shape:** `{df_current.shape[0]:,}` rows x `{df_current.shape[1]}` columns")
             st.dataframe(df_current, use_container_width=True)
 
             csv_buffer = io.StringIO()
@@ -371,9 +461,9 @@ if st.session_state["df"] is not None:
             csv_bytes = csv_buffer.getvalue().encode("utf-8")
 
             st.download_button(
-                label="Export Cleaned Dataset",
+                label="Export Curated CSV Dataset",
                 data=csv_bytes,
-                file_name="cleaned_dataset.csv",
+                file_name="curated_dataset.csv",
                 mime="text/csv",
                 use_container_width=True
             )
@@ -381,7 +471,7 @@ if st.session_state["df"] is not None:
         with tab_diff:
             if available_props:
                 selected_diff_op = st.selectbox(
-                    "Select cleaning operation to preview:",
+                    "Select operation to preview proposed diff:",
                     available_props,
                     format_func=lambda x: {
                         "missing": "Missing-Value Imputation",
@@ -398,18 +488,18 @@ if st.session_state["df"] is not None:
 
                 r_old, r_new = df_current.shape[0], df_proposed.shape[0]
                 r_diff = r_new - r_old
-                col_m1.metric("Row Count", r_new,
+                col_m1.metric("Rows", f"{r_new:,}",
                               delta=f"{r_diff} rows" if r_diff != 0 else "Unchanged")
 
                 c_old, c_new = df_current.shape[1], df_proposed.shape[1]
                 c_diff = c_new - c_old
-                col_m2.metric("Column Count", c_new,
+                col_m2.metric("Columns", c_new,
                               delta=f"{c_diff} cols" if c_diff != 0 else "Unchanged")
 
                 m_old = df_current.isna().sum().sum()
                 m_new = df_proposed.isna().sum().sum()
                 m_diff = m_new - m_old
-                col_m3.metric("Missing Cells", m_new,
+                col_m3.metric("Missing", f"{m_new:,}",
                               delta=f"{m_diff} cells" if m_diff != 0 else "Unchanged",
                               delta_color="inverse")
 
@@ -420,26 +510,24 @@ if st.session_state["df"] is not None:
                               delta=f"{d_diff} rows" if d_diff != 0 else "Unchanged",
                               delta_color="inverse")
 
-                st.write("### Proposed DataFrame Preview:")
+                st.markdown("**Proposed DataFrame Preview:**")
                 st.dataframe(df_proposed.head(50), use_container_width=True)
-                st.info(
-                    "Review the changes above. If they look correct, click the "
-                    "**Apply** button in the corresponding cleaning panel on the left to commit them."
-                )
+                st.info("Review changes above. Click Apply in the corresponding cleaning panel to commit.")
             else:
-                st.info("Configure a cleaning operation on the left to view a live diff.")
+                st.info("Configure a cleaning operation on the left panel to preview live diffs.")
 
         with tab_profile:
             prof = cleaner.profile()
 
             col_p1, col_p2, col_p3 = st.columns(3)
-            col_p1.write(f"**Total Cells:** {df_current.size}")
+            col_p1.metric("Total Data Cells", f"{df_current.size:,}")
             if df_current.size > 0:
                 missing_total = df_current.isna().sum().sum()
                 missing_pct = missing_total / df_current.size * 100
-                col_p2.write(f"**Missing Values:** {missing_total} ({missing_pct:.2f}%)")
-            col_p3.write(f"**Duplicates:** {df_current.duplicated().sum()}")
+                col_p2.metric("Missing Cell Rate", f"{missing_pct:.2f}%")
+            col_p3.metric("Duplicate Rows", f"{df_current.duplicated().sum()}")
 
+            st.markdown("**Column Data Types & Null Ratios:**")
             profile_df = pd.DataFrame({
                 "Dtype": prof["dtypes"],
                 "Missing Count": prof["null_counts"],
@@ -448,8 +536,10 @@ if st.session_state["df"] is not None:
             })
             st.dataframe(profile_df, use_container_width=True)
 
-            st.write("#### Detailed Feature Statistics")
+            st.markdown("**Statistical Summary:**")
             st.dataframe(pd.DataFrame(prof["describe"]), use_container_width=True)
 
 else:
-    st.info("Please upload a CSV or Excel file to begin profiling and cleaning.")
+    st.info("Please upload a CSV or Excel dataset to begin profiling and cleaning.")
+
+

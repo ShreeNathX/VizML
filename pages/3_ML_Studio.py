@@ -7,97 +7,177 @@ import plotly.express as px
 from sklearn.metrics import confusion_matrix, classification_report
 from src.ml_engine import MLEngine
 
-st.set_page_config(page_title="VizML - ML Studio", layout="wide")
+st.set_page_config(page_title="VizML — Machine Learning Studio", layout="wide")
 
+# Senior Designer Custom CSS Design System
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    :root {
+        --bg-main: #090A10;
+        --bg-card: #121420;
+        --bg-card-hover: #181B2B;
+        --border-color: rgba(255, 255, 255, 0.08);
+        --border-hover: rgba(99, 102, 241, 0.35);
+        --accent-indigo: #6366F1;
+        --accent-emerald: #10B981;
+        --accent-amber: #F59E0B;
+        --accent-rose: #F43F5E;
+        --text-primary: #F1F3F9;
+        --text-secondary: #94A3B8;
+        --text-muted: #64748B;
+    }
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-primary);
+    }
+
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
+    header { visibility: hidden; }
 
+    .stApp {
+        background-color: var(--bg-main);
+        background-image: 
+            radial-gradient(at 50% 10%, rgba(99, 102, 241, 0.08) 0px, transparent 45%),
+            radial-gradient(at 80% 85%, rgba(16, 185, 129, 0.05) 0px, transparent 40%);
+        background-attachment: fixed;
+    }
+
+    section[data-testid="stSidebar"] {
+        background: #0C0D16 !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+    }
+
+    /* Header Container */
+    .header-box {
+        background: linear-gradient(135deg, rgba(18, 20, 32, 0.9) 0%, rgba(12, 13, 22, 0.95) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 32px 36px;
+        margin-bottom: 28px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .header-eyebrow {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #A5B4FC;
+        margin-bottom: 8px;
+    }
     .page-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 36px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 34px;
         font-weight: 800;
-        background: linear-gradient(135deg, #6C63FF 0%, #2DD4A0 100%);
+        letter-spacing: -0.8px;
+        background: linear-gradient(135deg, #FFFFFF 0%, #C7D2FE 60%, #818CF8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
     .page-sub {
         font-size: 14px;
-        color: #8A8BA8;
-        margin-bottom: 28px;
+        color: var(--text-secondary);
+        max-width: 650px;
     }
+
     .section-header {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 16px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
         font-weight: 700;
-        color: #EEEEF5;
-        letter-spacing: 0.5px;
+        color: var(--text-primary);
+        letter-spacing: 0.3px;
         margin-top: 24px;
         margin-bottom: 12px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid #1E2030;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color);
     }
+
     .badge-auto {
         display: inline-block;
-        background: rgba(45, 212, 160, 0.12);
-        color: #2DD4A0;
+        background: rgba(16, 185, 129, 0.12);
+        color: #34D399;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 10px;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        padding: 3px 10px;
-        border-radius: 50px;
-        border: 1px solid rgba(45, 212, 160, 0.3);
+        padding: 4px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(16, 185, 129, 0.3);
         margin-left: 8px;
         vertical-align: middle;
     }
     .badge-manual {
         display: inline-block;
-        background: rgba(108, 99, 255, 0.12);
-        color: #6C63FF;
+        background: rgba(99, 102, 241, 0.12);
+        color: #A5B4FC;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 10px;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        padding: 3px 10px;
-        border-radius: 50px;
-        border: 1px solid rgba(108, 99, 255, 0.3);
+        padding: 4px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(99, 102, 241, 0.3);
         margin-left: 8px;
         vertical-align: middle;
     }
+
     .card-box {
-        background: #13141A;
-        border: 1px solid #1E2030;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
+
     div[data-testid="stMetricValue"] {
+        font-family: 'JetBrains Mono', monospace;
         font-size: 26px;
         font-weight: 700;
-        color: #6C63FF;
+        color: var(--accent-indigo) !important;
     }
     div[data-testid="stMetricLabel"] {
-        font-size: 12px;
-        color: #8A8BA8;
-        font-weight: 500;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: var(--text-muted) !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="page-title">ML Studio</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="page-sub">Automated end-to-end model training, diagnostic benchmarking, and interactive What-If inference.</div>',
-    unsafe_allow_html=True
-)
+# Page Header
+st.markdown("""
+<div class="header-box">
+    <div class="header-eyebrow">Phase 03 — Predictive Modeling</div>
+    <div class="page-title">Machine Learning Studio</div>
+    <div class="page-sub">
+        Automated task inference, feature preprocessing pipelines, multi-algorithm cross-validation leaderboards, residual & confusion diagnostics, and live What-If scenario prediction.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 df = st.session_state.get("df", None)
 if df is None:
-    st.warning("No dataset in session. Please upload and clean a dataset in the Data Curation page first.")
+    st.markdown("""
+    <div class="card-box" style="text-align: center; padding: 48px;">
+        <h3 style="color: #F59E0B; margin-bottom: 14px; font-family: 'Plus Jakarta Sans', sans-serif;">
+            No Active Dataset Session
+        </h3>
+        <p style="color: #94A3B8; margin-bottom: 20px; font-size: 14px; max-width: 480px; margin-left: auto; margin-right: auto;">
+            You need to upload and clean a dataset in the Data Curation module before training machine learning models.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.page_link("pages/1_Data_Curation.py", label="Go to Data Curation Engine")
     st.stop()
 
 all_cols = df.columns.tolist()
@@ -105,7 +185,7 @@ numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
 categorical_cols = [c for c in all_cols if c not in numeric_cols]
 
 st.info(
-    f"Active Session Dataset - **{df.shape[0]:,} rows x {df.shape[1]} columns** "
+    f"Active Dataset Workspace — **{df.shape[0]:,} rows x {df.shape[1]} columns** "
     f"({len(numeric_cols)} numeric, {len(categorical_cols)} categorical/datetime)."
 )
 
@@ -126,14 +206,14 @@ with col_target:
 auto_task, auto_reason = MLEngine.auto_detect_task(df, target_col)
 
 with col_task:
-    st.markdown(f"**Auto-Recommendation**: `{auto_task}` <span style='font-size:12px; color:#8A8BA8;'>({auto_reason})</span>", unsafe_allow_html=True)
+    st.markdown(f"**Auto Recommendation**: `{auto_task}` <span style='font-size:12px; color:#94A3B8;'>({auto_reason})</span>", unsafe_allow_html=True)
     task_type = st.radio(
         "Task Type",
         options=["Classification", "Regression"],
         index=0 if auto_task == "Classification" else 1,
         horizontal=True,
         key="ml_task_type",
-        help="Classification predicts discrete classes; Regression predicts continuous numbers."
+        help="Classification predicts discrete categories; Regression predicts continuous numeric values."
     )
 
 st.markdown('<div class="section-header">2 · Feature Engineering & Selection</div>', unsafe_allow_html=True)
@@ -151,7 +231,7 @@ feature_pool = [c for c in all_cols if c != target_col]
 if feat_mode.startswith("Auto"):
     selected_features = feature_pool
     st.markdown(
-        f'<span class="badge-auto">Auto ML Engine</span> Using all **{len(selected_features)}** remaining dataset columns. '
+        f'<span class="badge-auto">Auto ML Engine</span> Utilizing all **{len(selected_features)}** remaining dataset columns. '
         f'Categorical & Datetime features will be encoded automatically.',
         unsafe_allow_html=True
     )
@@ -166,7 +246,7 @@ else:
     )
 
 if not selected_features:
-    st.warning("Select at least one feature column to continue.")
+    st.warning("Please select at least one feature column to continue.")
     st.stop()
 
 st.markdown('<div class="section-header">3 · Model Selection & Benchmarking Setup</div>', unsafe_allow_html=True)
@@ -190,10 +270,10 @@ with col_m2:
     cv_folds = st.slider("Cross-Val Folds", 2, 10, 5, 1, key="ml_cv")
 
 if not selected_models:
-    st.warning("Select at least one model to train.")
+    st.warning("Please select at least one model to train.")
     st.stop()
 
-st.markdown("---")
+st.markdown("<br>", unsafe_allow_html=True)
 train_btn = st.button("Train Models (Automated Pipeline)", type="primary", use_container_width=True, key="ml_train_btn")
 
 if train_btn:
@@ -222,7 +302,7 @@ if train_btn:
 
         if output.get("errors"):
             for err in output["errors"]:
-                st.warning(f"Warning: {err}")
+                st.warning(f"Notice: {err}")
 
     except Exception as e:
         st.error(f"Training failed: {str(e)}")
@@ -260,12 +340,13 @@ if ml_output:
         fig_bar = px.bar(
             df_results, x="Model", y=primary_metric, color="Model",
             color_discrete_sequence=px.colors.qualitative.Vivid,
-            title=f"{primary_metric} Comparison Across Models",
+            title=f"{primary_metric} Benchmark Comparison Across Models",
             template="plotly_dark",
         )
         fig_bar.update_layout(
-            paper_bgcolor="#0D0E14", plot_bgcolor="#13141A",
-            showlegend=False, font_family="Inter", title_font_family="Space Grotesk"
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            showlegend=False, font_family="Inter", title_font_family="Plus Jakarta Sans",
+            font=dict(color="#F1F3F9")
         )
         st.plotly_chart(fig_bar, use_container_width=True, key="leaderboard_bar")
 
@@ -289,12 +370,13 @@ if ml_output:
                 fig_cm = px.imshow(
                     cm, x=labels, y=labels, text_auto=True,
                     color_continuous_scale="Purples",
-                    title="Confusion Matrix", template="plotly_dark",
+                    title="Confusion Matrix Diagnostics", template="plotly_dark",
                     labels=dict(x="Predicted", y="Actual"),
                 )
                 fig_cm.update_layout(
-                    paper_bgcolor="#0D0E14", plot_bgcolor="#13141A",
-                    font_family="Inter", title_font_family="Space Grotesk"
+                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                    font_family="Inter", title_font_family="Plus Jakarta Sans",
+                    font=dict(color="#F1F3F9")
                 )
                 st.plotly_chart(fig_cm, use_container_width=True, key=f"cm_{model_name}")
 
@@ -302,6 +384,7 @@ if ml_output:
                     y_test_g, y_pred, labels=label_ids, target_names=labels,
                     output_dict=True, zero_division=0
                 )
+                st.markdown("**Classification Report Breakdown:**")
                 st.dataframe(
                     pd.DataFrame(report).transpose().round(4),
                     use_container_width=True,
@@ -316,20 +399,21 @@ if ml_output:
                 with col_sc1:
                     fig_scatter = px.scatter(
                         x=y_test_local, y=y_pred,
-                        labels={"x": "Actual", "y": "Predicted"},
-                        title="Actual vs Predicted Values",
+                        labels={"x": "Actual Values", "y": "Predicted Values"},
+                        title="Actual vs Predicted Regression Alignment",
                         template="plotly_dark",
-                        color_discrete_sequence=["#6C63FF"],
+                        color_discrete_sequence=["#6366F1"],
                     )
                     mn = min(float(y_test_local.min()), float(y_pred.min()))
                     mx = max(float(y_test_local.max()), float(y_pred.max()))
                     fig_scatter.add_shape(
                         type="line", x0=mn, y0=mn, x1=mx, y1=mx,
-                        line=dict(color="#2DD4A0", width=2, dash="dash")
+                        line=dict(color="#10B981", width=2, dash="dash")
                     )
                     fig_scatter.update_layout(
-                        paper_bgcolor="#0D0E14", plot_bgcolor="#13141A",
-                        font_family="Inter", title_font_family="Space Grotesk"
+                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                        font_family="Inter", title_font_family="Plus Jakarta Sans",
+                        font=dict(color="#F1F3F9")
                     )
                     st.plotly_chart(fig_scatter, use_container_width=True, key=f"scatter_{model_name}")
 
@@ -337,12 +421,13 @@ if ml_output:
                     residuals = y_test_local - y_pred
                     fig_res = px.histogram(
                         x=residuals, nbins=30, title="Residual Error Distribution",
-                        template="plotly_dark", color_discrete_sequence=["#EC4899"],
+                        template="plotly_dark", color_discrete_sequence=["#F43F5E"],
                         labels={"x": "Residual Error"},
                     )
                     fig_res.update_layout(
-                        paper_bgcolor="#0D0E14", plot_bgcolor="#13141A",
-                        font_family="Inter", title_font_family="Space Grotesk"
+                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                        font_family="Inter", title_font_family="Plus Jakarta Sans",
+                        font=dict(color="#F1F3F9")
                     )
                     st.plotly_chart(fig_res, use_container_width=True, key=f"residual_{model_name}")
 
@@ -364,15 +449,16 @@ if ml_output:
                 fig_fi = px.bar(
                     fi_df.head(20), x="Importance", y="Feature", orientation="h",
                     color="Importance",
-                    color_continuous_scale=["#6C63FF", "#2DD4A0"],
-                    title=f"Top Feature Importance - {res['Model']}",
+                    color_continuous_scale=["#6366F1", "#10B981"],
+                    title=f"Top Feature Importance — {res['Model']}",
                     template="plotly_dark",
                 )
                 fig_fi.update_layout(
-                    paper_bgcolor="#0D0E14", plot_bgcolor="#13141A",
-                    font_family="Inter", title_font_family="Space Grotesk",
+                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                    font_family="Inter", title_font_family="Plus Jakarta Sans",
                     yaxis={"categoryorder": "total ascending"},
                     coloraxis_showscale=False,
+                    font=dict(color="#F1F3F9")
                 )
                 st.plotly_chart(fig_fi, use_container_width=True, key=f"fi_{res['Model']}")
 
@@ -393,7 +479,7 @@ if ml_output:
         chosen_model = chosen_model_res["_model"]
 
         raw_feats = pipeline_meta["raw_features"]
-        st.markdown("Enter input values to test model prediction:")
+        st.markdown("Specify feature inputs to test What-If scenario predictions:")
 
         input_data = {}
         grid_cols = st.columns(min(3, max(1, len(raw_feats))))
@@ -422,7 +508,7 @@ if ml_output:
                     input_data[feature_name] = val
 
         predict_btn = st.button(
-            "Run What-If Prediction", type="primary", use_container_width=True, key="ml_predict_btn"
+            "Predict Output", type="primary", use_container_width=True, key="ml_predict_btn"
         )
 
         if predict_btn:
@@ -441,14 +527,15 @@ if ml_output:
                     template="plotly_dark"
                 )
                 fig_prob.update_layout(
-                    paper_bgcolor="#0D0E14", plot_bgcolor="#13141A",
-                    font_family="Inter", title_font_family="Space Grotesk"
+                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                    font_family="Inter", title_font_family="Plus Jakarta Sans",
+                    font=dict(color="#F1F3F9")
                 )
                 st.plotly_chart(fig_prob, use_container_width=True, key="infer_proba_chart")
 
     with col_play2:
-        st.markdown("### Model Export")
-        st.write("Download the trained model object bundled with full pipeline metadata.")
+        st.markdown("### Model Bundle Export")
+        st.write("Export the trained model pipeline bundle (`.pkl`) complete with preprocessing metadata.")
 
         export_bundle = {
             "model_name": best_model_name,
@@ -460,9 +547,11 @@ if ml_output:
 
         bundle_bytes = pickle.dumps(export_bundle)
         st.download_button(
-            label=f"Download Best Model ({best_model_name})",
+            label=f"Export Best Model ({best_model_name})",
             data=bundle_bytes,
             file_name=f"vizml_{best_model_name.lower().replace(' ', '_')}_model.pkl",
             mime="application/octet-stream",
             use_container_width=True
         )
+
+
