@@ -1,4 +1,5 @@
 import numpy as np
+import sklearn
 import pandas as pd
 from typing import Dict, List, Tuple, Any, Optional
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, KFold
@@ -184,6 +185,8 @@ class MLEngine:
             "X_processed_df": X_processed,
             "X_scaled": X_scaled,
             "y": y,
+            # Version metadata so exported .pkl bundles can warn on mismatch
+            "sklearn_version": sklearn.__version__,
         }
 
         return pipeline_meta
@@ -206,7 +209,7 @@ class MLEngine:
             min_class_cnt = int(class_counts.min()) if len(class_counts) > 0 else 0
 
             if len(unique_classes) < 2:
-                raise ValueError("Target column has only 1 unique class — cannot train a classifier.")
+                raise ValueError("Target column has only 1 unique class - cannot train a classifier.")
 
             if min_class_cnt >= 2 and min_class_cnt >= int(1.0 / test_size):
                 stratify = y
@@ -409,8 +412,17 @@ class MLEngine:
                 le = pipeline_meta["label_encoders"][col]
                 try:
                     enc_val = le.transform([raw_val])[0]
-                except Exception:
+                except ValueError:
+                    # Value was never seen during training — use most frequent class (index 0)
+                    # and surface a warning so callers know the input was unseen.
                     enc_val = 0
+                    import warnings
+                    warnings.warn(
+                        f"Inference input for '{col}' has unseen value '{raw_val}'. "
+                        f"Known values: {list(le.classes_)}. Defaulting to '{le.classes_[0]}'.",
+                        UserWarning,
+                        stacklevel=2,
+                    )
                 lbl_df = pd.DataFrame({col: [enc_val]}, index=df_row.index)
                 processed_parts.append(lbl_df)
 

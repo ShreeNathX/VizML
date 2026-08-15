@@ -1,729 +1,514 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.express as px
 from typing import Any
 
-# Safe check for statsmodels (required for OLS trendlines in Plotly)
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+from src.styles import inject_css
+
 try:
-    import statsmodels  # pyright: ignore[reportMissingImports] # type: ignore
+    import statsmodels  # type: ignore
+
     has_statsmodels = True
 except ImportError:
     has_statsmodels = False
 
-st.set_page_config(page_title="VizML — Diagnostic Visualizations", layout="wide")
-
-# Senior Designer Custom CSS Design System
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
-    :root {
-        --bg-main: #090A10;
-        --bg-card: #121420;
-        --bg-card-hover: #181B2B;
-        --border-color: rgba(255, 255, 255, 0.08);
-        --border-hover: rgba(99, 102, 241, 0.35);
-        --accent-indigo: #6366F1;
-        --accent-emerald: #10B981;
-        --accent-amber: #F59E0B;
-        --accent-rose: #F43F5E;
-        --text-primary: #F1F3F9;
-        --text-secondary: #94A3B8;
-        --text-muted: #64748B;
-    }
-
-    html, body, [class*="css"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: var(--text-primary);
-    }
-
-    #MainMenu { visibility: hidden; }
-    footer { visibility: hidden; }
-    header { visibility: hidden; }
-
-    .stApp {
-        background-color: var(--bg-main);
-        background-image: 
-            radial-gradient(at 85% 15%, rgba(99, 102, 241, 0.07) 0px, transparent 40%),
-            radial-gradient(at 15% 85%, rgba(16, 185, 129, 0.05) 0px, transparent 40%);
-        background-attachment: fixed;
-    }
-
-    section[data-testid="stSidebar"] {
-        background: #0C0D16 !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
-    }
-
-    /* Page Header */
-    .header-box {
-        background: linear-gradient(135deg, rgba(18, 20, 32, 0.9) 0%, rgba(12, 13, 22, 0.95) 100%);
-        border: 1px solid var(--border-color);
-        border-radius: 18px;
-        padding: 32px 36px;
-        margin-bottom: 28px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-    .header-eyebrow {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        color: #A5B4FC;
-        margin-bottom: 8px;
-    }
-    .page-title {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 34px;
-        font-weight: 800;
-        letter-spacing: -0.8px;
-        background: linear-gradient(135deg, #FFFFFF 0%, #C7D2FE 60%, #818CF8 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 6px;
-    }
-    .page-sub {
-        font-size: 14px;
-        color: var(--text-secondary);
-        max-width: 650px;
-    }
-
-    /* Card Containers */
-    .diag-card {
-        border-radius: 16px;
-        padding: 24px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-        margin-bottom: 25px;
-    }
-
-    .section-header {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-top: 14px;
-        margin-bottom: 8px;
-    }
-
-    .alert-box {
-        padding: 14px 18px;
-        border-radius: 10px;
-        margin-bottom: 14px;
-        font-size: 13px;
-        line-height: 1.6;
-    }
-    .alert-warning {
-        background-color: rgba(245, 158, 11, 0.1);
-        border: 1px solid rgba(245, 158, 11, 0.35);
-        color: #FBBF24;
-    }
-    .alert-danger {
-        background-color: rgba(244, 63, 94, 0.1);
-        border: 1px solid rgba(244, 63, 94, 0.35);
-        color: #FB7185;
-    }
-    .alert-info {
-        background-color: rgba(99, 102, 241, 0.1);
-        border: 1px solid rgba(99, 102, 241, 0.35);
-        color: #C7D2FE;
-    }
-    .alert-success {
-        background-color: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.35);
-        color: #34D399;
-    }
-
-    div[data-testid="stMetricValue"] {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 26px;
-        font-weight: 700;
-        color: var(--accent-indigo) !important;
-    }
-    div[data-testid="stMetricLabel"] {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: var(--text-muted) !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
+st.set_page_config(page_title="VizML: Diagnostic Visualizations", layout="wide")
+inject_css()
 
 if "df" not in st.session_state or st.session_state["df"] is None:
-    st.markdown("""
-    <div class="header-box">
-        <div class="header-eyebrow">Phase 02 — Exploratory Analytics</div>
+    st.markdown(
+        """
+    <div class="glass-card">
+        <span class="eyebrow">Phase 02 | Exploratory Analytics</span>
         <div class="page-title">Diagnostic Visualizations</div>
-        <div class="page-sub">Spot feature correlations, redundant variables, and high-dimensional distribution geometry.</div>
+        <div class="page-sub">Upload a dataset in Data Curation to unlock interactive diagnostics.</div>
     </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="diag-card" style="text-align: center; padding: 48px;">
-        <h3 style="color: #F59E0B; margin-bottom: 14px; font-family: 'Plus Jakarta Sans', sans-serif;">
-            No Active Dataset Loaded
-        </h3>
-        <p style="color: #94A3B8; margin-bottom: 20px; font-size: 14px; max-width: 480px; margin-left: auto; margin-right: auto;">
-            Please upload a dataset in the Data Curation module first to unlock interactive diagnostic charts.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
+    """,
+        unsafe_allow_html=True,
+    )
     st.page_link("pages/1_Data_Curation.py", label="Go to Data Curation Engine")
+    st.stop()
 
-else:
-    df = st.session_state["df"]
+df = st.session_state["df"]
+numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+categorical_cols = [c for c in df.columns if c not in numeric_cols]
 
-    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    categorical_cols = [c for c in df.columns if c not in numeric_cols]
-
-    st.markdown("""
-    <div class="header-box">
-        <div class="header-eyebrow">Phase 02 — Exploratory Analytics</div>
-        <div class="page-title">Diagnostic Visualizations</div>
-        <div class="page-sub">
-            Multi-dimensional diagnostic charts, automated feature scans, correlation redundancy detection, and custom Plotly visual builders.
-        </div>
+st.markdown(
+    """
+<div class="glass-card">
+    <span class="eyebrow">Phase 02 | Exploratory Analytics</span>
+    <div class="page-title">Diagnostic Visualizations</div>
+    <div class="page-sub">
+        Multi-dimensional diagnostics, correlation redundancy detection, 3D feature explorers, and a custom Plotly builder.
     </div>
-    """, unsafe_allow_html=True)
+</div>
+""",
+    unsafe_allow_html=True,
+)
 
-    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-    with col_m1:
-        st.metric("Total Rows", f"{df.shape[0]:,}")
-    with col_m2:
-        st.metric("Total Columns", df.shape[1])
-    with col_m3:
-        st.metric("Numeric Features", len(numeric_cols))
-    with col_m4:
-        st.metric("Categorical Features", len(categorical_cols))
+m1, m2, m3, m4 = st.columns(4)
+m1.metric("Total Rows", f"{df.shape[0]:,}")
+m2.metric("Total Columns", df.shape[1])
+m3.metric("Numeric Features", len(numeric_cols))
+m4.metric("Categorical Features", len(categorical_cols))
 
-    st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown('<div class="section-header">Section 1: Auto-Generated Insights Dashboard</div>', unsafe_allow_html=True)
-    st.write("VizML scans your dataset schemas and automatically compiles baseline visual diagnostics.")
+st.markdown(
+    '<div class="section-header"><span class="badge badge-indigo">AUTO</span> Generated Insights Dashboard</div>',
+    unsafe_allow_html=True,
+)
 
-    auto_plots = []
+auto_plots: list = []
+auto_errors: list = []
 
+try:
     donut_cats = [c for c in categorical_cols if 2 <= df[c].nunique() <= 6]
     if donut_cats:
-        prim_cat = donut_cats[0]
-        fig_donut = px.pie(
-            df, names=prim_cat, hole=0.4,
-            template="plotly_dark",
-            color_discrete_sequence=px.colors.qualitative.Safe
-        )
-        fig_donut.update_layout(
-            title=dict(text=f"Proportion Share: {prim_cat} (Donut)", font=dict(family="Plus Jakarta Sans", size=14)),
+        fig = px.pie(df, names=donut_cats[0], hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
+        fig.update_layout(
+            title=dict(text=f"Proportion: {donut_cats[0]}", font=dict(family="Plus Jakarta Sans", size=14, color="#111827")),
             paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#F1F3F9"),
-            margin=dict(t=40, b=10, l=10, r=10)
+            font=dict(color="#111827"),
+            margin=dict(t=40, b=10, l=10, r=10),
         )
-        auto_plots.append(("donut_prop", fig_donut))
+        auto_plots.append(("donut", fig))
+except Exception as _e:
+    auto_errors.append(f"Proportion chart skipped: {_e}")
 
-    lat_cols = [c for c in df.columns if any(kw in c.lower() for kw in ["latitude", "lat_"]) or c.lower() == "lat"]
-    lon_cols = [c for c in df.columns if any(kw in c.lower() for kw in ["longitude", "lon_"]) or c.lower() in ("lon", "lng")]
-    country_cols = [c for c in df.columns if any(kw in c.lower() for kw in ["country", "nation", "state", "iso"])]
-
+try:
+    lat_cols = [c for c in df.columns if "lat" in c.lower()]
+    lon_cols = [c for c in df.columns if any(k in c.lower() for k in ["lon", "lng"])]
+    country_cols = [c for c in df.columns if any(k in c.lower() for k in ["country", "nation", "state", "iso"])]
     if lat_cols and lon_cols:
-        fig_map = px.scatter_geo(
-            df, lat=lat_cols[0], lon=lon_cols[0],
+        fig = px.scatter_geo(
+            df,
+            lat=lat_cols[0],
+            lon=lon_cols[0],
             color=numeric_cols[0] if numeric_cols else None,
-            title=f"Geographical Coordinates: {lat_cols[0]} / {lon_cols[0]}",
-            template="plotly_dark", color_continuous_scale="Plasma"
+            title=f"Geo: {lat_cols[0]}/{lon_cols[0]}",
+            color_continuous_scale="Viridis",
         )
-        fig_map.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F1F3F9"),
-            margin=dict(t=40, b=10, l=10, r=10)
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#111827"),
+            margin=dict(t=40, b=10, l=10, r=10),
         )
-        auto_plots.append(("geo_map", fig_map))
+        auto_plots.append(("geo", fig))
     elif country_cols:
-        geo_col = country_cols[0]
-        map_df = df[geo_col].dropna().value_counts().reset_index()
-        map_df.columns = [geo_col, "Count"]
-        loc_mode = "country names"
-        if "state" in geo_col.lower():
-            loc_mode = "USA-states"
-        elif "iso" in geo_col.lower():
-            loc_mode = "ISO-3"
-        fig_map = px.choropleth(
-            map_df, locations=geo_col, locationmode=loc_mode, color="Count",
-            title=f"Geographical Distribution: {geo_col}",
-            template="plotly_dark", color_continuous_scale="Plasma"
+        gdf = df[country_cols[0]].dropna().value_counts().reset_index()
+        gdf.columns = [country_cols[0], "Count"]
+        lm = "country names" if "state" not in country_cols[0].lower() else "USA-states"
+        fig = px.choropleth(
+            gdf,
+            locations=country_cols[0],
+            locationmode=lm,
+            color="Count",
+            title=f"Geo Distribution: {country_cols[0]}",
+            color_continuous_scale="Viridis",
         )
-        fig_map.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F1F3F9"),
-            margin=dict(t=40, b=10, l=10, r=10)
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#111827"),
+            margin=dict(t=40, b=10, l=10, r=10),
         )
-        auto_plots.append(("geo_map", fig_map))
+        auto_plots.append(("geo", fig))
+except Exception as _e:
+    auto_errors.append(f"Geo chart skipped: {_e}")
 
-    datetime_cols = df.select_dtypes(include=[np.datetime64]).columns.tolist()
-    if len(datetime_cols) == 0:
-        potential_dates = [c for c in categorical_cols if any(kw in c.lower() for kw in ["date", "time", "year", "month"])]
-        if potential_dates:
-            try:
-                temp_dates = pd.to_datetime(df[potential_dates[0]], errors="coerce", format="mixed")
-                if temp_dates.notna().sum() > 0.5 * len(df):
-                    df_temp = df.copy()
-                    df_temp[potential_dates[0]] = temp_dates
-                    datetime_cols = [potential_dates[0]]
-                    df = df_temp
-            except Exception:
-                pass
-
-    if datetime_cols and numeric_cols:
-        date_col = datetime_cols[0]
-        num_target = numeric_cols[0]
-        ts_df = df[[date_col, num_target]].dropna().sort_values(by=date_col)
-        fig_ts = px.line(
-            ts_df, x=date_col, y=num_target,
-            template="plotly_dark", color_discrete_sequence=["#F59E0B"]
+try:
+    dt_cols = df.select_dtypes(include=[np.datetime64]).columns.tolist()
+    if not dt_cols:
+        pot = [c for c in categorical_cols if any(k in c.lower() for k in ["date", "time", "year", "month"])]
+        if pot:
+            tmp = pd.to_datetime(df[pot[0]], errors="coerce", format="mixed")
+            if tmp.notna().sum() > 0.5 * len(df):
+                df = df.copy()
+                df[pot[0]] = tmp
+                dt_cols = [pot[0]]
+    if dt_cols and numeric_cols:
+        ts = df[[dt_cols[0], numeric_cols[0]]].dropna().sort_values(dt_cols[0])
+        fig = px.line(ts, x=dt_cols[0], y=numeric_cols[0], color_discrete_sequence=["#6366F1"])
+        fig.update_layout(
+            title=dict(text=f"Trend: {numeric_cols[0]}", font=dict(family="Plus Jakarta Sans", size=14, color="#111827")),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#111827"),
+            margin=dict(t=40, b=10, l=10, r=10),
         )
-        fig_ts.update_layout(
-            title=dict(text=f"Temporal Trend: {num_target} over time", font=dict(family="Plus Jakarta Sans", size=14)),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#F1F3F9"), margin=dict(t=40, b=10, l=10, r=10)
+        auto_plots.append(("ts", fig))
+except Exception as _e:
+    auto_errors.append(f"Time-series chart skipped: {_e}")
+
+try:
+    if len(auto_plots) < 4 and numeric_cols:
+        fig = px.histogram(df, x=numeric_cols[0], marginal="box", color_discrete_sequence=["#6366F1"])
+        fig.update_layout(
+            title=dict(text=f"Distribution: {numeric_cols[0]}", font=dict(family="Plus Jakarta Sans", size=14, color="#111827")),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#111827"),
+            margin=dict(t=40, b=10, l=10, r=10),
         )
-        auto_plots.append(("time_series", fig_ts))
+        auto_plots.append(("hist", fig))
+except Exception as _e:
+    auto_errors.append(f"Histogram skipped: {_e}")
 
-    if len(auto_plots) < 4 and len(numeric_cols) > 0:
-        prim_num = numeric_cols[0]
-        fig_num = px.histogram(
-            df, x=prim_num, marginal="box",
-            template="plotly_dark", color_discrete_sequence=["#6366F1"]
+try:
+    if len(auto_plots) < 4 and len(numeric_cols) >= 3:
+        fig = px.scatter_3d(
+            df,
+            x=numeric_cols[0],
+            y=numeric_cols[1],
+            z=numeric_cols[2],
+            color=categorical_cols[0] if categorical_cols else None,
+            opacity=0.8,
+            color_discrete_sequence=px.colors.qualitative.Pastel,
         )
-        fig_num.update_layout(
-            title=dict(text=f"Distribution of {prim_num}", font=dict(family="Plus Jakarta Sans", size=14)),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#F1F3F9"), margin=dict(t=40, b=10, l=10, r=10)
+        fig.update_layout(
+            title=dict(text="3D Feature Projection", font=dict(family="Plus Jakarta Sans", size=14, color="#111827")),
+            paper_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#111827"),
+            margin=dict(t=40, b=10, l=10, r=10),
         )
-        auto_plots.append(("numeric_dist", fig_num))
+        auto_plots.append(("3d", fig))
+    elif len(auto_plots) < 4 and len(numeric_cols) >= 2:
+        use_tl = has_statsmodels and df.shape[0] > 2 and df[numeric_cols[:2]].isna().sum().sum() == 0
+        fig = px.scatter(
+            df,
+            x=numeric_cols[0],
+            y=numeric_cols[1],
+            trendline="ols" if use_tl else None,
+            color_discrete_sequence=["#8B5CF6"],
+            opacity=0.7,
+        )
+        fig.update_layout(
+            title=dict(text=f"{numeric_cols[0]} vs {numeric_cols[1]}", font=dict(family="Plus Jakarta Sans", size=14, color="#111827")),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#111827"),
+            margin=dict(t=40, b=10, l=10, r=10),
+        )
+        auto_plots.append(("scatter", fig))
+except Exception as _e:
+    auto_errors.append(f"Scatter/3D chart skipped: {_e}")
 
-    if len(auto_plots) < 4:
-        if len(numeric_cols) >= 3:
-            fig_3d_proj = px.scatter_3d(
-                df, x=numeric_cols[0], y=numeric_cols[1], z=numeric_cols[2],
-                color=categorical_cols[0] if categorical_cols else None,
-                template="plotly_dark", opacity=0.8,
-                color_discrete_sequence=px.colors.qualitative.Safe,
-                color_continuous_scale="Plasma"
-            )
-            fig_3d_proj.update_layout(
-                title=dict(
-                    text=f"3D Feature Projection: {numeric_cols[0]} / {numeric_cols[1]} / {numeric_cols[2]}",
-                    font=dict(family="Plus Jakarta Sans", size=14)
-                ),
-                paper_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#F1F3F9"), margin=dict(t=40, b=10, l=10, r=10)
-            )
-            auto_plots.append(("3d_projection", fig_3d_proj))
-        elif len(numeric_cols) >= 2:
-            use_trendline = (
-                has_statsmodels
-                and df.shape[0] > 2
-                and df[numeric_cols[:2]].isna().sum().sum() == 0
-            )
-            fig_scatter = px.scatter(
-                df, x=numeric_cols[0], y=numeric_cols[1],
-                trendline="ols" if use_trendline else None,
-                template="plotly_dark",
-                color_discrete_sequence=["#10B981"], opacity=0.7
-            )
-            fig_scatter.update_layout(
-                title=dict(
-                    text=f"Numerical Interaction: {numeric_cols[0]} vs {numeric_cols[1]}",
-                    font=dict(family="Plus Jakarta Sans", size=14)
-                ),
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#F1F3F9"), margin=dict(t=40, b=10, l=10, r=10)
-            )
-            auto_plots.append(("scatter_interaction", fig_scatter))
+if not auto_plots and not auto_errors:
+    st.info("Not enough columns to generate automatic insights.")
+else:
+    for i in range(0, len(auto_plots), 2):
+        cl, cr = st.columns(2)
+        with cl:
+            if i < len(auto_plots):
+                try:
+                    st.plotly_chart(auto_plots[i][1], width="stretch", key=f"ap_{auto_plots[i][0]}")
+                except Exception as e:
+                    st.warning(f"Chart render error: {e}")
+        with cr:
+            if i + 1 < len(auto_plots):
+                try:
+                    st.plotly_chart(auto_plots[i+1][1], width="stretch", key=f"ap_{auto_plots[i+1][0]}")
+                except Exception as e:
+                    st.warning(f"Chart render error: {e}")
+    if auto_errors:
+        with st.expander(f"{len(auto_errors)} auto-chart(s) skipped", expanded=False):
+            for msg in auto_errors:
+                st.caption(msg)
 
-    if len(auto_plots) == 0:
-        st.info("No columns available to compile automated insights.")
-    else:
-        st.markdown('<div class="diag-card">', unsafe_allow_html=True)
-        cols_count = len(auto_plots)
-        for i in range(0, cols_count, 2):
-            col_left_auto, col_right_auto = st.columns(2)
-            with col_left_auto:
-                if i < cols_count:
-                    st.plotly_chart(
-                        auto_plots[i][1], use_container_width=True, key=f"auto_plot_{auto_plots[i][0]}"
-                    )
-            with col_right_auto:
-                if i + 1 < cols_count:
-                    st.plotly_chart(
-                        auto_plots[i + 1][1], use_container_width=True, key=f"auto_plot_{auto_plots[i + 1][0]}"
-                    )
-        st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown('<div class="section-header">Section 2: Multidimensional Diagnostic Suite</div>', unsafe_allow_html=True)
-    st.write("Use specialized multi-variable diagnostic views to detect feature redundancy, multicollinearity, or high-dimensional clustering.")
+st.markdown(
+    '<div class="section-header"><span class="badge badge-violet">SUITE</span> Multidimensional Diagnostic Suite</div>',
+    unsafe_allow_html=True,
+)
 
-    if len(numeric_cols) < 2:
-        st.info("At least 2 numeric columns are required to unlock the Multidimensional Diagnostic Suite.")
-    else:
-        tab_corr, tab_scatter, tab_3d = st.tabs([
-            "Correlation Matrix & Redundancy Inspector",
-            "2D Scatter Matrix",
-            "3D Scatter Explorer"
-        ])
+if len(numeric_cols) < 2:
+    st.info("At least 2 numeric columns are required for the Diagnostic Suite.")
+else:
+    tab_corr, tab_scatter, tab_3d = st.tabs(["Correlation Matrix", "Scatter Matrix", "3D Explorer"])
 
-        with tab_corr:
-            col_setup_l, col_setup_r = st.columns([6, 6])
-            with col_setup_l:
-                selected_corr_cols = st.multiselect(
-                    "Columns to include in correlation matrix:",
-                    numeric_cols, default=numeric_cols, key="corr_multiselect_tier2"
+    with tab_corr:
+        cl, cr = st.columns([6, 6])
+        with cl:
+            sel_corr = st.multiselect("Columns:", numeric_cols, default=numeric_cols, key="corr_cols")
+        with cr:
+            c1, c2 = st.columns(2)
+            with c1:
+                corr_method = st.radio(
+                    "Method", ["pearson", "spearman", "kendall"], index=0, horizontal=True, key="corr_method"
                 )
-            with col_setup_r:
-                col_sub1, col_sub2 = st.columns(2)
-                with col_sub1:
-                    corr_method = st.radio(
-                        "Method", ["pearson", "spearman", "kendall"],
-                        index=0, horizontal=True, key="corr_method_tier2"
-                    )
-                with col_sub2:
-                    threshold = st.slider(
-                        "Redundancy Threshold (|r|)", 0.50, 0.99, 0.80, 0.05,
-                        key="corr_threshold_tier2"
-                    )
+            with c2:
+                threshold = st.slider("Redundancy |r|", 0.50, 0.99, 0.80, 0.05, key="corr_thresh")
 
-            if len(selected_corr_cols) < 2:
-                st.warning("Select at least 2 columns to calculate correlation.")
-            else:
-                corr_matrix = df[selected_corr_cols].corr(method=corr_method)
-                redundant_pairs = []
-                for i in range(len(selected_corr_cols)):
-                    for j in range(i + 1, len(selected_corr_cols)):
-                        col_a = selected_corr_cols[i]
-                        col_b = selected_corr_cols[j]
-                        r_val = corr_matrix.loc[col_a, col_b]
-                        if abs(r_val) >= threshold:
-                            redundant_pairs.append((col_a, col_b, r_val))
-                redundant_pairs.sort(key=lambda x: abs(x[2]), reverse=True)
-
-                col_plot, col_inspect = st.columns([7, 5])
-                with col_plot:
-                    fig_heat = px.imshow(
-                        corr_matrix,
-                        text_auto=".2f" if len(selected_corr_cols) <= 15 else False,
+        if len(sel_corr) < 2:
+            st.warning("Select at least 2 columns.")
+        else:
+            try:
+                corr = df[sel_corr].corr(method=corr_method)
+                pairs = [
+                    (sel_corr[i], sel_corr[j], corr.loc[sel_corr[i], sel_corr[j]])
+                    for i in range(len(sel_corr))
+                    for j in range(i + 1, len(sel_corr))
+                    if abs(corr.loc[sel_corr[i], sel_corr[j]]) >= threshold
+                ]
+                pairs.sort(key=lambda x: abs(x[2]), reverse=True)
+                cp, ci = st.columns([7, 5])
+                with cp:
+                    fig_h = px.imshow(
+                        corr,
+                        text_auto=".2f" if len(sel_corr) <= 15 else False,
                         aspect="auto",
                         color_continuous_scale="RdBu",
-                        color_continuous_midpoint=0.0,
-                        range_color=[-1.0, 1.0],
-                        labels=dict(color="Correlation"),
-                        template="plotly_dark"
+                        color_continuous_midpoint=0,
+                        range_color=[-1, 1],
                     )
-                    fig_heat.update_layout(
-                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                        font=dict(color="#F1F3F9"), margin=dict(t=10, b=10, l=10, r=10)
+                    fig_h.update_layout(
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        font=dict(color="#111827"),
+                        margin=dict(t=10, b=10, l=10, r=10),
                     )
-                    st.plotly_chart(fig_heat, use_container_width=True)
-
-                with col_inspect:
-                    st.markdown("#### Feature Redundancy Inspector")
-                    if redundant_pairs:
+                    st.plotly_chart(fig_h, width="stretch")
+                with ci:
+                    st.markdown("#### Redundancy Inspector")
+                    if pairs:
                         st.markdown(
-                            f'<div class="alert-box alert-warning">'
-                            f'Found <strong>{len(redundant_pairs)}</strong> pairs with absolute correlation '
-                            f'>= <strong>{threshold:.2f}</strong>.'
-                            f'</div>',
-                            unsafe_allow_html=True
+                            f'<div class="alert-box alert-warning">Found <strong>{len(pairs)}</strong> pairs with |r| >= <strong>{threshold:.2f}</strong>.</div>',
+                            unsafe_allow_html=True,
                         )
-                        st.write("Highly correlated features convey redundant information. Consider dropping one of each pair:")
-                        for col_a, col_b, r_val in redundant_pairs:
-                            direction = "positive" if r_val > 0 else "negative"
-                            st.markdown(f"- `{col_a}` — `{col_b}`: **{r_val:.3f}** ({direction})")
+                        for a, b, r in pairs:
+                            st.markdown(f"- `{a}` vs `{b}`: **{r:.3f}**")
                     else:
                         st.markdown(
-                            f'<div class="alert-box alert-success">'
-                            f'No redundant feature pairs detected at threshold <strong>{threshold:.2f}</strong>.'
-                            f'</div>',
-                            unsafe_allow_html=True
+                            f'<div class="alert-box alert-success">No redundant pairs at threshold {threshold:.2f}.</div>',
+                            unsafe_allow_html=True,
                         )
-                        st.write("All selected numeric columns are linearly distinct under this threshold.")
+            except Exception as err:
+                st.error(str(err))
 
-        with tab_scatter:
-            default_dims = numeric_cols[:min(4, len(numeric_cols))]
-            col_sel1, col_sel2 = st.columns([8, 4])
-            with col_sel1:
-                selected_dims = st.multiselect(
-                    "Select dimensions to plot (Max 6 recommended):",
-                    numeric_cols, default=default_dims, key="scatter_matrix_dims_tier2"
-                )
-            with col_sel2:
-                color_var = st.selectbox(
-                    "Color Mapping Variable (Optional):",
-                    ["None"] + df.columns.tolist(), key="scatter_matrix_color_tier2"
-                )
-
-            if len(selected_dims) < 2:
-                st.info("Please select at least 2 dimensions to generate the scatter matrix.")
-            else:
-                if len(selected_dims) > 6:
-                    st.markdown(
-                        '<div class="alert-box alert-warning">Selecting more than 6 dimensions can slow down rendering.</div>',
-                        unsafe_allow_html=True
-                    )
-
-                with st.spinner("Generating Scatter Matrix..."):
-                    fig_matrix = px.scatter_matrix(
-                        df, dimensions=selected_dims,
-                        color=None if color_var == "None" else color_var,
-                        opacity=0.7, template="plotly_dark",
-                        color_discrete_sequence=px.colors.qualitative.Safe,
-                        color_continuous_scale="Plasma"
-                    )
-                    fig_matrix.update_layout(
-                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                        font=dict(color="#F1F3F9"), margin=dict(t=20, b=20, l=20, r=20)
-                    )
-                    fig_matrix.update_traces(diagonal_visible=True, showupperhalf=True)
-                    st.plotly_chart(fig_matrix, use_container_width=True)
-
-        with tab_3d:
-            col_axes, col_extras = st.columns([7, 5])
-            with col_axes:
-                st.markdown("**Axis Mapping**")
-                col_x, col_y, col_z = st.columns(3)
-                with col_x:
-                    x_var = st.selectbox("X-Axis (Numeric)", numeric_cols, index=0, key="3d_x_tier2")
-                with col_y:
-                    y_var = st.selectbox("Y-Axis (Numeric)", numeric_cols,
-                                         index=min(1, len(numeric_cols) - 1), key="3d_y_tier2")
-                with col_z:
-                    z_var = st.selectbox("Z-Axis (Numeric)", numeric_cols,
-                                         index=min(2, len(numeric_cols) - 1), key="3d_z_tier2")
-            with col_extras:
-                st.markdown("**Aesthetic Encodings**")
-                col_col, col_sz = st.columns(2)
-                with col_col:
-                    color_var_3d = st.selectbox(
-                        "Color mapping column", ["None"] + df.columns.tolist(), key="3d_color_val_tier2"
-                    )
-                with col_sz:
-                    size_var_3d = st.selectbox(
-                        "Size mapping column", ["None"] + numeric_cols, key="3d_size_val_tier2"
-                    )
-
-            with st.spinner("Generating 3D Scatter Explorer..."):
-                plot_df = df.copy()
-                size_param = None
-                if size_var_3d != "None":
-                    size_param = size_var_3d
-                    plot_df[size_var_3d] = plot_df[size_var_3d].fillna(0.0)
-                    min_val = plot_df[size_var_3d].min()
-                    if min_val <= 0:
-                        plot_df[size_var_3d] = plot_df[size_var_3d] - min_val + 0.1
-
-                fig_3d = px.scatter_3d(
-                    plot_df, x=x_var, y=y_var, z=z_var,
-                    color=None if color_var_3d == "None" else color_var_3d,
-                    size=size_param, opacity=0.8,
-                    template="plotly_dark",
-                    color_discrete_sequence=px.colors.qualitative.Safe,
-                    color_continuous_scale="Plasma"
-                )
-                fig_3d.update_layout(
-                    paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F1F3F9"),
-                    margin=dict(t=10, b=10, l=10, r=10),
-                    scene=dict(
-                        xaxis=dict(backgroundcolor="rgba(0,0,0,0)", gridcolor="#272836", showbackground=True),
-                        yaxis=dict(backgroundcolor="rgba(0,0,0,0)", gridcolor="#272836", showbackground=True),
-                        zaxis=dict(backgroundcolor="rgba(0,0,0,0)", gridcolor="#272836", showbackground=True)
-                    )
-                )
-                st.plotly_chart(fig_3d, use_container_width=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    st.markdown('<div class="section-header">Section 3: Interactive Custom Chart Builder</div>', unsafe_allow_html=True)
-    st.write("Configure and create custom 2D or 3D charts tailored to specific features of interest.")
-
-    st.markdown('<div class="diag-card">', unsafe_allow_html=True)
-
-    col_ctrl_type, col_ctrl_x, col_ctrl_y = st.columns(3)
-
-    with col_ctrl_type:
-        chart_type = st.selectbox(
-            "Select Chart Type",
-            [
-                "Scatter Plot", "Line Chart", "Bar Chart", "Histogram",
-                "Box Plot", "Violin Plot",
-                "Donut Chart", "World Map (Choropleth)",
-                "3D Scatter Plot", "3D Line Plot"
-            ]
-        )
-
-    with col_ctrl_x:
-        if chart_type == "World Map (Choropleth)":
-            x_label = "Locations Column (Country Name/Code)"
-        elif chart_type == "Donut Chart":
-            x_label = "Slices/Names Column (Categorical)"
+    with tab_scatter:
+        d1, d2 = st.columns([8, 4])
+        with d1:
+            dims = st.multiselect(
+                "Dimensions (max 6):", numeric_cols, default=numeric_cols[:min(4, len(numeric_cols))], key="scatter_dims"
+            )
+        with d2:
+            color_v = st.selectbox("Color by:", ["None"] + df.columns.tolist(), key="scatter_color")
+        if len(dims) < 2:
+            st.info("Select at least 2 dimensions.")
         else:
-            x_label = "X-Axis Column"
-        x_col = st.selectbox(x_label, df.columns.tolist())
-
-    with col_ctrl_y:
-        if chart_type in ["3D Scatter Plot", "3D Line Plot"]:
-            y_col = st.selectbox("Y-Axis Column", df.columns.tolist(), index=min(1, len(df.columns) - 1))
-        elif chart_type == "Donut Chart":
-            y_col = st.selectbox("Values Column (Optional, Numeric)", ["None"] + numeric_cols)
-        elif chart_type == "World Map (Choropleth)":
-            y_col = st.selectbox("Color Value Column (Optional)", ["None"] + df.columns.tolist())
-        else:
-            y_opts = ["None"] + df.columns.tolist()
-            default_y_index = 0
-            if chart_type in ["Scatter Plot", "Line Chart", "Box Plot", "Violin Plot"] and len(df.columns) > 1:
-                other_cols = [c for c in df.columns if c != x_col]
-                if other_cols:
-                    default_y_index = y_opts.index(other_cols[0])
-            y_col = st.selectbox("Y-Axis Column (Optional/Required)", y_opts, index=default_y_index)
-
-    z_col = None
-    if chart_type in ["3D Scatter Plot", "3D Line Plot"]:
-        col_z_axis, col_z_space = st.columns([4, 8])
-        with col_z_axis:
-            z_col = st.selectbox("Z-Axis Column", df.columns.tolist(), index=min(2, len(df.columns) - 1))
-
-    with st.expander("Advanced Aesthetic & Subplot Settings", expanded=False):
-        col_sub_a, col_sub_b, col_sub_c = st.columns(3)
-        with col_sub_a:
-            color_col = st.selectbox("Color Grouping (Hue)", ["None"] + df.columns.tolist(), key="custom_color_v3")
-        with col_sub_b:
-            facet_col = st.selectbox("Facet Subplots Column (2D Only)", ["None"] + categorical_cols, key="custom_facet_v3")
-        with col_sub_c:
-            opacity_val = st.slider("Opacity / Transparency", 0.1, 1.0, 0.8, key="custom_opacity_v3")
-
-        col_opts1, col_opts2 = st.columns(2)
-        with col_opts1:
-            custom_title = st.text_input("Custom Chart Title", value="", key="custom_title_v3")
-            log_x = st.checkbox("Log scale X-axis", key="custom_log_x_v3")
-        with col_opts2:
-            log_y = st.checkbox("Log scale Y-axis", key="custom_log_y_v3")
-            if chart_type == "Histogram":
-                hist_bins = st.slider("Histogram Bins", 5, 100, 30, key="custom_hist_bins_v3")
-            elif chart_type == "Bar Chart":
-                barmode_val = st.radio(
-                    "Bar Mode", ["group", "stack", "overlay"],
-                    index=0, horizontal=True, key="custom_barmode_v3"
+            try:
+                fig_m = px.scatter_matrix(
+                    df,
+                    dimensions=dims,
+                    color=None if color_v == "None" else color_v,
+                    opacity=0.7,
+                    color_discrete_sequence=px.colors.qualitative.Pastel,
+                    color_continuous_scale="Viridis",
                 )
+                fig_m.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font=dict(color="#111827"),
+                    margin=dict(t=20, b=20, l=20, r=20),
+                )
+                st.plotly_chart(fig_m, width="stretch")
+            except Exception as err:
+                st.error(str(err))
 
-    with st.spinner("Rendering Interactive Chart..."):
-        chart_error = None
-        fig_custom = None
+    with tab_3d:
+        ax, ex = st.columns([7, 5])
+        with ax:
+            xc, yc, zc = st.columns(3)
+            with xc:
+                x3 = st.selectbox("X", numeric_cols, index=0, key="3dx")
+            with yc:
+                y3 = st.selectbox("Y", numeric_cols, index=min(1, len(numeric_cols) - 1), key="3dy")
+            with zc:
+                z3 = st.selectbox("Z", numeric_cols, index=min(2, len(numeric_cols) - 1), key="3dz")
+        with ex:
+            cc, sc = st.columns(2)
+            with cc:
+                col3 = st.selectbox("Color", ["None"] + df.columns.tolist(), key="3dcol")
+            with sc:
+                sz3 = st.selectbox("Size", ["None"] + numeric_cols, key="3dsz")
         try:
-            kwargs: dict[str, Any] = {
-                "data_frame": df,
-                "template": "plotly_dark",
-            }
-            if chart_type in ["Scatter Plot", "Bar Chart", "Histogram", "Donut Chart", "3D Scatter Plot"]:
-                kwargs["opacity"] = opacity_val
-            kwargs["color_discrete_sequence"] = px.colors.qualitative.Safe
-            if chart_type in ["Scatter Plot", "Bar Chart", "World Map (Choropleth)", "3D Scatter Plot"]:
-                kwargs["color_continuous_scale"] = "Plasma"
+            pdf = df.copy()
+            sp = None
+            if sz3 != "None":
+                sp = sz3
+                pdf[sz3] = pdf[sz3].fillna(0)
+                mn = pdf[sz3].min()
+                if mn <= 0:
+                    pdf[sz3] = pdf[sz3] - mn + 0.1
+            fig_3d = px.scatter_3d(
+                pdf,
+                x=x3,
+                y=y3,
+                z=z3,
+                color=None if col3 == "None" else col3,
+                size=sp,
+                opacity=0.8,
+                color_discrete_sequence=px.colors.qualitative.Pastel,
+                color_continuous_scale="Viridis",
+            )
+            fig_3d.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#111827"),
+                margin=dict(t=10, b=10, l=10, r=10),
+            )
+            st.plotly_chart(fig_3d, width="stretch")
+        except Exception as err:
+            st.error(str(err))
 
-            if chart_type in ["3D Scatter Plot", "3D Line Plot"]:
-                kwargs["x"] = x_col
-                kwargs["y"] = y_col
-                kwargs["z"] = z_col
-            elif chart_type == "Donut Chart":
-                kwargs["names"] = x_col
-                if y_col != "None":
-                    kwargs["values"] = y_col
-            elif chart_type == "World Map (Choropleth)":
-                kwargs["locations"] = x_col
-                if y_col != "None":
-                    kwargs["color"] = y_col
-                else:
-                    map_df_custom = df[x_col].dropna().value_counts().reset_index()
-                    map_df_custom.columns = [x_col, "Count"]
-                    kwargs["data_frame"] = map_df_custom
-                    kwargs["color"] = "Count"
-                loc_mode_custom = "country names"
-                if "state" in x_col.lower():
-                    loc_mode_custom = "USA-states"
-                elif "iso" in x_col.lower():
-                    loc_mode_custom = "ISO-3"
-                kwargs["locationmode"] = loc_mode_custom
-            else:
-                kwargs["x"] = x_col
-                if y_col != "None":
-                    kwargs["y"] = y_col
-                elif chart_type in ["Scatter Plot", "Line Chart", "Box Plot", "Violin Plot"]:
-                    chart_error = f"Y-Axis Column is required for {chart_type}."
+st.markdown("<br>", unsafe_allow_html=True)
 
-            if chart_error is None:
-                if color_col != "None" and chart_type not in ["World Map (Choropleth)", "Donut Chart"]:
-                    kwargs["color"] = color_col
+st.markdown(
+    '<div class="section-header"><span class="badge badge-emerald">BUILDER</span> Interactive Custom Chart</div>',
+    unsafe_allow_html=True,
+)
 
-                if (facet_col != "None"
-                        and chart_type not in ["3D Scatter Plot", "3D Line Plot", "World Map (Choropleth)", "Donut Chart"]):
-                    kwargs["facet_col"] = facet_col
-                    kwargs["facet_col_wrap"] = 2
+ct1, ct2, ct3 = st.columns(3)
+with ct1:
+    chart_type = st.selectbox(
+        "Chart Type",
+        [
+            "Scatter Plot",
+            "Line Chart",
+            "Bar Chart",
+            "Histogram",
+            "Box Plot",
+            "Violin Plot",
+            "Donut Chart",
+            "World Map",
+            "3D Scatter",
+            "3D Line",
+        ],
+    )
+with ct2:
+    x_lbl = "Locations" if chart_type == "World Map" else ("Names" if chart_type == "Donut Chart" else "X-Axis")
+    x_col = st.selectbox(x_lbl, df.columns.tolist())
+with ct3:
+    if chart_type in ["3D Scatter", "3D Line"]:
+        y_col = st.selectbox("Y-Axis", df.columns.tolist(), index=min(1, len(df.columns) - 1))
+    elif chart_type == "Donut Chart":
+        y_col = st.selectbox("Values (optional)", ["None"] + numeric_cols)
+    elif chart_type == "World Map":
+        y_col = st.selectbox("Color Value (optional)", ["None"] + df.columns.tolist())
+    else:
+        y_opts = ["None"] + df.columns.tolist()
+        default_y = 0
+        if chart_type in ["Scatter Plot", "Line Chart", "Box Plot", "Violin Plot"] and len(df.columns) > 1:
+            others = [c for c in df.columns if c != x_col]
+            if others:
+                default_y = y_opts.index(others[0])
+        y_col = st.selectbox("Y-Axis", y_opts, index=default_y)
 
-                if chart_type not in ["Donut Chart", "World Map (Choropleth)"]:
-                    kwargs["log_x"] = log_x
-                    kwargs["log_y"] = log_y
+z_col = None
+if chart_type in ["3D Scatter", "3D Line"]:
+    cz, _ = st.columns([4, 8])
+    with cz:
+        z_col = st.selectbox("Z-Axis", df.columns.tolist(), index=min(2, len(df.columns) - 1))
 
-                if chart_type == "Scatter Plot":
-                    fig_custom = px.scatter(**kwargs)
-                elif chart_type == "Line Chart":
-                    fig_custom = px.line(**kwargs)
-                elif chart_type == "Bar Chart":
-                    kwargs["barmode"] = barmode_val
-                    fig_custom = px.bar(**kwargs)
-                elif chart_type == "Histogram":
-                    kwargs["nbins"] = hist_bins
-                    fig_custom = px.histogram(**kwargs)
-                elif chart_type == "Box Plot":
-                    fig_custom = px.box(**kwargs)
-                elif chart_type == "Violin Plot":
-                    fig_custom = px.violin(**kwargs)
-                elif chart_type == "Donut Chart":
-                    kwargs["hole"] = 0.4
-                    fig_custom = px.pie(**kwargs)
-                elif chart_type == "World Map (Choropleth)":
-                    fig_custom = px.choropleth(**kwargs)
-                elif chart_type == "3D Scatter Plot":
-                    fig_custom = px.scatter_3d(**kwargs)
-                elif chart_type == "3D Line Plot":
-                    fig_custom = px.line_3d(**kwargs)
+with st.expander("Advanced Settings", expanded=False):
+    as1, as2, as3 = st.columns(3)
+    with as1:
+        color_col = st.selectbox("Color Grouping", ["None"] + df.columns.tolist(), key="cb_color")
+    with as2:
+        facet_col = st.selectbox("Facet Column", ["None"] + categorical_cols, key="cb_facet")
+    with as3:
+        opacity_val = st.slider("Opacity", 0.1, 1.0, 0.8, key="cb_opacity")
+    ao1, ao2 = st.columns(2)
+    with ao1:
+        custom_title = st.text_input("Custom Title", "", key="cb_title")
+        log_x = st.checkbox("Log X", key="cb_logx")
+    with ao2:
+        log_y = st.checkbox("Log Y", key="cb_logy")
+        hist_bins = 30
+        barmode_val = "group"
+        if chart_type == "Histogram":
+            hist_bins = st.slider("Bins", 5, 100, 30, key="cb_bins")
+        elif chart_type == "Bar Chart":
+            barmode_val = st.radio("Bar Mode", ["group", "stack", "overlay"], index=0, horizontal=True, key="cb_barmode")
 
-                if fig_custom is not None:
-                    default_title = f"{chart_type}: {x_col}"
-                    if y_col != "None" and chart_type not in ["Donut Chart", "World Map (Choropleth)"]:
-                        default_title += f" vs {y_col}"
-                    if z_col:
-                        default_title += f" vs {z_col}"
-                    title_text = custom_title if custom_title else default_title
+chart_err = None
+fig_custom = None
+try:
+    kwargs: dict[str, Any] = {"data_frame": df}
+    if chart_type not in ["Donut Chart", "World Map"]:
+        kwargs["opacity"] = opacity_val
+    kwargs["color_discrete_sequence"] = px.colors.qualitative.Pastel
 
-                    fig_custom.update_layout(
-                        title=dict(text=title_text, font=dict(family="Plus Jakarta Sans", size=16)),
-                        paper_bgcolor="rgba(0,0,0,0)",
-                        font=dict(color="#F1F3F9")
-                    )
-                    if chart_type not in ["3D Scatter Plot", "3D Line Plot", "World Map (Choropleth)"]:
-                        fig_custom.update_layout(plot_bgcolor="rgba(0,0,0,0)")
+    if chart_type in ["3D Scatter", "3D Line"]:
+        kwargs.update({"x": x_col, "y": y_col, "z": z_col})
+    elif chart_type == "Donut Chart":
+        kwargs["names"] = x_col
+        if y_col != "None":
+            kwargs["values"] = y_col
+    elif chart_type == "World Map":
+        if y_col != "None":
+            kwargs.update({"locations": x_col, "color": y_col})
+        else:
+            mdf = df[x_col].dropna().value_counts().reset_index()
+            mdf.columns = [x_col, "Count"]
+            kwargs.update({"data_frame": mdf, "locations": x_col, "color": "Count"})
+        kwargs["locationmode"] = (
+            "USA-states" if "state" in x_col.lower() else ("ISO-3" if "iso" in x_col.lower() else "country names")
+        )
+    else:
+        kwargs["x"] = x_col
+        if y_col != "None":
+            kwargs["y"] = y_col
+        elif chart_type in ["Scatter Plot", "Line Chart", "Box Plot", "Violin Plot"]:
+            chart_err = f"Y-Axis required for {chart_type}."
 
-                    st.plotly_chart(fig_custom, use_container_width=True)
+    if chart_err is None:
+        if color_col != "None" and chart_type not in ["World Map", "Donut Chart"]:
+            kwargs["color"] = color_col
+        if facet_col != "None" and chart_type not in ["3D Scatter", "3D Line", "World Map", "Donut Chart"]:
+            kwargs["facet_col"] = facet_col
+            kwargs["facet_col_wrap"] = 2
+        if chart_type not in ["Donut Chart", "World Map"]:
+            kwargs.update({"log_x": log_x, "log_y": log_y})
 
-        except Exception as chart_err:
-            chart_error = str(chart_err)
+        chart_map = {
+            "Scatter Plot": px.scatter,
+            "Line Chart": px.line,
+            "Box Plot": px.box,
+            "Violin Plot": px.violin,
+            "Donut Chart": lambda **kw: px.pie(hole=0.4, **kw),
+            "World Map": px.choropleth,
+            "3D Scatter": px.scatter_3d,
+            "3D Line": px.line_3d,
+        }
+        if chart_type == "Bar Chart":
+            kwargs["barmode"] = barmode_val
+            fig_custom = px.bar(**kwargs)
+        elif chart_type == "Histogram":
+            kwargs["nbins"] = hist_bins
+            fig_custom = px.histogram(**kwargs)
+        elif chart_type in chart_map:
+            fig_custom = chart_map[chart_type](**kwargs)
 
-        if chart_error:
-            st.markdown(f"""
-            <div class="alert-box alert-danger">
-                <strong>Chart Execution Failure</strong><br>
-                Plotly Express failed to render with this dataset configuration.<br><br>
-                <em>Details: {chart_error}</em>
-            </div>
-            """, unsafe_allow_html=True)
+        if fig_custom is not None:
+            title = custom_title or f"{chart_type}: {x_col}" + (
+                f" vs {y_col}" if y_col not in (None, "None") and chart_type not in ["Donut Chart", "World Map"] else ""
+            )
+            fig_custom.update_layout(
+                title=dict(text=title, font=dict(family="Plus Jakarta Sans", size=16, color="#111827")),
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#111827"),
+            )
+            if chart_type not in ["3D Scatter", "3D Line", "World Map"]:
+                fig_custom.update_layout(plot_bgcolor="rgba(0,0,0,0)")
+            st.plotly_chart(fig_custom, width="stretch")
+except Exception as e:
+    chart_err = str(e)
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
+if chart_err:
+    st.markdown(
+        f'<div class="alert-box alert-danger"><strong>Chart Error</strong><br><em>{chart_err}</em></div>',
+        unsafe_allow_html=True,
+    )
