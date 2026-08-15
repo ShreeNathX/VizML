@@ -8,10 +8,8 @@ import src.cleaner
 importlib.reload(src.cleaner)
 from src.cleaner import DataCleaner
 
-# ── Page Config ───────────────────────────────────────────────────
 st.set_page_config(page_title="VizML - Data Curation", layout="wide")
 
-# ── CSS ───────────────────────────────────────────────────────────
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -20,7 +18,6 @@ st.markdown("""
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
 
-    /* Page title */
     .page-title {
         font-family: 'Space Grotesk', sans-serif;
         font-size: 36px;
@@ -36,7 +33,6 @@ st.markdown("""
         margin-bottom: 24px;
     }
 
-    /* Metric cards */
     div[data-testid="stMetricValue"] {
         font-size: 26px;
         font-weight: 700;
@@ -48,7 +44,6 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* Expander headers */
     div[data-testid="stExpander"] summary,
     div[data-testid="stExpander"] summary p,
     div[data-testid="stExpander"] summary span,
@@ -60,7 +55,6 @@ st.markdown("""
         font-size: 14px !important;
     }
 
-    /* Flag badges */
     .flag-warning {
         background-color: rgba(245, 166, 35, 0.15);
         color: #F5A623;
@@ -89,13 +83,11 @@ st.markdown("""
         border: 1px solid rgba(45, 212, 160, 0.3);
     }
 
-    /* Section divider */
     hr { border-color: #1E2030; }
     </style>
 """, unsafe_allow_html=True)
 
 
-# ── Header ─────────────────────────────────────────────────────────
 st.markdown('<div class="page-title">Data Curation Engine</div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="page-sub">Upload, profile, and clean your dataset with real-time change tracking and undo capability.</div>',
@@ -103,7 +95,6 @@ st.markdown(
 )
 
 
-# ── Helpers ────────────────────────────────────────────────────────
 def show_toast(message, icon=None):
     if hasattr(st, "toast"):
         st.toast(message)
@@ -111,7 +102,6 @@ def show_toast(message, icon=None):
         st.sidebar.info(message)
 
 
-# ── Session State ──────────────────────────────────────────────────
 for key, default in [
     ("df", None),
     ("original_df", None),
@@ -122,7 +112,6 @@ for key, default in [
         st.session_state[key] = default
 
 
-# ── File Loader ────────────────────────────────────────────────────
 def load_data(uploaded_file):
     try:
         if uploaded_file.name.endswith(".csv"):
@@ -138,7 +127,6 @@ def load_data(uploaded_file):
         st.error(f"Error loading file: {str(e)}")
 
 
-# ── Upload Widget ──────────────────────────────────────────────────
 uploaded_file = st.file_uploader("Drop your dataset here (CSV or Excel)", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
@@ -147,7 +135,6 @@ if uploaded_file is not None:
         st.session_state["current_file_name"] = uploaded_file.name
         load_data(uploaded_file)
 else:
-    # Fallback: load sample dataset from workspace root if no file uploaded
     sample_path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "..", "Test Dataset", "messy_data.csv"
     )
@@ -160,11 +147,9 @@ else:
         st.session_state["current_file_name"] = "messy_data.csv (sample)"
 
 
-# ── Main Content ───────────────────────────────────────────────────
 if st.session_state["df"] is not None:
     df_current = st.session_state["df"]
 
-    # ── Undo / Reset bar ───────────────────────────────────────────
     col_hist1, col_hist2, col_hist3 = st.columns([1, 1, 6])
     with col_hist1:
         undo_disabled = len(st.session_state["history"]) == 0
@@ -184,7 +169,6 @@ if st.session_state["df"] is not None:
 
     col_left, col_right = st.columns([5, 7])
 
-    # ── LEFT — Cleaning operations ─────────────────────────────────
     with col_left:
         st.subheader("Cleaning Operations")
 
@@ -192,7 +176,6 @@ if st.session_state["df"] is not None:
         cleaner.flagged_columns = st.session_state["coercion_flags"]
         proposed_dfs = {}
 
-        # 1. Missing-value imputation
         with st.expander("1. Missing-Value Imputation", expanded=False):
             st.markdown("Impute missing values based on column types.")
 
@@ -231,7 +214,6 @@ if st.session_state["df"] is not None:
             else:
                 st.success("No missing values detected in the current dataset.")
 
-        # 2. Type coercion
         with st.expander("2. Smart Type Coercion", expanded=False):
             st.markdown("""
                 Automatically convert object/text columns that represent numeric or datetime values.
@@ -281,7 +263,6 @@ if st.session_state["df"] is not None:
                     show_toast("Type coercion completed.")
                     st.rerun()
 
-        # 3. Outlier handling
         with st.expander("3. Outlier Handling (IQR Method)", expanded=False):
             st.markdown("Detect outliers using the IQR range (Q1 - 1.5 x IQR, Q3 + 1.5 x IQR).")
 
@@ -320,7 +301,6 @@ if st.session_state["df"] is not None:
             else:
                 st.info("No numeric columns available for outlier detection.")
 
-        # 4. Duplicate removal
         with st.expander("4. Duplicate Removal", expanded=False):
             dup_count = cleaner.get_duplicate_count()
             st.write(f"Exact duplicate rows detected: **{dup_count}**")
@@ -337,7 +317,6 @@ if st.session_state["df"] is not None:
             else:
                 st.success("No duplicate rows found.")
 
-        # 5. Categorical encoding
         with st.expander("5. Categorical Encoding (Prep Step)", expanded=False):
             st.markdown("""
                 Convert categorical columns into numerical representations.
@@ -347,7 +326,7 @@ if st.session_state["df"] is not None:
             cat_encode_cols = []
             for col in df_current.columns:
                 if (pd.api.types.is_object_dtype(df_current[col])
-                        or pd.api.types.is_categorical_dtype(df_current[col])
+                        or isinstance(df_current[col].dtype, pd.CategoricalDtype)
                         or getattr(df_current[col], "dtype", None) == "string"
                         or pd.api.types.is_bool_dtype(df_current[col])):
                     cat_encode_cols.append(col)
@@ -375,7 +354,6 @@ if st.session_state["df"] is not None:
             else:
                 st.info("No categorical columns detected in the current dataset.")
 
-    # ── RIGHT — Preview & diff ─────────────────────────────────────
     with col_right:
         st.subheader("Data Preview & Change Tracker")
 

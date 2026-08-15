@@ -11,10 +11,8 @@ try:
 except ImportError:
     has_statsmodels = False
 
-# ── Page Config ───────────────────────────────────────────────────
 st.set_page_config(page_title="VizML - Diagnostic Visualizations", layout="wide")
 
-# ── CSS ───────────────────────────────────────────────────────────
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -23,7 +21,6 @@ st.markdown("""
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
 
-    /* Metric cards */
     div[data-testid="stMetricValue"] {
         font-size: 28px;
         font-weight: 700;
@@ -35,7 +32,6 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* Page title */
     .app-title {
         font-family: 'Space Grotesk', sans-serif;
         font-size: 36px;
@@ -51,7 +47,6 @@ st.markdown("""
         margin-bottom: 24px;
     }
 
-    /* Container cards */
     .diag-card {
         border-radius: 12px;
         padding: 24px;
@@ -61,7 +56,6 @@ st.markdown("""
         margin-bottom: 25px;
     }
 
-    /* Section header */
     .section-header {
         font-family: 'Space Grotesk', sans-serif;
         font-size: 20px;
@@ -74,7 +68,6 @@ st.markdown("""
         -webkit-text-fill-color: transparent;
     }
 
-    /* Alert callouts */
     .alert-box {
         padding: 14px 18px;
         border-radius: 8px;
@@ -108,7 +101,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── Dataset Check ──────────────────────────────────────────────────
 if "df" not in st.session_state or st.session_state["df"] is None:
     st.markdown('<div class="app-title">Diagnostic Visualizations</div>', unsafe_allow_html=True)
     st.markdown(
@@ -142,7 +134,6 @@ else:
         unsafe_allow_html=True
     )
 
-    # ── Dataset Metrics ────────────────────────────────────────────
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     with col_m1:
         st.metric("Total Rows", df.shape[0])
@@ -155,13 +146,11 @@ else:
 
     st.markdown("---")
 
-    # ── Section 1: Auto-Generated Insights Dashboard ───────────────
     st.markdown('<div class="section-header">Section 1: Auto-Generated Insights Dashboard</div>', unsafe_allow_html=True)
     st.write("VizML scans your dataset schemas and automatically compiles baseline visual diagnostics.")
 
     auto_plots = []
 
-    # 1. Proportional Donut Chart
     donut_cats = [c for c in categorical_cols if 2 <= df[c].nunique() <= 6]
     if donut_cats:
         prim_cat = donut_cats[0]
@@ -178,7 +167,6 @@ else:
         )
         auto_plots.append(("donut_prop", fig_donut))
 
-    # 2. Geographical Map
     lat_cols = [c for c in df.columns if any(kw in c.lower() for kw in ["latitude", "lat_"]) or c.lower() == "lat"]
     lon_cols = [c for c in df.columns if any(kw in c.lower() for kw in ["longitude", "lon_"]) or c.lower() in ("lon", "lng")]
     country_cols = [c for c in df.columns if any(kw in c.lower() for kw in ["country", "nation", "state", "iso"])]
@@ -215,7 +203,6 @@ else:
         )
         auto_plots.append(("geo_map", fig_map))
 
-    # 3. Temporal Trend
     datetime_cols = df.select_dtypes(include=[np.datetime64]).columns.tolist()
     if len(datetime_cols) == 0:
         potential_dates = [c for c in categorical_cols if any(kw in c.lower() for kw in ["date", "time", "year", "month"])]
@@ -245,7 +232,6 @@ else:
         )
         auto_plots.append(("time_series", fig_ts))
 
-    # 4. Numeric distribution
     if len(auto_plots) < 4 and len(numeric_cols) > 0:
         prim_num = numeric_cols[0]
         fig_num = px.histogram(
@@ -259,7 +245,6 @@ else:
         )
         auto_plots.append(("numeric_dist", fig_num))
 
-    # 5. Numerical interaction
     if len(auto_plots) < 4:
         if len(numeric_cols) >= 3:
             fig_3d_proj = px.scatter_3d(
@@ -300,7 +285,6 @@ else:
             )
             auto_plots.append(("scatter_interaction", fig_scatter))
 
-    # Render auto dashboard in 2-column grid
     if len(auto_plots) == 0:
         st.info("No columns available to compile automated insights.")
     else:
@@ -320,7 +304,6 @@ else:
                     )
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ── Section 2: Multidimensional Diagnostic Suite ───────────────
     st.markdown('<div class="section-header">Section 2: Multidimensional Diagnostic Suite</div>', unsafe_allow_html=True)
     st.write("Use specialized multi-variable diagnostic views to detect feature redundancy, multicollinearity, or high-dimensional clustering.")
 
@@ -333,7 +316,6 @@ else:
             "3D Scatter Explorer"
         ])
 
-        # Correlation matrix tab
         with tab_corr:
             col_setup_l, col_setup_r = st.columns([6, 6])
             with col_setup_l:
@@ -409,7 +391,6 @@ else:
                         )
                         st.write("All selected numeric columns are linearly distinct under this threshold.")
 
-        # 2D Scatter matrix tab
         with tab_scatter:
             default_dims = numeric_cols[:min(4, len(numeric_cols))]
             col_sel1, col_sel2 = st.columns([8, 4])
@@ -448,7 +429,6 @@ else:
                     fig_matrix.update_traces(diagonal_visible=True, showupperhalf=True)
                     st.plotly_chart(fig_matrix, use_container_width=True)
 
-        # 3D Scatter explorer tab
         with tab_3d:
             col_axes, col_extras = st.columns([7, 5])
             with col_axes:
@@ -505,7 +485,6 @@ else:
 
     st.markdown("---")
 
-    # ── Section 3: Interactive Custom Chart Builder ────────────────
     st.markdown('<div class="section-header">Section 3: Interactive Custom Chart Builder</div>', unsafe_allow_html=True)
     st.write("Configure and create custom 2D or 3D charts tailored to specific features of interest.")
 
@@ -518,7 +497,7 @@ else:
             "Select Chart Type",
             [
                 "Scatter Plot", "Line Chart", "Bar Chart", "Histogram",
-                "Box Plot", "Violin Plot", "Heatmap (2D Density)",
+                "Box Plot", "Violin Plot",
                 "Donut Chart", "World Map (Choropleth)",
                 "3D Scatter Plot", "3D Line Plot"
             ]
@@ -549,14 +528,12 @@ else:
                     default_y_index = y_opts.index(other_cols[0])
             y_col = st.selectbox("Y-Axis Column (Optional/Required)", y_opts, index=default_y_index)
 
-    # 3D axis
     z_col = None
     if chart_type in ["3D Scatter Plot", "3D Line Plot"]:
         col_z_axis, col_z_space = st.columns([4, 8])
         with col_z_axis:
             z_col = st.selectbox("Z-Axis Column", df.columns.tolist(), index=min(2, len(df.columns) - 1))
 
-    # Advanced settings
     with st.expander("Advanced Aesthetic & Subplot Settings", expanded=False):
         col_sub_a, col_sub_b, col_sub_c = st.columns(3)
         with col_sub_a:
@@ -580,7 +557,6 @@ else:
                     index=0, horizontal=True, key="custom_barmode_v3"
                 )
 
-    # Render chart
     with st.spinner("Rendering Interactive Chart..."):
         chart_error = None
         fig_custom = None
@@ -589,11 +565,10 @@ else:
                 "data_frame": df,
                 "template": "plotly_dark",
             }
-            if chart_type in ["Scatter Plot", "Bar Chart", "Histogram", "Heatmap (2D Density)", "Donut Chart", "3D Scatter Plot"]:
+            if chart_type in ["Scatter Plot", "Bar Chart", "Histogram", "Donut Chart", "3D Scatter Plot"]:
                 kwargs["opacity"] = opacity_val
-            if chart_type != "Heatmap (2D Density)":
-                kwargs["color_discrete_sequence"] = px.colors.qualitative.Safe
-            if chart_type in ["Scatter Plot", "Bar Chart", "Heatmap (2D Density)", "World Map (Choropleth)", "3D Scatter Plot"]:
+            kwargs["color_discrete_sequence"] = px.colors.qualitative.Safe
+            if chart_type in ["Scatter Plot", "Bar Chart", "World Map (Choropleth)", "3D Scatter Plot"]:
                 kwargs["color_continuous_scale"] = "Plasma"
 
             if chart_type in ["3D Scatter Plot", "3D Line Plot"]:
@@ -653,8 +628,6 @@ else:
                     fig_custom = px.box(**kwargs)
                 elif chart_type == "Violin Plot":
                     fig_custom = px.violin(**kwargs)
-                elif chart_type == "Heatmap (2D Density)":
-                    fig_custom = px.density_heatmap(**kwargs)
                 elif chart_type == "Donut Chart":
                     kwargs["hole"] = 0.4
                     fig_custom = px.pie(**kwargs)

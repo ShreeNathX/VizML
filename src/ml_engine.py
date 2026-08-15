@@ -1,11 +1,3 @@
-"""
-VizML Machine Learning Engine (`src/ml_engine.py`)
-
-Automated, fault-tolerant ML pipeline that handles data preparation, feature engineering,
-categorical encoding, missing value imputation, scaling, cross-validation, model training,
-and single-sample inference.
-"""
-
 import numpy as np
 import pandas as pd
 from typing import Dict, List, Tuple, Any, Optional
@@ -26,10 +18,6 @@ from sklearn.naive_bayes import GaussianNB
 class MLEngine:
     @staticmethod
     def auto_detect_task(df: pd.DataFrame, target_col: str) -> Tuple[str, str]:
-        """
-        Auto-detect whether a target column is for Classification or Regression.
-        Returns (task_type, reason).
-        """
         if target_col not in df.columns:
             return "Classification", "Target column not found in dataset."
 
@@ -37,11 +25,9 @@ class MLEngine:
         if len(col_data) == 0:
             return "Classification", "Target column contains only null values."
 
-        # If non-numeric dtype (object, string, category, bool)
         if not pd.api.types.is_numeric_dtype(col_data) or col_data.dtype == bool:
             return "Classification", f"Target '{target_col}' is non-numeric ({col_data.dtype})."
 
-        # Check if float with non-zero decimals
         is_float = pd.api.types.is_float_dtype(col_data)
         has_decimals = False
         if is_float:
@@ -53,11 +39,10 @@ class MLEngine:
         if has_decimals:
             return "Regression", f"Target '{target_col}' has continuous float values."
 
-        # If integer/discrete numeric, check unique count
         n_unique = col_data.nunique()
         if n_unique <= 15:
             return "Classification", f"Target '{target_col}' has {n_unique} discrete unique values."
-        
+
         return "Regression", f"Target '{target_col}' has continuous numeric values ({n_unique} unique)."
 
     @staticmethod
@@ -67,11 +52,6 @@ class MLEngine:
         selected_features: List[str],
         task_type: str
     ) -> Dict[str, Any]:
-        """
-        Preprocess features and target for machine learning training.
-        Returns a pipeline object dictionary containing clean X, y, splits, and transformers.
-        """
-        # 1. Clean target
         df_clean = df.copy()
         df_clean = df_clean.dropna(subset=[target_col])
 
@@ -89,7 +69,6 @@ class MLEngine:
                 le_target = LabelEncoder()
                 y = le_target.fit_transform(y_raw.values)
         else:
-            # Coerce to numeric for regression
             y_numeric = pd.to_numeric(y_raw, errors="coerce")
             valid_mask = y_numeric.notna()
             df_clean = df_clean[valid_mask]
@@ -97,14 +76,12 @@ class MLEngine:
             if len(y) == 0:
                 raise ValueError(f"Target column '{target_col}' could not be coerced to float for Regression.")
 
-        # Filter selected features present in df_clean
         feats = [f for f in selected_features if f in df_clean.columns and f != target_col]
         if not feats:
             raise ValueError("No valid feature columns selected.")
 
         X_df = df_clean[feats].copy()
 
-        # 2. Process Datetime features
         datetime_cols = []
         for col in X_df.columns:
             if pd.api.types.is_datetime64_any_dtype(X_df[col]):
@@ -127,7 +104,6 @@ class MLEngine:
             X_df[f"{col}_dayofweek"] = dt_series.dt.dayofweek.fillna(0)
             X_df.drop(columns=[col], inplace=True)
 
-        # 3. Drop uninformative constant or high-cardinality string ID columns
         cols_to_drop = []
         for col in X_df.columns:
             nun = X_df[col].nunique(dropna=True)
@@ -142,7 +118,6 @@ class MLEngine:
         if X_df.shape[1] == 0:
             raise ValueError("All selected features were constant or high-cardinality ID columns.")
 
-        # 4. Impute and encode features
         numeric_cols = X_df.select_dtypes(include=[np.number]).columns.tolist()
         categorical_cols = [c for c in X_df.columns if c not in numeric_cols]
 
@@ -171,13 +146,11 @@ class MLEngine:
 
             nunique = series_filled.nunique()
             if nunique <= 15:
-                # One-hot encode
                 dummies = pd.get_dummies(series_filled, prefix=col, drop_first=False, dtype=float)
                 onehot_encoders[col] = dummies.columns.tolist()
                 processed_dfs.append(dummies)
                 encoded_feature_names.extend(dummies.columns.tolist())
             else:
-                # Ordinal/Label encode for high cardinality
                 le = LabelEncoder()
                 encoded_vals = le.fit_transform(series_filled)
                 label_encoders[col] = le
@@ -190,7 +163,6 @@ class MLEngine:
 
         X_processed = pd.concat(processed_dfs, axis=1)
 
-        # 5. Fit StandardScaler
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X_processed.values)
 
@@ -224,9 +196,6 @@ class MLEngine:
         test_size_pct: float,
         cv_folds: int
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Any, int, Optional[str]]:
-        """
-        Split dataset and compute safe cross-validation strategy without crashing on rare classes.
-        """
         test_size = max(0.1, min(0.4, test_size_pct / 100.0))
         warning_msg = None
         stratify = None
@@ -269,7 +238,6 @@ class MLEngine:
 
     @staticmethod
     def get_model_dictionary(task_type: str) -> Dict[str, Any]:
-        """Return model instances based on task type."""
         if task_type == "Classification":
             return {
                 "Logistic Regression": LogisticRegression(max_iter=1000, random_state=42),
@@ -304,10 +272,6 @@ class MLEngine:
         cv_folds: int = 5,
         progress_callback: Optional[Any] = None
     ) -> Dict[str, Any]:
-        """
-        Main entry point: execute automated preprocessing, safe split, cross-validation,
-        and fault-tolerant model training.
-        """
         if progress_callback:
             progress_callback(0.1, "Preprocessing dataset & engineering features...")
 
@@ -403,9 +367,6 @@ class MLEngine:
         model: Any,
         input_dict: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """
-        Preprocess a single raw input sample (dict) and predict with the trained model.
-        """
         df_row = pd.DataFrame([input_dict])
 
         for col in pipeline_meta["datetime_cols"]:

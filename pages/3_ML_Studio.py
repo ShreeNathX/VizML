@@ -7,10 +7,8 @@ import plotly.express as px
 from sklearn.metrics import confusion_matrix, classification_report
 from src.ml_engine import MLEngine
 
-# ── Page Config ───────────────────────────────────────────────────
 st.set_page_config(page_title="VizML - ML Studio", layout="wide")
 
-# ── CSS Styling ───────────────────────────────────────────────────
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -91,14 +89,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ── Header ─────────────────────────────────────────────────────────
 st.markdown('<div class="page-title">ML Studio</div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="page-sub">Automated end-to-end model training, diagnostic benchmarking, and interactive What-If inference.</div>',
     unsafe_allow_html=True
 )
 
-# ── Dataset Guard ──────────────────────────────────────────────────
 df = st.session_state.get("df", None)
 if df is None:
     st.warning("No dataset in session. Please upload and clean a dataset in the Data Curation page first.")
@@ -113,9 +109,6 @@ st.info(
     f"({len(numeric_cols)} numeric, {len(categorical_cols)} categorical/datetime)."
 )
 
-# ══════════════════════════════════════════════════════════════════
-# SECTION 1 — Task & Target Configuration
-# ══════════════════════════════════════════════════════════════════
 st.markdown('<div class="section-header">1 · Task & Target Setup</div>', unsafe_allow_html=True)
 
 col_target, col_task = st.columns([2, 2])
@@ -130,7 +123,6 @@ with col_target:
         help="Select the column you want the model to predict."
     )
 
-# Auto-detect task recommendation
 auto_task, auto_reason = MLEngine.auto_detect_task(df, target_col)
 
 with col_task:
@@ -144,9 +136,6 @@ with col_task:
         help="Classification predicts discrete classes; Regression predicts continuous numbers."
     )
 
-# ══════════════════════════════════════════════════════════════════
-# SECTION 2 — Feature Selection
-# ══════════════════════════════════════════════════════════════════
 st.markdown('<div class="section-header">2 · Feature Engineering & Selection</div>', unsafe_allow_html=True)
 
 feat_mode = st.radio(
@@ -180,9 +169,6 @@ if not selected_features:
     st.warning("Select at least one feature column to continue.")
     st.stop()
 
-# ══════════════════════════════════════════════════════════════════
-# SECTION 3 — Model Selection & Hyperparameters
-# ══════════════════════════════════════════════════════════════════
 st.markdown('<div class="section-header">3 · Model Selection & Benchmarking Setup</div>', unsafe_allow_html=True)
 
 model_dict = MLEngine.get_model_dictionary(task_type)
@@ -207,15 +193,12 @@ if not selected_models:
     st.warning("Select at least one model to train.")
     st.stop()
 
-# ══════════════════════════════════════════════════════════════════
-# SECTION 4 — Training Execution
-# ══════════════════════════════════════════════════════════════════
 st.markdown("---")
 train_btn = st.button("Train Models (Automated Pipeline)", type="primary", use_container_width=True, key="ml_train_btn")
 
 if train_btn:
     prog_bar = st.progress(0, text="Initializing automated pipeline...")
-    
+
     def update_progress(pct, text):
         prog_bar.progress(pct, text=text)
 
@@ -245,9 +228,6 @@ if train_btn:
         st.error(f"Training failed: {str(e)}")
         st.stop()
 
-# ══════════════════════════════════════════════════════════════════
-# SECTION 5 — Results & Leaderboard
-# ══════════════════════════════════════════════════════════════════
 ml_output = st.session_state.get("ml_engine_output", None)
 
 if ml_output:
@@ -267,7 +247,6 @@ if ml_output:
     best_model_name = results[best_idx]["Model"]
     best_model_obj = results[best_idx]["_model"]
 
-    # Table display
     num_display = [c for c in df_results.columns if c != "Model"]
     try:
         styled = df_results.style.highlight_max(subset=num_display, color="#1e1f4a")
@@ -276,7 +255,6 @@ if ml_output:
     st.dataframe(styled, use_container_width=True, hide_index=True)
     st.caption(f"Top Performing Model: **{best_model_name}** (CV Score: {results[best_idx]['CV Score (mean)']})")
 
-    # Bar chart
     primary_metric = "Test Accuracy" if task_done == "Classification" else "Test R²"
     if primary_metric in df_results.columns:
         fig_bar = px.bar(
@@ -291,7 +269,6 @@ if ml_output:
         )
         st.plotly_chart(fig_bar, use_container_width=True, key="leaderboard_bar")
 
-    # ── Per-Model Diagnostic Detail ────────────────────────────
     st.markdown('<div class="section-header">5 · Per-Model Diagnostic Detail</div>', unsafe_allow_html=True)
     tabs = st.tabs([r["Model"] for r in results])
     y_test_g = ml_output["y_test"]
@@ -369,7 +346,6 @@ if ml_output:
                     )
                     st.plotly_chart(fig_res, use_container_width=True, key=f"residual_{model_name}")
 
-    # ── Feature Importance ────────────────────────────────────
     tree_results = [r for r in results if hasattr(r["_model"], "feature_importances_")]
     if tree_results:
         st.markdown('<div class="section-header">6 · Feature Importance Analysis</div>', unsafe_allow_html=True)
@@ -400,9 +376,6 @@ if ml_output:
                 )
                 st.plotly_chart(fig_fi, use_container_width=True, key=f"fi_{res['Model']}")
 
-    # ══════════════════════════════════════════════════════════════════
-    # SECTION 7 — Interactive What-If Playground & Export
-    # ══════════════════════════════════════════════════════════════════
     st.markdown('<div class="section-header">7 · Interactive Prediction Studio (What-If Tester) & Export</div>', unsafe_allow_html=True)
 
     col_play1, col_play2 = st.columns([3, 2])

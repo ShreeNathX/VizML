@@ -7,7 +7,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── Premium CSS ────────────────────────────────────────────────────
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
@@ -16,11 +15,9 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* Hide default Streamlit branding */
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
 
-    /* Sidebar */
     section[data-testid="stSidebar"] {
         background: #0D0E14;
         border-right: 1px solid #1E2030;
@@ -30,7 +27,6 @@ st.markdown("""
         font-size: 13px;
     }
 
-    /* Hero */
     .hero-wrap {
         background: linear-gradient(135deg, #0D0E14 0%, #13141F 100%);
         border: 1px solid #1E2030;
@@ -70,7 +66,6 @@ st.markdown("""
         margin-bottom: 32px;
     }
 
-    /* Feature cards */
     .feature-card {
         background: #13141A;
         border: 1px solid #1E2030;
@@ -104,7 +99,6 @@ st.markdown("""
         margin-bottom: 12px;
     }
 
-    /* Session status panel */
     .status-panel {
         background: #13141A;
         border: 1px solid #1E2030;
@@ -132,7 +126,6 @@ st.markdown("""
     .status-val { color: #6C63FF; font-weight: 600; font-family: 'Space Grotesk', sans-serif; }
     .status-val-none { color: #4B4C65; font-style: italic; }
 
-    /* Metric override */
     div[data-testid="stMetricValue"] {
         font-size: 28px;
         font-weight: 700;
@@ -147,7 +140,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── Hero Section ───────────────────────────────────────────────────
 st.markdown("""
 <div class="hero-wrap">
     <div class="hero-badge">Machine Learning Toolkit</div>
@@ -161,7 +153,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── Feature Cards ──────────────────────────────────────────────────
 c1, c2, c3 = st.columns(3)
 with c1:
     st.markdown("""
@@ -203,7 +194,6 @@ with c3:
 st.markdown("<br>", unsafe_allow_html=True)
 
 
-# ── Session Status ─────────────────────────────────────────────────
 df = st.session_state.get("df", None)
 original_df = st.session_state.get("original_df", None)
 history = st.session_state.get("history", [])
@@ -259,7 +249,6 @@ else:
     st.info("No dataset loaded yet. Go to **Data Curation** in the sidebar to upload a CSV or Excel file.")
 
 
-# ── Sidebar ────────────────────────────────────────────────────────
 st.sidebar.markdown("### VizML")
 st.sidebar.markdown("Select a page from the navigation above to begin.")
 
