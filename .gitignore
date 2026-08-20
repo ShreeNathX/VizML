@@ -1,7 +1,49 @@
-# Virtual environment
+﻿# Virtual environments
 venv/
 env/
+.venv/
+.env/
 
 # Python cache
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Streamlit secrets (never commit)
+.streamlit/secrets.toml
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+
+# Trained model exports (can be large)
+*.pkl
+*.joblib
+*.model

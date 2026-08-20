@@ -413,7 +413,7 @@ class MLEngine:
                 try:
                     enc_val = le.transform([raw_val])[0]
                 except ValueError:
-                    # Value was never seen during training — use most frequent class (index 0)
+                    # Value was never seen during training - use most frequent class (index 0)
                     # and surface a warning so callers know the input was unseen.
                     enc_val = 0
                     import warnings
