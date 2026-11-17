@@ -1,14 +1,18 @@
 # VizML Studio
 
-**An end-to-end data intelligence platform — built with Streamlit and Plotly.**
+**An end-to-end data intelligence platform built with Streamlit and Plotly.**
 
 Upload a CSV or Excel file, clean it, explore it, train ML models, and generate reports. Data is processed wherever you run the app: your machine locally or the Streamlit host when deployed.
+
+**Live app:** [vizmlby.streamlit.app](https://vizmlby.streamlit.app/)
+
+Made in collaboration with [Aditya Singh Baghel](https://github.com/ArBaghel).
 
 ---
 
 ## Features
 
-### Phase 01 — Data Curation Engine
+### Phase 01: Data Curation Engine
 - Drag-and-drop CSV / Excel upload (up to 100 MB)
 - Developer manual type casting (`int64`, `float64`, `str`, `category`, `datetime64`, `bool`)
 - Automatic schema detection and high-confidence type coercion
@@ -18,14 +22,14 @@ Upload a CSV or Excel file, clean it, explore it, train ML models, and generate 
 - Categorical encoding (one-hot or label)
 - Non-destructive pipeline with undo history and live diff previews
 
-### Phase 02 — Diagnostic Visualizations
+### Phase 02: Diagnostic Visualizations
 - Real-time KPI telemetry (rows, nulls, duplicates, numeric/categorical split)
 - Interactive cohort filtering with slice-and-dice controls
 - Automated statistical insight cards
 - Correlation heatmaps, scatter matrices, and 3D spatial projectors
 - Custom chart builder with 12 chart types and 9 color palette schemes
 
-### Phase 03 — ML Studio
+### Phase 03: ML Studio
 - Auto task detection (Classification vs Regression)
 - Multi-algorithm cross-validation leaderboard (Linear, Ridge, Lasso, Random Forest, Gradient Boosting, SVM, KNN, Decision Tree, Naive Bayes)
 - Confusion matrices, residual histograms, and actual-vs-predicted plots
@@ -33,7 +37,7 @@ Upload a CSV or Excel file, clean it, explore it, train ML models, and generate 
 - Live What-If scenario simulation with custom input sliders
 - Model export as `.pkl`
 
-### Phase 04 — Executive Summary Report
+### Phase 04: Executive Summary Report
 - Consolidated summaries of data curation, statistical diagnostics, and ML results
 - Auto-generated strategic recommendations & data purity scoring
 - Custom chart builder with 7 chart types, custom axes, groupings, and 9 color palettes
@@ -81,9 +85,9 @@ VizML/
 │   ├── 3_ML_Studio.py             # Phase 03: ML training and simulation
 │   └── 4_Executive_Reports.py     # Phase 04: dashboards and exports
 ├── src/
-│   ├── cleaner.py                 # DataCleaner — all data cleaning logic
+│   ├── cleaner.py                 # DataCleaner: all data cleaning logic
 │   ├── file_utils.py              # Upload identity and extension helpers
-│   ├── ml_engine.py               # MLEngine — preprocessing, training, evaluation
+│   ├── ml_engine.py               # MLEngine: preprocessing, training, evaluation
 │   └── styles.py                  # Claymorphic design system (CSS + Plotly themes)
 ├── tests/
 │   ├── test_ml_engine.py
@@ -119,4 +123,4 @@ VizML/
 
 ## License
 
-MIT — free to use, modify, and distribute.
+MIT License. Free to use, modify, and distribute.
