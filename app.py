@@ -1,3 +1,5 @@
+import html
+
 import streamlit as st
 from src.styles import inject_css, render_html
 
@@ -80,6 +82,7 @@ with col_right:
         file_name = "None"
         status_badge = '<span class="badge badge-gold">NO DATASET</span>'
         rows_val = missing_val = dups_val = "Not Loaded"
+    file_name_html = html.escape(str(file_name))
 
     render_html(
         f"""
@@ -93,7 +96,7 @@ with col_right:
                 {status_badge}
             </div>
             <div class="session-row"><span class="session-label">Source</span>
-                <span class="session-val">{file_name}</span></div>
+                <span class="session-val">{file_name_html}</span></div>
             <div class="session-row"><span class="session-label">Dimensions</span>
                 <span class="session-val">{rows_val}</span></div>
             <div class="session-row"><span class="session-label">Missing Cells</span>
@@ -211,7 +214,7 @@ if df is not None:
     render_html(
         f"""
         <div class="alert-box alert-success">
-            <strong>Dataset Active:</strong> <code>{file_name}</code> loaded
+            <strong>Dataset Active:</strong> <code>{file_name_html}</code> loaded
             ({rows:,} rows × {cols} columns).
             Ready for curation, dashboard analytics, ML modeling, and executive reports.
         </div>

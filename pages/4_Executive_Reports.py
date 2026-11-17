@@ -3,6 +3,7 @@ Phase 04 — Executive Summary Report
 Synthesises what was learned across Data Curation, Diagnostics, and ML Studio,
 then lets the user build custom charts and download everything.
 """
+import html
 import io
 from datetime import datetime
 
@@ -20,6 +21,7 @@ from src.styles import (
     render_html,
     resolve_continuous_scale,
 )
+from src.cleaner import calculate_purity_score
 
 st.set_page_config(page_title="VizML: Executive Summary", layout="wide")
 inject_css()
@@ -113,10 +115,7 @@ def _profile(df_json: str) -> dict:
         except Exception:
             pass
 
-    # purity score
-    missing_pct = (missing / max(1, total_cells)) * 100
-    dups_pct    = (dups    / max(1, rows))        * 100
-    purity = max(0.0, min(100.0, 100.0 - missing_pct * 1.5 - dups_pct * 2.0))
+    purity = calculate_purity_score(missing, total_cells, dups, rows)
 
     return {
         "rows": rows, "cols": cols_n, "total_cells": total_cells,
@@ -567,24 +566,33 @@ with dc3:
         if ml_results is not None:
             display_ml_cols = [c for c in ml_results.columns if not c.startswith("_")]
             ml_table = ml_results[display_ml_cols].to_html(border=0, index=False, classes="bp-table")
+            best_html = html.escape(str(ml_best or "N/A"))
+            task_html = html.escape(str(ml_task or "N/A"))
+            target_html = html.escape(str(ml_target or "N/A"))
             ml_section_html = f"""
 <h2>Phase 03 — Machine Learning Leaderboard</h2>
-<p>Champion Model: <strong>{ml_best or 'N/A'}</strong> | Task: <strong>{ml_task or 'N/A'}</strong> | Target: <strong>{ml_target or 'N/A'}</strong></p>
+<p>Champion Model: <strong>{best_html}</strong> | Task: <strong>{task_html}</strong> | Target: <strong>{target_html}</strong></p>
 {ml_table}
 """
         else:
             ml_section_html = ""
 
         corr_rows = "".join(
-            f"<tr><td>{a}</td><td>{b}</td><td><strong>{r:+.3f}</strong></td></tr>"
+            f"<tr><td>{html.escape(str(a))}</td><td>{html.escape(str(b))}</td><td><strong>{r:+.3f}</strong></td></tr>"
             for a, b, r in p["high_corr"][:20]
         ) if p["high_corr"] else "<tr><td colspan='3'>No high-correlation pairs detected.</td></tr>"
+        file_name_html = html.escape(str(file_name))
+        profile_rows = "".join(
+            f"<tr><td>{html.escape(str(r['Column']))}</td><td>{html.escape(str(r['Type']))}</td>"
+            f"<td>{r['Nulls']}</td><td>{r['Null %']}</td><td>{r['Unique']}</td></tr>"
+            for r in p["col_profile"]
+        )
 
         html_report = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>VizML Summary Report — {file_name}</title>
+<title>VizML Summary Report — {file_name_html}</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 body {{ font-family:'Plus Jakarta Sans',sans-serif; background:#F5F3FC; color:#211F36; margin:0; padding:32px; }}
@@ -605,7 +613,7 @@ ul.recs li {{ margin-bottom:8px; font-size:13px; }}
 <body>
 <h1>VizML Executive Summary Report</h1>
 <p class="meta">
-  Dataset: <strong>{file_name}</strong> &nbsp;|&nbsp;
+  Dataset: <strong>{file_name_html}</strong> &nbsp;|&nbsp;
   Generated: {ts} &nbsp;|&nbsp;
   Tool: VizML Studio
 </p>
@@ -622,7 +630,7 @@ ul.recs li {{ margin-bottom:8px; font-size:13px; }}
 
 <table class="bp-table">
 <thead><tr><th>Column</th><th>Type</th><th>Nulls</th><th>Null %</th><th>Unique</th></tr></thead>
-<tbody>{"".join(f"<tr><td>{r['Column']}</td><td>{r['Type']}</td><td>{r['Nulls']}</td><td>{r['Null %']}</td><td>{r['Unique']}</td></tr>" for r in p["col_profile"])}</tbody>
+<tbody>{profile_rows}</tbody>
 </table>
 
 <h2>Phase 02 — Diagnostic Insights</h2>

@@ -1,19 +1,37 @@
+import math
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
-import sklearn
 import pandas as pd
-from typing import Dict, List, Tuple, Any, Optional
-from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, KFold
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, r2_score
-from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso
+import sklearn
+from scipy import sparse
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import (
-    RandomForestClassifier, RandomForestRegressor,
-    GradientBoostingClassifier, GradientBoostingRegressor
+    GradientBoostingClassifier,
+    GradientBoostingRegressor,
+    RandomForestClassifier,
+    RandomForestRegressor,
 )
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.svm import SVC, SVR
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import Lasso, LinearRegression, LogisticRegression, Ridge
+from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, r2_score
+from sklearn.model_selection import (
+    KFold,
+    StratifiedKFold,
+    cross_val_score,
+    train_test_split,
+)
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer, LabelEncoder, OneHotEncoder, StandardScaler
+from sklearn.svm import SVC, SVR
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
+
+def _to_dense(values):
+    return values.toarray() if sparse.issparse(values) else values
 
 
 class MLEngine:
@@ -26,18 +44,10 @@ class MLEngine:
         if len(col_data) == 0:
             return "Classification", "Target column contains only null values."
 
-        if not pd.api.types.is_numeric_dtype(col_data) or col_data.dtype == bool:
+        if not pd.api.types.is_numeric_dtype(col_data) or pd.api.types.is_bool_dtype(col_data):
             return "Classification", f"Target '{target_col}' is non-numeric ({col_data.dtype})."
 
-        is_float = pd.api.types.is_float_dtype(col_data)
-        has_decimals = False
-        if is_float:
-            try:
-                has_decimals = bool((col_data % 1 != 0).any())
-            except Exception:
-                has_decimals = True
-
-        if has_decimals:
+        if pd.api.types.is_float_dtype(col_data) and (col_data % 1 != 0).any():
             return "Regression", f"Target '{target_col}' has continuous float values."
 
         n_unique = col_data.nunique()
@@ -47,197 +57,134 @@ class MLEngine:
         return "Regression", f"Target '{target_col}' has continuous numeric values ({n_unique} unique)."
 
     @staticmethod
+    def _expand_datetime_features(X: pd.DataFrame, datetime_cols: List[str]) -> pd.DataFrame:
+        X = X.copy()
+        for col in datetime_cols:
+            if col not in X:
+                continue
+            dates = pd.to_datetime(X[col], errors="coerce")
+            for part in ("year", "month", "day", "dayofweek"):
+                X[f"{col}_{part}"] = getattr(dates.dt, part)
+            X.drop(columns=col, inplace=True)
+        return X
+
+    @classmethod
     def preprocess(
+        cls,
         df: pd.DataFrame,
         target_col: str,
         selected_features: List[str],
-        task_type: str
+        task_type: str,
     ) -> Dict[str, Any]:
-        df_clean = df.copy()
-        df_clean = df_clean.dropna(subset=[target_col])
+        if task_type not in ("Classification", "Regression"):
+            raise ValueError(f"Unsupported task type: {task_type}")
+        if target_col not in df.columns:
+            raise ValueError(f"Target column '{target_col}' not found in dataset.")
 
-        if len(df_clean) == 0:
+        df_clean = df.dropna(subset=[target_col]).copy()
+        if df_clean.empty:
             raise ValueError("No valid rows remaining after dropping missing target values.")
 
         y_raw = df_clean[target_col]
         le_target = None
-
         if task_type == "Classification":
-            if not pd.api.types.is_numeric_dtype(y_raw) or y_raw.dtype == bool:
-                le_target = LabelEncoder()
-                y = le_target.fit_transform(y_raw.astype(str))
-            else:
-                le_target = LabelEncoder()
-                y = le_target.fit_transform(y_raw.values)
+            le_target = LabelEncoder()
+            y = le_target.fit_transform(y_raw.astype(str) if not pd.api.types.is_numeric_dtype(y_raw) else y_raw)
         else:
             y_numeric = pd.to_numeric(y_raw, errors="coerce")
-            valid_mask = y_numeric.notna()
-            df_clean = df_clean[valid_mask]
-            y = y_numeric[valid_mask].values.astype(float)
+            valid = y_numeric.notna()
+            df_clean = df_clean.loc[valid]
+            y = y_numeric.loc[valid].to_numpy(dtype=float)
             if len(y) == 0:
                 raise ValueError(f"Target column '{target_col}' could not be coerced to float for Regression.")
 
-        feats = [f for f in selected_features if f in df_clean.columns and f != target_col]
-        if not feats:
+        raw_features = [c for c in selected_features if c in df_clean.columns and c != target_col]
+        if not raw_features:
             raise ValueError("No valid feature columns selected.")
 
-        X_df = df_clean[feats].copy()
-
+        X = df_clean[raw_features].copy()
         datetime_cols = []
-        for col in X_df.columns:
-            if pd.api.types.is_datetime64_any_dtype(X_df[col]):
+        for col in X.columns:
+            if pd.api.types.is_datetime64_any_dtype(X[col]):
                 datetime_cols.append(col)
-            elif X_df[col].dtype == object:
-                sample = X_df[col].dropna().head(20)
-                if len(sample) > 0:
-                    try:
-                        parsed = pd.to_datetime(sample, errors="coerce")
-                        if parsed.notna().sum() / len(sample) > 0.8:
-                            datetime_cols.append(col)
-                    except Exception:
-                        pass
+            elif X[col].dtype == object:
+                sample = X[col].dropna().head(20)
+                if not sample.empty:
+                    parsed = pd.to_datetime(sample, errors="coerce")
+                    if parsed.notna().mean() > 0.8:
+                        datetime_cols.append(col)
 
-        for col in datetime_cols:
-            dt_series = pd.to_datetime(X_df[col], errors="coerce")
-            X_df[f"{col}_year"] = dt_series.dt.year.fillna(dt_series.dt.year.median() if dt_series.dt.year.notna().any() else 2000)
-            X_df[f"{col}_month"] = dt_series.dt.month.fillna(1)
-            X_df[f"{col}_day"] = dt_series.dt.day.fillna(1)
-            X_df[f"{col}_dayofweek"] = dt_series.dt.dayofweek.fillna(0)
-            X_df.drop(columns=[col], inplace=True)
-
-        cols_to_drop = []
-        for col in X_df.columns:
-            nun = X_df[col].nunique(dropna=True)
-            if nun <= 1:
-                cols_to_drop.append(col)
-            elif X_df[col].dtype == object and len(X_df) > 20 and (nun / len(X_df)) > 0.95:
-                cols_to_drop.append(col)
-
-        if cols_to_drop:
-            X_df.drop(columns=cols_to_drop, inplace=True)
-
-        if X_df.shape[1] == 0:
-            raise ValueError("All selected features were constant or high-cardinality ID columns.")
-
-        numeric_cols = X_df.select_dtypes(include=[np.number]).columns.tolist()
-        categorical_cols = [c for c in X_df.columns if c not in numeric_cols]
-
-        numeric_imputers = {}
-        for col in numeric_cols:
-            med = X_df[col].median()
-            val = med if pd.notna(med) else 0.0
-            numeric_imputers[col] = val
-            X_df[col] = X_df[col].fillna(val)
-
-        categorical_imputers = {}
-        onehot_encoders = {}
-        label_encoders = {}
-        encoded_feature_names = []
-
-        processed_dfs = []
-        if numeric_cols:
-            processed_dfs.append(X_df[numeric_cols])
-            encoded_feature_names.extend(numeric_cols)
-
+        X = cls._expand_datetime_features(X, datetime_cols)
+        numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+        categorical_cols = [c for c in X.columns if c not in numeric_cols]
         for col in categorical_cols:
-            mode_val = X_df[col].mode(dropna=True)
-            fill_val = mode_val.iloc[0] if len(mode_val) > 0 else "Missing"
-            categorical_imputers[col] = fill_val
-            series_filled = X_df[col].fillna(fill_val).astype(str)
+            X[col] = X[col].map(lambda value: str(value) if pd.notna(value) else np.nan)
 
-            nunique = series_filled.nunique()
-            if nunique <= 15:
-                dummies = pd.get_dummies(series_filled, prefix=col, drop_first=False, dtype=float)
-                onehot_encoders[col] = dummies.columns.tolist()
-                processed_dfs.append(dummies)
-                encoded_feature_names.extend(dummies.columns.tolist())
-            else:
-                le = LabelEncoder()
-                encoded_vals = le.fit_transform(series_filled)
-                label_encoders[col] = le
-                df_encoded = pd.DataFrame({col: encoded_vals}, index=X_df.index)
-                processed_dfs.append(df_encoded)
-                encoded_feature_names.append(col)
-
-        if not processed_dfs:
-            raise ValueError("Failed to create processed feature matrices.")
-
-        X_processed = pd.concat(processed_dfs, axis=1)
-
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X_processed.values)
-
-        pipeline_meta = {
+        return {
             "target_col": target_col,
             "task_type": task_type,
-            "raw_features": feats,
-            "encoded_feature_names": encoded_feature_names,
+            "raw_features": raw_features,
+            "feature_cols": X.columns.tolist(),
             "numeric_cols": numeric_cols,
             "categorical_cols": categorical_cols,
             "datetime_cols": datetime_cols,
-            "dropped_cols": cols_to_drop,
-            "numeric_imputers": numeric_imputers,
-            "categorical_imputers": categorical_imputers,
-            "onehot_encoders": onehot_encoders,
-            "label_encoders": label_encoders,
             "le_target": le_target,
-            "scaler": scaler,
-            "X_processed_df": X_processed,
-            "X_scaled": X_scaled,
-            "y": y,
-            # Version metadata so exported .pkl bundles can warn on mismatch
             "sklearn_version": sklearn.__version__,
+            "X": X,
+            "y": y,
         }
-
-        return pipeline_meta
 
     @staticmethod
     def safe_split_and_cv(
-        X_scaled: np.ndarray,
+        X: pd.DataFrame,
         y: np.ndarray,
         task_type: str,
-        test_size_pct: float,
-        cv_folds: int
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Any, int, Optional[str]]:
+        test_size_pct: int,
+        cv_folds: int,
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray, Any, int, Optional[str]]:
         test_size = max(0.1, min(0.4, test_size_pct / 100.0))
-        warning_msg = None
-        stratify = None
-        cv_strategy = cv_folds
-
+        test_count = math.ceil(len(y) * test_size)
+        train_count = len(y) - test_count
         if task_type == "Classification":
-            unique_classes, class_counts = np.unique(y, return_counts=True)
-            min_class_cnt = int(class_counts.min()) if len(class_counts) > 0 else 0
-
-            if len(unique_classes) < 2:
+            classes, counts = np.unique(y, return_counts=True)
+            if len(classes) < 2:
                 raise ValueError("Target column has only 1 unique class - cannot train a classifier.")
-
-            if min_class_cnt >= 2 and min_class_cnt >= int(1.0 / test_size):
-                stratify = y
-            else:
-                warning_msg = (
-                    f"Stratified split disabled: smallest class has only {min_class_cnt} sample(s), "
-                    "which is too small for stratification."
+            if counts.min() < 2 or test_count < len(classes) or train_count < len(classes):
+                raise ValueError(
+                    "Not enough examples per class for a stratified holdout and cross-validation. "
+                    "Add rows or reduce the number of classes."
                 )
-
-            if min_class_cnt < cv_folds:
-                safe_cv = max(2, min_class_cnt)
-                cv_strategy = safe_cv
-                msg = f"Adjusted cross-validation folds from {cv_folds} to {safe_cv} due to class count."
-                warning_msg = f"{warning_msg} {msg}" if warning_msg else msg
-
-            if stratify is not None:
-                cv_splitter = StratifiedKFold(n_splits=cv_strategy, shuffle=True, random_state=42)
-            else:
-                cv_splitter = KFold(n_splits=cv_strategy, shuffle=True, random_state=42)
+            stratify = y
         else:
-            cv_strategy = max(2, min(cv_folds, len(y)))
-            cv_splitter = KFold(n_splits=cv_strategy, shuffle=True, random_state=42)
+            if test_count < 2:
+                raise ValueError(
+                    "Regression needs at least 2 holdout rows to calculate R². "
+                    "Add more rows or increase the holdout split."
+                )
+            if train_count < 4:
+                raise ValueError("Regression needs at least 4 training rows for 2-fold cross-validation.")
+            stratify = None
 
         X_train, X_test, y_train, y_test = train_test_split(
-            X_scaled, y, test_size=test_size, random_state=42, stratify=stratify
+            X, y, test_size=test_size, random_state=42, stratify=stratify
         )
 
-        return X_train, X_test, y_train, y_test, cv_splitter, cv_strategy, warning_msg
+        if task_type == "Classification":
+            _, train_counts = np.unique(y_train, return_counts=True)
+            folds = min(cv_folds, int(train_counts.min()))
+            if folds < 2:
+                raise ValueError("Each class needs at least 2 training examples for cross-validation.")
+            splitter = StratifiedKFold(n_splits=folds, shuffle=True, random_state=42)
+        else:
+            folds = min(cv_folds, len(y_train) // 2)
+            splitter = KFold(n_splits=folds, shuffle=True, random_state=42)
+
+        warning = (
+            f"Adjusted cross-validation folds from {cv_folds} to {folds} to fit the training data."
+            if folds != cv_folds
+            else None
+        )
+        return X_train, X_test, y_train, y_test, splitter, folds, warning
 
     @staticmethod
     def get_model_dictionary(task_type: str) -> Dict[str, Any]:
@@ -248,10 +195,10 @@ class MLEngine:
                 "Gradient Boosting": GradientBoostingClassifier(n_estimators=100, random_state=42),
                 "Decision Tree": DecisionTreeClassifier(random_state=42),
                 "K-Nearest Neighbors": KNeighborsClassifier(),
-                "SVM (RBF Kernel)": SVC(kernel="rbf", probability=True, random_state=42),
+                "SVM (RBF Kernel)": CalibratedClassifierCV(SVC(kernel="rbf", random_state=42), cv=3),
                 "Naive Bayes": GaussianNB(),
             }
-        else:
+        if task_type == "Regression":
             return {
                 "Linear Regression": LinearRegression(),
                 "Ridge Regression": Ridge(alpha=1.0, random_state=42),
@@ -262,6 +209,38 @@ class MLEngine:
                 "K-Nearest Neighbors": KNeighborsRegressor(),
                 "SVR (RBF Kernel)": SVR(kernel="rbf"),
             }
+        raise ValueError(f"Unsupported task type: {task_type}")
+
+    @staticmethod
+    def _build_pipeline(model: Any, metadata: Dict[str, Any]) -> Pipeline:
+        transformers = []
+        if metadata["numeric_cols"]:
+            transformers.append((
+                "numeric",
+                Pipeline([
+                    ("imputer", SimpleImputer(strategy="median", keep_empty_features=True)),
+                    ("scaler", StandardScaler()),
+                ]),
+                metadata["numeric_cols"],
+            ))
+        if metadata["categorical_cols"]:
+            transformers.append((
+                "categorical",
+                Pipeline([
+                    ("imputer", SimpleImputer(strategy="constant", fill_value="Missing", keep_empty_features=True)),
+                    ("onehot", OneHotEncoder(
+                        handle_unknown="ignore", min_frequency=2, max_categories=100,
+                        sparse_output=True,
+                    )),
+                ]),
+                metadata["categorical_cols"],
+            ))
+
+        steps = [("preprocessor", ColumnTransformer(transformers))]
+        if isinstance(model, (GradientBoostingClassifier, GradientBoostingRegressor, GaussianNB)):
+            steps.append(("dense", FunctionTransformer(_to_dense, accept_sparse=True)))
+        steps.append(("model", model))
+        return Pipeline(steps)
 
     @classmethod
     def train_models(
@@ -273,92 +252,67 @@ class MLEngine:
         selected_model_names: List[str],
         test_size: int = 20,
         cv_folds: int = 5,
-        progress_callback: Optional[Any] = None
+        progress_callback: Optional[Any] = None,
     ) -> Dict[str, Any]:
+        if not selected_model_names:
+            raise ValueError("Select at least one model to train.")
         if progress_callback:
             progress_callback(0.1, "Preprocessing dataset & engineering features...")
 
-        prep = cls.preprocess(df, target_col, selected_features, task_type)
-
-        if progress_callback:
-            progress_callback(0.25, "Setting up cross-validation splits...")
-
+        metadata = cls.preprocess(df, target_col, selected_features, task_type)
         X_train, X_test, y_train, y_test, cv_splitter, cv_effective, cv_warning = cls.safe_split_and_cv(
-            prep["X_scaled"], prep["y"], task_type, test_size, cv_folds
+            metadata.pop("X"), metadata.pop("y"), task_type, test_size, cv_folds
         )
-
         all_models = cls.get_model_dictionary(task_type)
+        unknown_models = set(selected_model_names) - set(all_models)
+        if unknown_models:
+            raise ValueError(f"Models do not match {task_type}: {', '.join(sorted(unknown_models))}.")
+
         results = []
         errors = []
-
-        total_models = max(1, len(selected_model_names))
-
+        total_models = len(selected_model_names)
         for idx, model_name in enumerate(selected_model_names):
-            if model_name not in all_models:
-                continue
-
-            pct = 0.3 + (0.65 * (idx / total_models))
             if progress_callback:
-                progress_callback(pct, f"Training {model_name}...")
-
-            model = all_models[model_name]
-
+                progress_callback(0.3 + 0.65 * idx / total_models, f"Training {model_name}...")
+            model = cls._build_pipeline(all_models[model_name], metadata)
             try:
                 scoring = "accuracy" if task_type == "Classification" else "r2"
-                cv_scores = cross_val_score(
-                    model, X_train, y_train, cv=cv_splitter, scoring=scoring
-                )
-                cv_mean = float(cv_scores.mean())
-                cv_std = float(cv_scores.std())
-
+                cv_scores = cross_val_score(model, X_train, y_train, cv=cv_splitter, scoring=scoring)
                 model.fit(X_train, y_train)
                 y_pred = model.predict(X_test)
-
+                result = {
+                    "Model": model_name,
+                    "CV Score (mean)": round(float(cv_scores.mean()), 4),
+                    "CV Score (std)": round(float(cv_scores.std()), 4),
+                    "_model": model,
+                    "_y_pred": y_pred,
+                    "_cv_mean": float(cv_scores.mean()),
+                }
                 if task_type == "Classification":
-                    acc = float(accuracy_score(y_test, y_pred))
-                    f1 = float(f1_score(y_test, y_pred, average="weighted", zero_division=0))
-                    results.append({
-                        "Model": model_name,
-                        "Test Accuracy": round(acc, 4),
-                        "F1 Score (weighted)": round(f1, 4),
-                        "CV Score (mean)": round(cv_mean, 4),
-                        "CV Score (std)": round(cv_std, 4),
-                        "_model": model,
-                        "_y_pred": y_pred,
-                        "_cv_mean": cv_mean,
-                    })
+                    result["Test Accuracy"] = round(float(accuracy_score(y_test, y_pred)), 4)
+                    result["F1 Score (weighted)"] = round(
+                        float(f1_score(y_test, y_pred, average="weighted", zero_division=0)), 4
+                    )
                 else:
-                    mse = float(mean_squared_error(y_test, y_pred))
-                    rmse = float(np.sqrt(mse))
-                    r2 = float(r2_score(y_test, y_pred))
-                    results.append({
-                        "Model": model_name,
-                        "Test R²": round(r2, 4),
-                        "RMSE": round(rmse, 4),
-                        "CV Score (mean)": round(cv_mean, 4),
-                        "CV Score (std)": round(cv_std, 4),
-                        "_model": model,
-                        "_y_pred": y_pred,
-                        "_y_test": y_test,
-                        "_cv_mean": cv_mean,
-                    })
-            except Exception as e:
-                errors.append(f"Model '{model_name}' failed to train: {str(e)}")
+                    result["Test R²"] = round(float(r2_score(y_test, y_pred)), 4)
+                    result["RMSE"] = round(float(np.sqrt(mean_squared_error(y_test, y_pred))), 4)
+                    result["_y_test"] = y_test
+                results.append(result)
+            except Exception as err:
+                errors.append(f"Model '{model_name}' failed to train: {err}")
 
         if progress_callback:
             progress_callback(1.0, "Training complete!")
-
         if not results:
-            error_str = " | ".join(errors) if errors else "No selected models completed successfully."
-            raise RuntimeError(f"All model training attempts failed. Details: {error_str}")
+            detail = " | ".join(errors) if errors else "No selected models completed successfully."
+            raise RuntimeError(f"All model training attempts failed. Details: {detail}")
 
         return {
             "results": results,
             "errors": errors,
-            "pipeline": prep,
+            "pipeline": metadata,
             "cv_effective_folds": cv_effective,
             "cv_warning": cv_warning,
-            "X_test": X_test,
             "y_test": y_test,
             "task_type": task_type,
             "target_col": target_col,
@@ -367,98 +321,31 @@ class MLEngine:
     @staticmethod
     def predict_single(
         pipeline_meta: Dict[str, Any],
-        model: Any,
-        input_dict: Dict[str, Any]
+        model: Pipeline,
+        input_dict: Dict[str, Any],
     ) -> Dict[str, Any]:
-        df_row = pd.DataFrame([input_dict])
+        row = pd.DataFrame([input_dict]).reindex(columns=pipeline_meta["raw_features"])
+        row = MLEngine._expand_datetime_features(row, pipeline_meta["datetime_cols"])
+        row = row.reindex(columns=pipeline_meta["feature_cols"])
+        for col in pipeline_meta["numeric_cols"]:
+            row[col] = pd.to_numeric(row[col], errors="coerce")
+        for col in pipeline_meta["categorical_cols"]:
+            row[col] = row[col].map(lambda value: str(value) if pd.notna(value) else np.nan)
 
-        for col in pipeline_meta["datetime_cols"]:
-            if col in df_row.columns:
-                dt_series = pd.to_datetime(df_row[col], errors="coerce")
-                df_row[f"{col}_year"] = dt_series.dt.year.fillna(2000)
-                df_row[f"{col}_month"] = dt_series.dt.month.fillna(1)
-                df_row[f"{col}_day"] = dt_series.dt.day.fillna(1)
-                df_row[f"{col}_dayofweek"] = dt_series.dt.dayofweek.fillna(0)
-                df_row.drop(columns=[col], inplace=True)
-
-        processed_parts = []
-
-        numeric_cols = pipeline_meta["numeric_cols"]
-        if numeric_cols:
-            num_df = pd.DataFrame(index=df_row.index)
-            for col in numeric_cols:
-                fill_val = pipeline_meta["numeric_imputers"].get(col, 0.0)
-                if col in df_row.columns:
-                    val = pd.to_numeric(df_row[col].iloc[0], errors="coerce")
-                    num_df[col] = [val if pd.notna(val) else fill_val]
-                else:
-                    num_df[col] = [fill_val]
-            processed_parts.append(num_df)
-
-        categorical_cols = pipeline_meta["categorical_cols"]
-        for col in categorical_cols:
-            fill_val = pipeline_meta["categorical_imputers"].get(col, "Missing")
-            raw_val = str(df_row[col].iloc[0]) if col in df_row.columns and pd.notna(df_row[col].iloc[0]) else fill_val
-
-            if col in pipeline_meta["onehot_encoders"]:
-                cols_onehot = pipeline_meta["onehot_encoders"][col]
-                oh_df = pd.DataFrame(0.0, index=df_row.index, columns=cols_onehot)
-                matched_col = f"{col}_{raw_val}"
-                if matched_col in oh_df.columns:
-                    oh_df[matched_col] = 1.0
-                processed_parts.append(oh_df)
-
-            elif col in pipeline_meta["label_encoders"]:
-                le = pipeline_meta["label_encoders"][col]
-                try:
-                    enc_val = le.transform([raw_val])[0]
-                except ValueError:
-                    # Value was never seen during training - use most frequent class (index 0)
-                    # and surface a warning so callers know the input was unseen.
-                    enc_val = 0
-                    import warnings
-                    warnings.warn(
-                        f"Inference input for '{col}' has unseen value '{raw_val}'. "
-                        f"Known values: {list(le.classes_)}. Defaulting to '{le.classes_[0]}'.",
-                        UserWarning,
-                        stacklevel=2,
-                    )
-                lbl_df = pd.DataFrame({col: [enc_val]}, index=df_row.index)
-                processed_parts.append(lbl_df)
-
-        X_processed = pd.concat(processed_parts, axis=1)
-
-        target_cols = pipeline_meta["encoded_feature_names"]
-        X_aligned = X_processed.reindex(columns=target_cols, fill_value=0.0)
-
-        scaler = pipeline_meta["scaler"]
-        X_scaled = scaler.transform(X_aligned.values)
-
-        raw_pred = model.predict(X_scaled)[0]
-
-        proba_dict = None
+        raw_pred = model.predict(row)[0]
         task_type = pipeline_meta["task_type"]
         le_target = pipeline_meta["le_target"]
-
+        proba_dict = None
         if task_type == "Classification":
-            if hasattr(model, "predict_proba"):
-                try:
-                    probas = model.predict_proba(X_scaled)[0]
-                    if le_target is not None:
-                        classes = [str(c) for c in le_target.classes_]
-                    else:
-                        classes = [str(i) for i in range(len(probas))]
-                    proba_dict = dict(zip(classes, [round(float(p), 4) for p in probas]))
-                except Exception:
-                    pass
-
-            if le_target is not None:
-                try:
-                    display_pred = str(le_target.inverse_transform([int(raw_pred)])[0])
-                except Exception:
-                    display_pred = str(raw_pred)
-            else:
-                display_pred = str(raw_pred)
+            estimator = model.named_steps["model"]
+            if hasattr(estimator, "predict_proba"):
+                probabilities = model.predict_proba(row)[0]
+                classes = le_target.inverse_transform(estimator.classes_.astype(int))
+                proba_dict = {
+                    str(label): round(float(probability), 4)
+                    for label, probability in zip(classes, probabilities)
+                }
+            display_pred = str(le_target.inverse_transform([int(raw_pred)])[0])
         else:
             display_pred = round(float(raw_pred), 4)
 

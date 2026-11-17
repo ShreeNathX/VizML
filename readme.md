@@ -1,8 +1,8 @@
 # VizML Studio
 
-**A local-first, end-to-end data intelligence platform — built with Streamlit and Plotly.**
+**An end-to-end data intelligence platform — built with Streamlit and Plotly.**
 
-Upload a messy CSV or Excel file, clean it up, explore it visually, train ML models, and generate executive-grade reports — all running on your machine. No cloud required.
+Upload a CSV or Excel file, clean it, explore it, train ML models, and generate reports. Data is processed wherever you run the app: your machine locally or the Streamlit host when deployed.
 
 ---
 
@@ -82,8 +82,12 @@ VizML/
 │   └── 4_Executive_Reports.py     # Phase 04: dashboards and exports
 ├── src/
 │   ├── cleaner.py                 # DataCleaner — all data cleaning logic
+│   ├── file_utils.py              # Upload identity and extension helpers
 │   ├── ml_engine.py               # MLEngine — preprocessing, training, evaluation
 │   └── styles.py                  # Claymorphic design system (CSS + Plotly themes)
+├── tests/
+│   ├── test_ml_engine.py
+│   └── test_uploads.py
 ├── .streamlit/
 │   └── config.toml                # Theme and server configuration
 ├── requirements.txt
@@ -107,7 +111,7 @@ VizML/
 
 ## Notes
 
-- All data stays on your machine — nothing is sent to external servers.
+- Local runs keep data on your machine. Streamlit Cloud receives uploaded data for processing; configure app access in Streamlit Cloud before deployment, especially for sensitive data. This repo does not add its own sign-in screen.
 - Trained models are exported as `.pkl` files (excluded from git by default via `.gitignore`).
 - The app uses session state to pass data between pages, so keep the browser tab open while working through the pipeline.
 

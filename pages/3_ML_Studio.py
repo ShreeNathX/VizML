@@ -1,3 +1,4 @@
+import html
 import io
 import pickle
 
@@ -73,7 +74,7 @@ if "ml_cv" in st.session_state and not isinstance(st.session_state["ml_cv"], int
 render_html(
     f"""
     <div class="alert-box alert-info">
-        <strong>Active Dataset:</strong> <code>{st.session_state.get('current_file_name', 'Active Dataset')}</code>
+        <strong>Active Dataset:</strong> <code>{html.escape(str(st.session_state.get('current_file_name', 'Active Dataset')))}</code>
         ({df.shape[0]:,} rows × {df.shape[1]} cols | {len(numeric_cols)} numeric, {len(categorical_cols)} categorical).
     </div>
     """
@@ -103,7 +104,7 @@ except Exception as err:
 
 with ck:
     render_html(
-        f"**Heuristic Task Inference:** <span class='badge badge-gold'>{auto_task}</span> : <span style='color:var(--ink-soft);font-size:11px;'>{auto_reason}</span>"
+        f"**Heuristic Task Inference:** <span class='badge badge-gold'>{html.escape(auto_task)}</span> : <span style='color:var(--ink-soft);font-size:11px;'>{html.escape(auto_reason)}</span>"
     )
     task_type = st.radio(
         "Modeling Paradigm",
@@ -177,6 +178,26 @@ with cm2:
     test_size = st.slider("Holdout Test Split %", 10, 40, 20, 5, key="ml_test_size")
     cv_folds = st.slider("K-Fold Cross Validation", 2, 10, 5, 1, key="ml_cv")
 
+training_settings = {
+    "target": target_col,
+    "task": task_type,
+    "features": tuple(selected_features),
+    "models": tuple(selected_models),
+    "test_size": test_size,
+    "cv_folds": cv_folds,
+}
+previous_output = st.session_state.get("ml_engine_output")
+if previous_output is not None and (
+    not isinstance(previous_output, dict) or previous_output.get("_settings") != training_settings
+):
+    st.session_state.pop("ml_engine_output", None)
+    for key in (
+        "ml_results", "ml_best_name", "ml_pipeline", "ml_task_result",
+        "ml_target_result", "ml_feature_importance", "ml_bundle",
+    ):
+        st.session_state.pop(key, None)
+    st.info("Model settings changed. Train again to refresh the results and report.")
+
 if not selected_models:
     st.warning("Select at least one algorithm to train.")
     st.stop()
@@ -204,6 +225,7 @@ if train_btn:
             cv_folds=cv_folds,
             progress_callback=lambda p, t: prog.progress(p, text=t),
         )
+        output["_settings"] = training_settings
         st.session_state["ml_engine_output"] = output
         render_html(
             f'<div class="alert-box alert-success">Successfully trained <strong>{len(output["results"])}</strong> model(s). Leaderboard updated.</div>'
@@ -334,19 +356,26 @@ if ml_output and isinstance(ml_output, dict) and "results" in ml_output and ml_o
     # 6. Feature Importance
     # ---------------------------------------------------------
     try:
-        tree_res = [r for r in results if hasattr(r.get("_model"), "feature_importances_")]
+        st.session_state["ml_feature_importance"] = None
+        tree_res = [
+            r for r in results
+            if hasattr(r["_model"].named_steps["model"], "feature_importances_")
+        ]
         if tree_res:
             render_html('<div class="step-header"><span class="step-num indigo">06</span><span class="step-title">Predictive Feature Drivers</span></div>')
-            feat_names = pipeline_meta.get("encoded_feature_names", [])
             fi_tabs = st.tabs([r["Model"] for r in tree_res])
             for tab, res in zip(fi_tabs, tree_res):
                 with tab:
-                    imps = res["_model"].feature_importances_
+                    model_pipeline = res["_model"]
+                    estimator = model_pipeline.named_steps["model"]
+                    feat_names = model_pipeline.named_steps["preprocessor"].get_feature_names_out()
+                    imps = estimator.feature_importances_
                     n = min(len(feat_names), len(imps))
                     fi_df = pd.DataFrame({"Feature": feat_names[:n], "Importance": imps[:n]}).sort_values(
                         "Importance", ascending=False
                     )
-                    st.session_state["ml_feature_importance"] = fi_df
+                    if res["Model"] == best_name:
+                        st.session_state["ml_feature_importance"] = fi_df
                     fig_fi = px.bar(
                         fi_df.head(15),
                         x="Importance",
@@ -403,8 +432,8 @@ if ml_output and isinstance(ml_output, dict) and "results" in ml_output and ml_o
                     render_html(
                         f"""
                         <div class="bp-display">
-                            <div class="bp-expr">Predicted Response: {target_done}</div>
-                            <div class="bp-value" style="color:var(--lime);">{pred['prediction']}</div>
+                            <div class="bp-expr">Predicted Response: {html.escape(str(target_done))}</div>
+                            <div class="bp-value" style="color:var(--lime);">{html.escape(str(pred['prediction']))}</div>
                         </div>
                         """
                     )

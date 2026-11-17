@@ -1,3 +1,4 @@
+import html
 import io
 
 import numpy as np
@@ -5,6 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from src.cleaner import DataCleaner
+from src.file_utils import file_extension, upload_identity
 from src.styles import inject_css, render_html
 
 MAX_FILE_MB = 100
@@ -48,20 +50,25 @@ def safe_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def reset_workspace_for_new_dataset(data_df: pd.DataFrame, file_name: str) -> None:
+def clear_ml_results() -> None:
+    for key in (
+        "ml_engine_output", "ml_results", "ml_best_name", "ml_pipeline",
+        "ml_task_result", "ml_target_result", "ml_feature_importance", "ml_bundle",
+    ):
+        st.session_state[key] = None
+
+
+def reset_workspace_for_new_dataset(data_df: pd.DataFrame, file_name: str, upload_id: str = "") -> None:
     """Sets active dataset and purges all old downstream ML, filters, and reports state."""
     st.session_state["df"] = data_df
     st.session_state["original_df"] = data_df.copy()
     st.session_state["history"] = []
     st.session_state["coercion_flags"] = {}
     st.session_state["current_file_name"] = file_name
+    st.session_state["_active_upload_id"] = upload_id
 
     # Clear downstream ML state variables
-    for ml_var in [
-        "ml_engine_output", "ml_results", "ml_best_name", "ml_pipeline",
-        "ml_task_result", "ml_target_result", "ml_feature_importance", "ml_bundle"
-    ]:
-        st.session_state[ml_var] = None
+    clear_ml_results()
 
     # Delete widget keys (never set widget keys to None in Streamlit!)
     for widget_k in [
@@ -84,12 +91,9 @@ def unload_dataset() -> None:
     st.session_state["history"] = []
     st.session_state["coercion_flags"] = {}
     st.session_state["current_file_name"] = None
+    st.session_state["_active_upload_id"] = ""
 
-    for ml_var in [
-        "ml_engine_output", "ml_results", "ml_best_name", "ml_pipeline",
-        "ml_task_result", "ml_target_result", "ml_feature_importance", "ml_bundle"
-    ]:
-        st.session_state[ml_var] = None
+    clear_ml_results()
 
     for widget_k in [
         "ml_target", "ml_task", "ml_feat_mode", "ml_features", "ml_models",
@@ -110,6 +114,7 @@ for k, v in [
     ("history", []),
     ("coercion_flags", {}),
     ("current_file_name", None),
+    ("_active_upload_id", ""),
 ]:
     if k not in st.session_state:
         st.session_state[k] = v
@@ -124,9 +129,9 @@ def load_data(file_obj) -> None:
             )
             return
 
-        if file_obj.name.endswith(".csv"):
+        if file_extension(file_obj.name) == ".csv":
             data_df = pd.read_csv(file_obj)
-        elif file_obj.name.endswith((".xlsx", ".xls")):
+        elif file_extension(file_obj.name) in (".xlsx", ".xls"):
             data_df = pd.read_excel(file_obj)
         else:
             st.error("Unsupported file format. Please upload CSV or Excel.")
@@ -136,7 +141,7 @@ def load_data(file_obj) -> None:
             st.error("The uploaded dataset contains no rows.")
             return
 
-        reset_workspace_for_new_dataset(data_df, file_obj.name)
+        reset_workspace_for_new_dataset(data_df, file_obj.name, upload_identity(file_obj))
         show_toast(f"Loaded {file_obj.name} ({data_df.shape[0]:,} rows, {data_df.shape[1]} cols).")
     except Exception as err:
         st.error(f"Failed to load dataset: {err}")
@@ -184,7 +189,7 @@ if has_active_df:
                     </div>
                     <div>
                         <div style="font-family:'Baloo 2',sans-serif;font-size:17px;font-weight:700;color:var(--ink);">
-                            Active Dataset: <code>{active_file_name}</code>
+            Active Dataset: <code>{html.escape(str(active_file_name))}</code>
                         </div>
                         <div style="font-size:12px;color:var(--ink-soft);font-weight:600;">
                             {active_df_obj.shape[0]:,} rows × {active_df_obj.shape[1]} columns
@@ -208,7 +213,7 @@ if has_active_df:
             key="curation_file_uploader_replace",
         )
         if uploaded_file is not None:
-            if st.session_state.get("current_file_name") != uploaded_file.name:
+            if st.session_state.get("_active_upload_id") != upload_identity(uploaded_file):
                 load_data(uploaded_file)
                 st.rerun()
 
@@ -224,7 +229,7 @@ else:
         key="curation_file_uploader_fresh",
     )
     if uploaded_file is not None:
-        if st.session_state.get("current_file_name") != uploaded_file.name:
+        if st.session_state.get("_active_upload_id") != upload_identity(uploaded_file):
             load_data(uploaded_file)
             st.rerun()
 
@@ -242,6 +247,7 @@ if st.session_state.get("df") is not None:
         if st.button("Undo Last Step", disabled=undo_disabled):
             try:
                 st.session_state["df"] = st.session_state["history"].pop()
+                clear_ml_results()
                 show_toast("Undid last cleaning operation.")
                 st.rerun()
             except Exception as err:
@@ -250,6 +256,7 @@ if st.session_state.get("df") is not None:
         if st.button("Reset to Source"):
             try:
                 st.session_state["df"] = st.session_state["original_df"].copy()
+                clear_ml_results()
                 st.session_state["history"] = []
                 st.session_state["coercion_flags"] = {}
                 show_toast("Reset to original dataset.")
@@ -319,6 +326,7 @@ if st.session_state.get("df") is not None:
                             with st.spinner("Applying imputation to missing values..."):
                                 push_history(df_current)
                                 st.session_state["df"] = df_prop_missing
+                                clear_ml_results()
                             show_toast("Missing values successfully imputed.")
                             st.rerun()
                     except Exception as err:
@@ -413,7 +421,7 @@ if st.session_state.get("df") is not None:
                             if loss_pct >= 50:
                                 render_html(
                                     f'<div class="alert-box alert-error" style="margin-top:8px;font-size:12.5px;">'
-                                    f'<strong>⚠ Destructive Cast Detected:</strong> Casting <code>{col_to_cast}</code> to '
+                                    f'<strong>⚠ Destructive Cast Detected:</strong> Casting <code>{html.escape(str(col_to_cast))}</code> to '
                                     f'<code>{target_type_key}</code> will convert <strong>{new_nulls:,} of {total_rows:,} '
                                     f'values ({loss_pct:.1f}%)</strong> to <code>NaN</code> because they cannot be parsed as '
                                     f'{target_type_key} (e.g. text like &quot;male&quot;/&quot;female&quot; cannot become integers). '
@@ -437,7 +445,7 @@ if st.session_state.get("df") is not None:
                         last_cast = st.session_state.get("_last_cast_col")
                         last_cast_type = st.session_state.get("_last_cast_type")
                         if last_cast == col_to_cast and last_cast_type == target_type_key:
-                            render_html(f'<div class="alert-box alert-success" style="margin-top:6px;font-size:12px;"><strong>Successfully cast</strong> — {cast_msg} &nbsp;|&nbsp; Use <strong>Undo Last Step</strong> above to reverse.</div>')
+                            render_html(f'<div class="alert-box alert-success" style="margin-top:6px;font-size:12px;"><strong>Successfully cast</strong> — {html.escape(cast_msg)} &nbsp;|&nbsp; Use <strong>Undo Last Step</strong> above to reverse.</div>')
                         elif new_nulls == 0:
                             render_html(f'<div class="alert-box alert-info" style="margin-top:6px;font-size:12px;">Preview ready. Click <strong>Commit Type Cast</strong> to apply.</div>')
 
@@ -450,6 +458,7 @@ if st.session_state.get("df") is not None:
                             with st.spinner(f"Casting '{col_to_cast}' to {target_type_key}..."):
                                 push_history(df_current)
                                 st.session_state["df"] = df_prop_cast
+                                clear_ml_results()
                                 st.session_state["_last_cast_col"] = col_to_cast
                                 st.session_state["_last_cast_type"] = target_type_key
                                 # Reset confirmation checkbox for next action
@@ -493,6 +502,7 @@ if st.session_state.get("df") is not None:
                                 with st.spinner("Running batch schema coercion..."):
                                     push_history(df_current)
                                     st.session_state["df"] = df_prop_coerce
+                                    clear_ml_results()
                                     st.session_state["coercion_flags"] = cleaner.flagged_columns
                                 show_toast("Batch type coercion applied.")
                                 st.rerun()
@@ -501,7 +511,7 @@ if st.session_state.get("df") is not None:
 
                         for c, flag in cleaner.flagged_columns.items():
                             if "cast" in flag.lower():
-                                render_html(f"`{c}`: <span class='badge badge-gold'>PARSED</span>: {flag}")
+                                render_html(f"`{html.escape(str(c))}`: <span class='badge badge-gold'>PARSED</span>: {html.escape(str(flag))}")
                     else:
                         render_html('<div class="alert-box alert-success"><strong>Schema Optimal:</strong> No unparsed string columns detected.</div>')
                 except Exception as err:
@@ -564,6 +574,7 @@ if st.session_state.get("df") is not None:
                                 with st.spinner(f"Applying outlier {outlier_action}..."):
                                     push_history(df_current)
                                     st.session_state["df"] = df_prop_outliers
+                                    clear_ml_results()
                                 show_toast(f"Outliers handled via '{outlier_action}'.")
                                 st.rerun()
                         except Exception as err:
@@ -595,6 +606,7 @@ if st.session_state.get("df") is not None:
                         with st.spinner("Scrubbing duplicate rows..."):
                             push_history(df_current)
                             st.session_state["df"] = df_prop_dups
+                            clear_ml_results()
                         show_toast(f"Removed {dup_count} duplicate rows.")
                         st.rerun()
                 else:
@@ -633,6 +645,7 @@ if st.session_state.get("df") is not None:
                             with st.spinner(f"Encoding columns via {enc_method}..."):
                                 push_history(df_current)
                                 st.session_state["df"] = df_prop_enc
+                                clear_ml_results()
                             show_toast(f"Encoded via '{enc_method}'.")
                             st.rerun()
                     except Exception as err:

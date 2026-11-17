@@ -1,10 +1,11 @@
 ﻿# Core framework
-streamlit>=1.35.0
+streamlit>=1.49.0
 
 # Data processing
 pandas>=2.0.0
 numpy>=1.26.0
 openpyxl>=3.1.0
+xlrd>=2.0.1
 
 # Machine learning
 scikit-learn>=1.4.0

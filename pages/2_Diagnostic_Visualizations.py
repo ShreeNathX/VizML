@@ -15,6 +15,7 @@ from src.styles import (
     render_html,
     resolve_continuous_scale,
 )
+from src.cleaner import calculate_purity_score
 
 try:
     import statsmodels  # type: ignore
@@ -130,10 +131,9 @@ total_cells = df_full.size
 missing_cells = int(df_full.isna().sum().sum())
 completeness_pct = ((total_cells - missing_cells) / max(1, total_cells)) * 100
 dups_count = int(df_full.duplicated().sum())
-dup_pct = (dups_count / max(1, len(df_full))) * 100
 mem_mb = df_full.memory_usage(deep=True).sum() / (1024 * 1024)
 
-purity_score = max(0.0, min(100.0, 100.0 - (missing_cells / max(1, total_cells) * 60) - (dup_pct * 40)))
+purity_score = calculate_purity_score(missing_cells, total_cells, dups_count, len(df_full))
 
 k1, k2, k3, k4, k5 = st.columns(5)
 
@@ -142,7 +142,7 @@ with k1:
         f"""
         <div class="bp-display">
             <div class="bp-expr">Total Records</div>
-            <div class="bp-value">{df.shape[0]:,}</div>
+            <div class="bp-value">{df_full.shape[0]:,}</div>
         </div>
         """
     )
@@ -758,13 +758,6 @@ except Exception as e:
     chart_err = str(e)
 
 if chart_err:
-    render_html(
-        f"""
-        <div class="alert-box alert-danger">
-            <strong>Chart Construction Advisory:</strong><br>
-            <em>{chart_err}</em><br>
-            <span style="font-size:12px;opacity:0.85;">Tip: Ensure appropriate variable types (numeric vs categorical) and try selecting a Y-axis variable or adjusting color grouping.</span>
-        </div>
-        """
-    )
+    st.error(f"Chart construction failed: {chart_err}")
+    st.caption("Check the selected variable types, axes, and color grouping.")
 

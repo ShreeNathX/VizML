@@ -2,6 +2,13 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
+
+def calculate_purity_score(missing_cells: int, total_cells: int, duplicates: int, rows: int) -> float:
+    missing_pct = missing_cells / max(1, total_cells) * 100
+    duplicate_pct = duplicates / max(1, rows) * 100
+    return max(0.0, min(100.0, 100.0 - missing_pct * 1.5 - duplicate_pct * 2.0))
+
+
 class DataCleaner:
     def __init__(self, df: pd.DataFrame):
         self.df = df.copy()

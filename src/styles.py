@@ -1042,7 +1042,7 @@ hr { border: none !important; border-top: 2px solid var(--bg-deep) !important; }
 
 
 def render_html(html_content: str) -> None:
-    """Renders raw HTML safely directly in Streamlit's container with full CSS support."""
+    """Renders trusted HTML directly in Streamlit's container with full CSS support."""
     cleaned = textwrap.dedent(html_content).strip()
     st.markdown(cleaned, unsafe_allow_html=True)
 
