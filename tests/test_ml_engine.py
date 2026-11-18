@@ -34,6 +34,17 @@ class MLEngineTests(unittest.TestCase):
         self.assertEqual(imputer.statistics_[0], X_train["feature"].median())
         self.assertNotEqual(imputer.statistics_[0], df["feature"].median())
 
+    def test_string_dtype_dates_are_engineered(self):
+        df = pd.DataFrame({
+            "date": pd.Series(pd.date_range("2025-01-01", periods=40).strftime("%Y-%m-%d"), dtype="str"),
+            "target": np.arange(40, dtype=float),
+        })
+
+        metadata = MLEngine.preprocess(df, "target", ["date"], "Regression")
+
+        self.assertEqual(metadata["datetime_cols"], ["date"])
+        self.assertIn("date_year", metadata["feature_cols"])
+
     def test_all_models_train_and_unseen_category_predicts(self):
         rows = 80
         df = pd.DataFrame({

@@ -48,7 +48,7 @@ Made in collaboration with [Aditya Singh Baghel](https://github.com/ArBaghel).
 ## Getting Started
 
 ### Prerequisites
-- Python 3.10 or higher
+- Python 3.11 or higher
 - pip
 
 ### Installation

@@ -52,9 +52,6 @@ categorical_cols = [c for c in all_cols if c not in numeric_cols]
 # -------------------------------------------------------------
 # Defensive Session State Sanitization (Prevent NoneType Iteration Errors)
 # -------------------------------------------------------------
-if "ml_models" in st.session_state and (st.session_state["ml_models"] is None or not isinstance(st.session_state["ml_models"], (list, tuple))):
-    del st.session_state["ml_models"]
-
 if "ml_features" in st.session_state and (st.session_state["ml_features"] is None or not isinstance(st.session_state["ml_features"], (list, tuple))):
     del st.session_state["ml_features"]
 
@@ -160,9 +157,10 @@ except Exception as err:
     model_options = []
 
 # Validate existing selection
-if "ml_models" in st.session_state:
-    if not isinstance(st.session_state["ml_models"], (list, tuple)) or not all(m in model_options for m in st.session_state["ml_models"]):
-        del st.session_state["ml_models"]
+models_key = f"ml_models_{task_type.lower()}"
+if models_key in st.session_state:
+    if not isinstance(st.session_state[models_key], (list, tuple)) or not all(m in model_options for m in st.session_state[models_key]):
+        del st.session_state[models_key]
 
 default_models = model_options[:min(4, len(model_options))] if model_options else []
 
@@ -172,7 +170,7 @@ with cm1:
         "Candidate Algorithms to Train & Benchmark",
         options=model_options,
         default=default_models,
-        key="ml_models",
+        key=models_key,
     )
 with cm2:
     test_size = st.slider("Holdout Test Split %", 10, 40, 20, 5, key="ml_test_size")

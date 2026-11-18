@@ -73,6 +73,7 @@ def reset_workspace_for_new_dataset(data_df: pd.DataFrame, file_name: str, uploa
     # Delete widget keys (never set widget keys to None in Streamlit!)
     for widget_k in [
         "ml_target", "ml_task", "ml_feat_mode", "ml_features", "ml_models",
+        "ml_models_classification", "ml_models_regression",
         "ml_test_size", "ml_cv", "ml_infer_model", "ml_predict"
     ]:
         if widget_k in st.session_state:
@@ -97,6 +98,7 @@ def unload_dataset() -> None:
 
     for widget_k in [
         "ml_target", "ml_task", "ml_feat_mode", "ml_features", "ml_models",
+        "ml_models_classification", "ml_models_regression",
         "ml_test_size", "ml_cv", "ml_infer_model", "ml_predict"
     ]:
         if widget_k in st.session_state:

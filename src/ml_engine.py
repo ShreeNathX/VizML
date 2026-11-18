@@ -107,10 +107,10 @@ class MLEngine:
         for col in X.columns:
             if pd.api.types.is_datetime64_any_dtype(X[col]):
                 datetime_cols.append(col)
-            elif X[col].dtype == object:
+            elif pd.api.types.is_object_dtype(X[col]) or pd.api.types.is_string_dtype(X[col]):
                 sample = X[col].dropna().head(20)
                 if not sample.empty:
-                    parsed = pd.to_datetime(sample, errors="coerce")
+                    parsed = pd.to_datetime(sample, errors="coerce", format="mixed")
                     if parsed.notna().mean() > 0.8:
                         datetime_cols.append(col)
 
