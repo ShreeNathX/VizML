@@ -13,12 +13,10 @@ from src.ml_engine import MLEngine
 from src.styles import (
     CLAY_COLOR_SEQUENCE,
     apply_clay_theme,
-    inject_css,
     render_html,
 )
 
 st.set_page_config(page_title="VizML: ML Studio", layout="wide")
-inject_css()
 
 render_html(
     """

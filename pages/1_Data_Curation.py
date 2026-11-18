@@ -7,13 +7,12 @@ import streamlit as st
 
 from src.cleaner import DataCleaner
 from src.file_utils import file_extension, upload_identity
-from src.styles import inject_css, render_html
+from src.styles import render_html
 
 MAX_FILE_MB = 100
 MAX_HISTORY = 10
 
 st.set_page_config(page_title="VizML: Data Curation", layout="wide")
-inject_css()
 
 render_html(
     """

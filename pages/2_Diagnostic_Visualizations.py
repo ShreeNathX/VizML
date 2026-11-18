@@ -11,7 +11,6 @@ from src.styles import (
     COLOR_PALETTES,
     CONTINUOUS_COLOR_SCALES,
     apply_clay_theme,
-    inject_css,
     render_html,
     resolve_continuous_scale,
 )
@@ -25,7 +24,6 @@ except ImportError:
     has_statsmodels = False
 
 st.set_page_config(page_title="VizML: Diagnostic Dashboard", layout="wide")
-inject_css()
 
 if "df" not in st.session_state or st.session_state["df"] is None:
     render_html(

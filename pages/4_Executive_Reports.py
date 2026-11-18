@@ -17,14 +17,12 @@ from src.styles import (
     COLOR_PALETTES,
     CONTINUOUS_COLOR_SCALES,
     apply_clay_theme,
-    inject_css,
     render_html,
     resolve_continuous_scale,
 )
 from src.cleaner import calculate_purity_score
 
 st.set_page_config(page_title="VizML: Executive Summary", layout="wide")
-inject_css()
 
 render_html(
     """
