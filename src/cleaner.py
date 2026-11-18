@@ -74,9 +74,13 @@ class DataCleaner:
                         val = mode_series.iloc[0]
                     else:
                         val = categorical_constant
+                    if isinstance(df_new[col].dtype, pd.CategoricalDtype) and val not in df_new[col].cat.categories:
+                        df_new[col] = df_new[col].cat.add_categories([val])
                     df_new[col] = df_new[col].fillna(val)
                 else:
                     val = categorical_constant
+                    if isinstance(df_new[col].dtype, pd.CategoricalDtype) and val not in df_new[col].cat.categories:
+                        df_new[col] = df_new[col].cat.add_categories([val])
                     df_new[col] = df_new[col].fillna(val)
 
         return df_new

@@ -62,7 +62,7 @@ class MLEngine:
         for col in datetime_cols:
             if col not in X:
                 continue
-            dates = pd.to_datetime(X[col], errors="coerce")
+            dates = pd.to_datetime(X[col], errors="coerce", format="mixed")
             for part in ("year", "month", "day", "dayofweek"):
                 X[f"{col}_{part}"] = getattr(dates.dt, part)
             X.drop(columns=col, inplace=True)
@@ -118,7 +118,7 @@ class MLEngine:
         numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
         categorical_cols = [c for c in X.columns if c not in numeric_cols]
         for col in categorical_cols:
-            X[col] = X[col].map(lambda value: str(value) if pd.notna(value) else np.nan)
+            X[col] = X[col].map(lambda value: str(value) if pd.notna(value) else np.nan).astype(object)
 
         return {
             "target_col": target_col,
@@ -274,10 +274,26 @@ class MLEngine:
         for idx, model_name in enumerate(selected_model_names):
             if progress_callback:
                 progress_callback(0.3 + 0.65 * idx / total_models, f"Training {model_name}...")
-            model = cls._build_pipeline(all_models[model_name], metadata)
+            estimator = all_models[model_name]
+            if isinstance(estimator, (KNeighborsClassifier, KNeighborsRegressor)):
+                fold_train_size = len(y_train) - math.ceil(len(y_train) / cv_effective)
+                estimator.set_params(n_neighbors=min(estimator.n_neighbors, fold_train_size))
+            elif isinstance(estimator, CalibratedClassifierCV):
+                class_counts = np.unique(y_train, return_counts=True)[1]
+                calibration_train_size = min(
+                    count - math.ceil(count / cv_effective) for count in class_counts
+                )
+                if calibration_train_size >= 2:
+                    estimator.set_params(cv=min(estimator.cv, calibration_train_size))
+                else:
+                    # shortcut: tiny folds omit probabilities; add non-CV calibration if confidence estimates are required.
+                    estimator = SVC(kernel="rbf", random_state=42)
+            model = cls._build_pipeline(estimator, metadata)
             try:
                 scoring = "accuracy" if task_type == "Classification" else "r2"
                 cv_scores = cross_val_score(model, X_train, y_train, cv=cv_splitter, scoring=scoring)
+                if not np.isfinite(cv_scores).all():
+                    raise ValueError("Cross-validation returned non-finite scores; this model cannot be ranked.")
                 model.fit(X_train, y_train)
                 y_pred = model.predict(X_test)
                 result = {
@@ -330,7 +346,7 @@ class MLEngine:
         for col in pipeline_meta["numeric_cols"]:
             row[col] = pd.to_numeric(row[col], errors="coerce")
         for col in pipeline_meta["categorical_cols"]:
-            row[col] = row[col].map(lambda value: str(value) if pd.notna(value) else np.nan)
+            row[col] = row[col].map(lambda value: str(value) if pd.notna(value) else np.nan).astype(object)
 
         raw_pred = model.predict(row)[0]
         task_type = pipeline_meta["task_type"]
