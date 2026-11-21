@@ -13,7 +13,7 @@ Made in collaboration with [Aditya Singh Baghel](https://github.com/ArBaghel).
 ## Features
 
 ### Phase 01: Data Curation Engine
-- Drag-and-drop CSV / Excel upload (up to 100 MB)
+- Drag-and-drop CSV / Excel upload (100 MB on Streamlit Cloud, 200 MB locally)
 - Developer manual type casting (`int64`, `float64`, `str`, `category`, `datetime64`, `bool`)
 - Automatic schema detection and high-confidence type coercion
 - Missing-value imputation (median, mean, mode, forward/backward fill, constant)
@@ -46,6 +46,10 @@ Made in collaboration with [Aditya Singh Baghel](https://github.com/ArBaghel).
 ---
 
 ## Getting Started
+
+### Cloud and local limits
+
+VizML detects Streamlit Community Cloud on Linux and applies upload and training limits: 100 MB per upload, 50,000 training rows, up to 4 models, and 5-fold cross-validation. Local Windows and macOS runs allow 200 MB uploads, have no app-level row or model cap, and allow up to 10 folds. Local Linux runs use Cloud limits by default; set `VIZML_RUNTIME=local` to override. You can set `VIZML_RUNTIME=cloud` to force Cloud limits on another system.
 
 ### Prerequisites
 - Python 3.11 or higher

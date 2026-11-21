@@ -10,6 +10,7 @@ import streamlit as st
 from sklearn.metrics import classification_report, confusion_matrix
 
 from src.ml_engine import MLEngine
+from src.runtime_config import MAX_CV_FOLDS, MAX_MODELS, MAX_TRAINING_ROWS
 from src.styles import (
     CLAY_COLOR_SEQUENCE,
     apply_clay_theme,
@@ -169,10 +170,11 @@ with cm1:
         options=model_options,
         default=default_models,
         key=models_key,
+        max_selections=MAX_MODELS,
     )
 with cm2:
     test_size = st.slider("Holdout Test Split %", 10, 40, 20, 5, key="ml_test_size")
-    cv_folds = st.slider("K-Fold Cross Validation", 2, 10, 5, 1, key="ml_cv")
+    cv_folds = st.slider("K-Fold Cross Validation", 2, MAX_CV_FOLDS, 5, 1, key="ml_cv")
 
 training_settings = {
     "target": target_col,
@@ -200,13 +202,19 @@ if not selected_models:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-if len(df) > 50_000:
+training_limit_exceeded = MAX_TRAINING_ROWS is not None and len(df) > MAX_TRAINING_ROWS
+if training_limit_exceeded:
     st.warning(
-        f"Your dataset has {len(df):,} rows. Training may take a couple of minutes on Streamlit Cloud. "
-        "Consider using fewer models if it times out."
+        f"Cloud mode can train datasets up to {MAX_TRAINING_ROWS:,} rows. "
+        "Run VizML locally for this larger dataset."
     )
 
-train_btn = st.button("Execute Automated Training Pipeline", type="primary", key="ml_train_btn")
+train_btn = st.button(
+    "Execute Automated Training Pipeline",
+    type="primary",
+    key="ml_train_btn",
+    disabled=training_limit_exceeded,
+)
 
 if train_btn:
     prog = st.progress(0, text="Initializing model training pipeline...")
