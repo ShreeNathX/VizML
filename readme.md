@@ -55,7 +55,7 @@ Made in collaboration with [Aditya Singh Baghel](https://github.com/ArBaghel).
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/VizML.git
+git clone https://github.com/ShreeNathX/VizML.git
 cd VizML
 
 # 2. Create and activate a virtual environment (recommended)
@@ -67,7 +67,7 @@ env\Scripts\activate         # Windows
 pip install -r requirements.txt
 
 # 4. Run the app
-streamlit run App.py
+streamlit run app.py
 ```
 
 The app opens at `http://localhost:8501` in your browser.
@@ -78,7 +78,7 @@ The app opens at `http://localhost:8501` in your browser.
 
 ```
 VizML/
-├── App.py                          # Landing page and navigation hub
+├── app.py                          # Landing page and navigation hub
 ├── pages/
 │   ├── 1_Data_Curation.py         # Phase 01: upload, clean, profile
 │   ├── 2_Diagnostic_Visualizations.py  # Phase 02: charts and analytics

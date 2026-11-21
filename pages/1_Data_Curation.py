@@ -1,12 +1,11 @@
 import html
-import io
 
 import numpy as np
 import pandas as pd
 import streamlit as st
 
 from src.cleaner import DataCleaner
-from src.file_utils import file_extension, upload_identity
+from src.file_utils import dataframe_to_safe_csv, file_extension, upload_identity
 from src.styles import render_html
 
 MAX_FILE_MB = 100
@@ -65,6 +64,8 @@ def reset_workspace_for_new_dataset(data_df: pd.DataFrame, file_name: str, uploa
     st.session_state["coercion_flags"] = {}
     st.session_state["current_file_name"] = file_name
     st.session_state["_active_upload_id"] = upload_id
+    for key in ("cast_loss_confirm", "_cast_confirmation_context", "_failed_upload_id", "_upload_error"):
+        st.session_state.pop(key, None)
 
     # Clear downstream ML state variables
     clear_ml_results()
@@ -92,6 +93,8 @@ def unload_dataset() -> None:
     st.session_state["coercion_flags"] = {}
     st.session_state["current_file_name"] = None
     st.session_state["_active_upload_id"] = ""
+    for key in ("cast_loss_confirm", "_cast_confirmation_context", "_failed_upload_id", "_upload_error"):
+        st.session_state.pop(key, None)
 
     clear_ml_results()
 
@@ -121,31 +124,38 @@ for k, v in [
         st.session_state[k] = v
 
 
-def load_data(file_obj) -> None:
+def load_data(file_obj) -> bool:
+    upload_id = upload_identity(file_obj)
+    if st.session_state.get("_failed_upload_id") == upload_id:
+        st.error(st.session_state["_upload_error"])
+        return False
+
     try:
         size_mb = file_obj.size / (1024 * 1024)
         if size_mb > MAX_FILE_MB:
-            st.error(
+            raise ValueError(
                 f"File size ({size_mb:.1f} MB) exceeds maximum allowed limit of {MAX_FILE_MB} MB."
             )
-            return
 
         if file_extension(file_obj.name) == ".csv":
             data_df = pd.read_csv(file_obj)
         elif file_extension(file_obj.name) in (".xlsx", ".xls"):
             data_df = pd.read_excel(file_obj)
         else:
-            st.error("Unsupported file format. Please upload CSV or Excel.")
-            return
+            raise ValueError("Unsupported file format. Please upload CSV or Excel.")
 
         if data_df.empty:
-            st.error("The uploaded dataset contains no rows.")
-            return
+            raise ValueError("The uploaded dataset contains no rows.")
 
-        reset_workspace_for_new_dataset(data_df, file_obj.name, upload_identity(file_obj))
+        reset_workspace_for_new_dataset(data_df, file_obj.name, upload_id)
         show_toast(f"Loaded {file_obj.name} ({data_df.shape[0]:,} rows, {data_df.shape[1]} cols).")
+        return True
     except Exception as err:
-        st.error(f"Failed to load dataset: {err}")
+        message = f"Failed to load dataset: {err}"
+        st.session_state["_failed_upload_id"] = upload_id
+        st.session_state["_upload_error"] = message
+        st.error(message)
+        return False
 
 
 def push_history(df: pd.DataFrame) -> None:
@@ -211,12 +221,13 @@ if has_active_df:
         uploaded_file = st.file_uploader(
             f"Select a new CSV or Excel file to replace current dataset (max {MAX_FILE_MB} MB)",
             type=["csv", "xlsx", "xls"],
+            max_upload_size=MAX_FILE_MB,
             key="curation_file_uploader_replace",
         )
         if uploaded_file is not None:
             if st.session_state.get("_active_upload_id") != upload_identity(uploaded_file):
-                load_data(uploaded_file)
-                st.rerun()
+                if load_data(uploaded_file):
+                    st.rerun()
 
         if st.button("Unload Dataset (Clear Workspace)", type="secondary"):
             unload_dataset()
@@ -227,12 +238,13 @@ else:
     uploaded_file = st.file_uploader(
         f"Upload Dataset (CSV or Excel, max {MAX_FILE_MB} MB)",
         type=["csv", "xlsx", "xls"],
+        max_upload_size=MAX_FILE_MB,
         key="curation_file_uploader_fresh",
     )
     if uploaded_file is not None:
         if st.session_state.get("_active_upload_id") != upload_identity(uploaded_file):
-            load_data(uploaded_file)
-            st.rerun()
+            if load_data(uploaded_file):
+                st.rerun()
 
 
 # -------------------------------------------------------------
@@ -385,6 +397,10 @@ if st.session_state.get("df") is not None:
                     )
 
                     target_type_key = target_type_choice.split()[0]
+                    cast_context = (st.session_state.get("_active_upload_id"), col_to_cast, target_type_key)
+                    if st.session_state.get("_cast_confirmation_context") != cast_context:
+                        st.session_state.pop("cast_loss_confirm", None)
+                        st.session_state["_cast_confirmation_context"] = cast_context
                     dt_fmt = None
                     if target_type_key == "datetime64":
                         dt_fmt = st.text_input(
@@ -671,11 +687,9 @@ if st.session_state.get("df") is not None:
             try:
                 st.markdown(f"**Dimensions:** `{df_current.shape[0]:,}` rows × `{df_current.shape[1]}` columns")
                 st.dataframe(safe_dataframe(df_current), width='stretch')
-                buf = io.StringIO()
-                df_current.to_csv(buf, index=False)
                 st.download_button(
                     "Export Curated Dataset (.CSV)",
-                    buf.getvalue().encode(),
+                    dataframe_to_safe_csv(df_current).encode("utf-8"),
                     f"curated_{active_file_name.replace('.', '_')}.csv",
                     "text/csv",
                     type="primary",

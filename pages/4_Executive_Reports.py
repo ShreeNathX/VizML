@@ -21,6 +21,7 @@ from src.styles import (
     resolve_continuous_scale,
 )
 from src.cleaner import calculate_purity_score
+from src.file_utils import dataframe_to_safe_csv
 
 st.set_page_config(page_title="VizML: Executive Summary", layout="wide")
 
@@ -61,7 +62,7 @@ ml_fi       = st.session_state.get("ml_feature_importance", None)  # pd.DataFram
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, scope="session", max_entries=1)
 def _profile(df_json: str) -> dict:
     """Cache expensive per-column profiling (serialise df via JSON key)."""
     import pandas as pd, numpy as np
@@ -128,7 +129,6 @@ def _profile(df_json: str) -> dict:
     }
 
 
-@st.cache_data(show_spinner=False)
 def _df_to_json(df: pd.DataFrame) -> str:
     return df.to_json(orient="split", date_format="iso")
 
@@ -520,11 +520,9 @@ else:
 with dc1:
     render_html('<div class="section-header" style="margin-top:0;font-size:13px;">Curated Dataset</div>')
     try:
-        buf_csv = io.StringIO()
-        df.to_csv(buf_csv, index=False)
         st.download_button(
             "Download Dataset (.csv)",
-            data=buf_csv.getvalue().encode(),
+            data=dataframe_to_safe_csv(df).encode("utf-8"),
             file_name=f"vizml_curated_{file_name.replace('.', '_')}.csv",
             mime="text/csv",
             width='stretch',
@@ -540,11 +538,9 @@ if dc2 is not None and ml_results is not None:
         render_html('<div class="section-header" style="margin-top:0;font-size:13px;">ML Leaderboard</div>')
         try:
             display_cols = [c for c in ml_results.columns if not c.startswith("_")]
-            buf_ml = io.StringIO()
-            ml_results[display_cols].to_csv(buf_ml, index=False)
             st.download_button(
                 "Download Leaderboard (.csv)",
-                data=buf_ml.getvalue().encode(),
+                data=dataframe_to_safe_csv(ml_results[display_cols]).encode("utf-8"),
                 file_name="vizml_ml_leaderboard.csv",
                 mime="text/csv",
                 width='stretch',
