@@ -6,9 +6,9 @@ import streamlit as st
 
 from src.cleaner import DataCleaner
 from src.file_utils import dataframe_to_safe_csv, file_extension, upload_identity
+from src.runtime_config import MAX_UPLOAD_MB
 from src.styles import render_html
 
-MAX_FILE_MB = 100
 MAX_HISTORY = 10
 
 st.set_page_config(page_title="VizML: Data Curation", layout="wide")
@@ -132,9 +132,9 @@ def load_data(file_obj) -> bool:
 
     try:
         size_mb = file_obj.size / (1024 * 1024)
-        if size_mb > MAX_FILE_MB:
+        if size_mb > MAX_UPLOAD_MB:
             raise ValueError(
-                f"File size ({size_mb:.1f} MB) exceeds maximum allowed limit of {MAX_FILE_MB} MB."
+                f"File size ({size_mb:.1f} MB) exceeds maximum allowed limit of {MAX_UPLOAD_MB} MB."
             )
 
         if file_extension(file_obj.name) == ".csv":
@@ -219,9 +219,9 @@ if has_active_df:
 
     with st.expander("Replace / Upload Another Dataset", expanded=False):
         uploaded_file = st.file_uploader(
-            f"Select a new CSV or Excel file to replace current dataset (max {MAX_FILE_MB} MB)",
+            f"Select a new CSV or Excel file to replace current dataset (max {MAX_UPLOAD_MB} MB)",
             type=["csv", "xlsx", "xls"],
-            max_upload_size=MAX_FILE_MB,
+            max_upload_size=MAX_UPLOAD_MB,
             key="curation_file_uploader_replace",
         )
         if uploaded_file is not None:
@@ -236,9 +236,9 @@ if has_active_df:
 
 else:
     uploaded_file = st.file_uploader(
-        f"Upload Dataset (CSV or Excel, max {MAX_FILE_MB} MB)",
+        f"Upload Dataset (CSV or Excel, max {MAX_UPLOAD_MB} MB)",
         type=["csv", "xlsx", "xls"],
-        max_upload_size=MAX_FILE_MB,
+        max_upload_size=MAX_UPLOAD_MB,
         key="curation_file_uploader_fresh",
     )
     if uploaded_file is not None:
